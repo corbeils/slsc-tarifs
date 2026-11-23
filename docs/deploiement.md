@@ -6,15 +6,14 @@
 
 ```bash
 sudo mkdir -p /opt/slsc-tarifs && cd /opt/slsc-tarifs
-sudo curl -fsSL -H "Authorization: token <JETON_GITHUB>" \
-  -o docker-compose.yml https://raw.githubusercontent.com/corbeils/slsc-tarifs/main/deploy/docker-compose.yml
+sudo curl -fsSL -o docker-compose.yml https://raw.githubusercontent.com/corbeils/slsc-tarifs/main/deploy/docker-compose.yml
 printf 'ADMIN_TOKEN=%s\nCRON_US=30 3 * * 1\nCRON_FX=15 17 * * 1-5\nTZ=America/Toronto\n' "$(openssl rand -hex 24)" | sudo tee .env
 cat .env      # noter l'ADMIN_TOKEN : c'est le mot de passe de la page Admin
 docker compose pull && docker compose up -d
 curl -s http://127.0.0.1:8085/api/health      # → {"ok":true}
 ```
 
-L'image est privée (dépôt privé). Le `docker login ghcr.io` déjà fait pour `slscload` suffit : le même jeton `read:packages` donne accès à tous tes paquets.
+Le dépôt est public. Ton `docker login ghcr.io` (fait pour `slscload`) donne de toute façon accès à l'image. Pour la rendre téléchargeable sans connexion : GitHub → ton profil → *Packages* → `slsc-tarifs` → *Package settings* → *Change visibility* → **Public**.
 
 ## 2. Nginx Proxy Manager (`npmplus`)
 

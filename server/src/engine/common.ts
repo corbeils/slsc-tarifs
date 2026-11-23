@@ -86,7 +86,7 @@ export function scopeMatch(
 }
 
 const listCountCache = new Map<string, { n: number; t: number }>();
-function countList(db: DB, id: string): number {
+export function countList(db: DB, id: string): number {
   const c = listCountCache.get(id);
   if (c && Date.now() - c.t < 5000) return c.n;
   const n = (db.prepare('SELECT COUNT(*) AS n FROM code_lists WHERE measure_id = ?').get(id) as { n: number }).n;

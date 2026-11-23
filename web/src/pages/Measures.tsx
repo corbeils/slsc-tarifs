@@ -34,7 +34,7 @@ export default function Measures() {
                     <td><b>{p.url ? <a href={p.url} target="_blank" rel="noreferrer">{p.name}</a> : p.name}</b><div className="muted small mono">{p.id}</div></td>
                     <td className="mono small">{(p.prefixes ?? []).join(', ') || 'detected by description'}</td>
                     <td><St s={p.status} /></td>
-                    <td className="small">{p.note}{p.options && <ul>{Object.entries(p.options).map(([k, o]: any) => <li key={k}>{o.label} <St s={o.status} /></li>)}</ul>}</td>
+                    <td className="small">{p.note}{p.lists?.length > 0 && <ul>{p.lists.map((l: any) => <li key={l.id}>{l.label} — {l.rate}%{l.capCombinedPct ? ` (combined cap ${l.capCombinedPct}%)` : ''} {l.listCount > 0 ? <span className="badge ok">list: {l.listCount} codes</span> : <span className="badge warn">{l.prefixes?.length ? 'indicative prefixes' : 'list to import'}</span>}</li>)}</ul>}{p.options && <ul>{Object.entries(p.options).map(([k, o]: any) => <li key={k}>{o.label} <St s={o.status} /></li>)}</ul>}</td>
                   </tr>
                 ))}
               </tbody>

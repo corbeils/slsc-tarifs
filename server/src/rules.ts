@@ -103,6 +103,25 @@ export const Program = z
       .object({ mode: z.enum(['exempt', 'nonUsContent', 'none']), partsExemptOption: z.string().optional() })
       .optional(),
     headings: z.record(HeadingOverride).optional(),
+    /** Annex / list based coverage (when USITC does not footnote the lines). */
+    lists: z
+      .array(
+        z
+          .object({
+            id: z.string(),
+            label: z.string(),
+            rate: z.number(),
+            ch99: z.string().optional(),
+            prefixes: z.array(z.string()).optional(),
+            exclude: z.array(z.string()).optional(),
+            origins: z.array(z.string()).optional(),
+            capCombinedPct: z.number().optional(),
+            status: Status,
+            note: z.string().optional(),
+          })
+          .passthrough(),
+      )
+      .optional(),
   })
   .passthrough();
 export type Program = z.infer<typeof Program>;

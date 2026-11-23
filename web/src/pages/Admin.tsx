@@ -105,6 +105,7 @@ function AdminPanel({ me, onLogout, onPasswordChanged }: { me: Me; onLogout: () 
   };
 
   const listMeasures = [
+    ...(measures?.us.programs ?? []).flatMap((p: any) => (p.lists ?? []).map((l: any) => ({ id: l.id, name: `${p.name} — ${l.label}`, j: 'US' }))),
     ...(measures?.us.measures ?? []).filter((m: any) => m.scope.codeList).map((m: any) => ({ ...m, j: 'US' })),
     ...(measures?.ca.measures ?? []).filter((m: any) => m.scope.codeList).map((m: any) => ({ ...m, j: 'CA' })),
   ];
@@ -328,6 +329,8 @@ function CodeLists({ measures, lists, wrap }: { measures: any[]; lists: any[]; w
   const [url, setUrl] = useState('');
   const [replace, setReplace] = useState(true);
   const [withRates, setWithRates] = useState(false);
+  const [from, setFrom] = useState('');
+  const [until, setUntil] = useState('');
   const [preview, setPreview] = useState<any[]>([]);
   const count = (mid: string) => lists.find((l) => l.measure_id === mid)?.n ?? 0;
   return (
@@ -348,10 +351,20 @@ function CodeLists({ measures, lists, wrap }: { measures: any[]; lists: any[]; w
           </select>
           <label className="lbl">URL (optional)</label>
           <input className="input" value={url} onChange={(e) => setUrl(e.target.value)} placeholder="https://www.canada.ca/…" />
+          <div className="grid2">
+            <div>
+              <label className="lbl">From marker (optional)</label>
+              <input className="input" value={from} onChange={(e) => setFrom(e.target.value)} placeholder="e.g. Annex I-B" />
+            </div>
+            <div>
+              <label className="lbl">Until marker (optional)</label>
+              <input className="input" value={until} onChange={(e) => setUntil(e.target.value)} placeholder="e.g. Annex I-C" />
+            </div>
+          </div>
           <label className="check"><input type="checkbox" checked={replace} onChange={(e) => setReplace(e.target.checked)} /><span>Replace the existing list</span></label>
           <label className="check"><input type="checkbox" checked={withRates} onChange={(e) => setWithRates(e.target.checked)} /><span>Read the rate (%) on each line</span></label>
           <div className="row">
-            <button className="btn" disabled={!id || (!text && !url)} onClick={async () => { const r = await wrap('List ' + id, () => api.admin.codes({ measureId: id, text, url: url || undefined, replace, withRates })); if (r) setPreview(r.sample ?? []); }}>Import</button>
+            <button className="btn" disabled={!id || (!text && !url)} onClick={async () => { const r = await wrap('List ' + id, () => api.admin.codes({ measureId: id, text, url: url || undefined, replace, withRates, from: from || undefined, until: until || undefined })); if (r) setPreview(r.sample ?? []); }}>Import</button>
             <button className="btn ghost" disabled={!id} onClick={async () => setPreview(await api.admin.listCodes(id))}>View</button>
             <button className="btn danger" disabled={!id} onClick={() => confirm('Empty this list?') && wrap('Empty ' + id, () => api.admin.deleteCodes(id))}>Empty</button>
           </div>

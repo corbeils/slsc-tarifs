@@ -9,6 +9,7 @@ import { openDb, type DB } from '../db.js';
 import { loadRules, type Rules } from '../rules.js';
 import { calculate } from './index.js';
 import { ensureSeed } from '../seed.js';
+import { importUsRecords } from '../importers/us-hts.js';
 
 describe('parseRate', () => {
   it('Free / pourcentage / spécifique / composé', () => {
@@ -148,5 +149,63 @@ describe('scénarios (données de démonstration)', () => {
     const r = calculate(db, rules, { direction: 'US-CA', code: '39231090', origin: 'DE', value: 1000, currency: 'USD', fxUsdCad: 1.4 });
     expect(r.value).toBe(1400);
     expect(r.lines[0].amount).toBe(91);
+  });
+});
+
+describe('Section 232 / 301 / 338 by annex lists (real USITC data has no Chapter 99 footnotes)', () => {
+  let db: DB;
+  let rules: Rules;
+  const rec = (htsno: string, general = '', special = '') => ({ htsno, description: htsno, indent: '1', general, special, other: '', footnotes: [] });
+  beforeAll(() => {
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'tarifs-real-'));
+    db = openDb(path.join(dir, 't.sqlite'));
+    rules = loadRules(path.resolve(__dirname, '../../../rules'));
+    importUsRecords(
+      db,
+      [
+        rec('7326.90.86', '2.9%', 'Free (A,AU,S,SG)'),
+        rec('7326.90.86.88'),
+        rec('7208.51.00', 'Free'),
+        rec('7208.51.00.30'),
+        rec('8462.11.00', '4.4%', 'Free (A,AU,S,SG)'),
+        rec('8462.11.00.35'),
+        rec('8703.80.00', '2.5%', 'Free (A+,S)'),
+      ] as never,
+      'test',
+    );
+  });
+  const calc = (code: string, origin: string, extra: object = {}) =>
+    calculate(db, rules, { direction: 'CA-US', code, origin, value: 10000, currency: 'USD', ...extra });
+
+  it('steel derivative: 232 Annex I-B by indicative prefix', () => {
+    const l = calc('7326908688', 'CA', { preferential: true }).lines.find((x) => x.key === 'US-232-METALS');
+    expect(l?.amount).toBe(2500);
+    expect(l?.status).toBe('to verify');
+    expect(l?.note).toContain('indicative prefix');
+  });
+  it('steel plate: Annex I-A 50%, 301 exempt through 9903.05.90 when USMCA not claimed', () => {
+    const r = calc('7208510030', 'CA');
+    expect(r.lines.find((x) => x.key === 'US-232-METALS')?.amount).toBe(5000);
+    expect(r.lines.find((x) => x.key === 'US-301-FL')?.ch99).toBe('9903.05.90');
+  });
+  it('official list replaces prefixes; Annex III list applies the 15% combined cap', () => {
+    saveCodeList(db, 'US-232-ANNEX-IB', [{ code: '72085100', rate: null }], { replace: true });
+    expect(calc('7326908688', 'CA', { preferential: true }).lines.find((x) => x.key === 'US-232-METALS')).toBeUndefined();
+    saveCodeList(db, 'US-232-ANNEX-III', [{ code: '84621100', rate: null }], { replace: true });
+    const r = calc('8462110035', 'CA');
+    const l = r.lines.find((x) => x.key === 'US-232-METALS');
+    expect(l?.ratePct).toBeCloseTo(10.6);
+    expect(r.totals.dutyPct).toBe(15);
+  });
+  it('autos: vehicle prefix 25% on non-U.S. content; 338 motor list once imported', () => {
+    saveCodeList(db, 'US-338-MOTOR', [{ code: '87038000', rate: null }], { replace: true });
+    const r = calc('87038000', 'CA', { preferential: true, usContentPct: 50 });
+    expect(r.lines.find((x) => x.key === 'US-232-AUTO')?.amount).toBe(1250);
+    expect(r.lines.find((x) => x.key === 'US-338-CA')?.amount).toBe(5000);
+  });
+  it('301 China: list import with rate', () => {
+    saveCodeList(db, 'US-301-CN-L3', [{ code: '7326908688', rate: null }], { replace: true });
+    const r = calc('7326908688', 'CN');
+    expect(r.lines.find((x) => x.key === 'US-301-CN')?.amount).toBe(2500);
   });
 });

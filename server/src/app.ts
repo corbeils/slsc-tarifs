@@ -173,7 +173,7 @@ export async function buildApp(db: DB) {
     const ch99 = db.prepare('SELECT COUNT(*) n FROM ch99').get() as { n: number };
     return {
       us: {
-        programs: R.us.programs.map((p) => ({ id: p.id, name: p.name, family: p.family, prefixes: p.prefixes, status: p.status, note: p.note, url: p.url, options: p.options })),
+        programs: R.us.programs.map((p) => ({ id: p.id, name: p.name, family: p.family, prefixes: p.prefixes, status: p.status, note: p.note, url: p.url, options: p.options, lists: (p.lists ?? []).map((l) => ({ ...l, listCount: lists[l.id] ?? 0 })) })),
         measures: R.us.measures.map((m) => ({ ...m, listCount: lists[m.id] ?? 0 })),
         regimes: R.us.regimes,
         fees: R.us.fees,
@@ -274,9 +274,19 @@ export async function buildApp(db: DB) {
       db.prepare('SELECT code, rate, source, added_at FROM code_lists WHERE measure_id = ? ORDER BY code').all((req.params as { id: string }).id),
     );
     a.post('/api/admin/codes', async (req, reply) => {
-      const b = req.body as { measureId: string; text?: string; url?: string; replace?: boolean; withRates?: boolean; rate?: number | null };
+      const b = req.body as { measureId: string; text?: string; url?: string; replace?: boolean; withRates?: boolean; rate?: number | null; from?: string; until?: string };
       if (!b.measureId) return reply.code(400).send({ error: 'measureId required' });
-      const text = b.url ? await fetchText(b.url) : b.text ?? '';
+      let text = b.url ? await fetchText(b.url) : b.text ?? '';
+      // Keep only the section between two markers (e.g. "Annex I-B" … "Annex I-C")
+      if (b.from) {
+        const i = text.toLowerCase().indexOf(b.from.toLowerCase());
+        if (i < 0) return reply.code(400).send({ error: `Marker not found: ${b.from}` });
+        text = text.slice(i + b.from.length);
+      }
+      if (b.until) {
+        const i = text.toLowerCase().indexOf(b.until.toLowerCase());
+        if (i >= 0) text = text.slice(0, i);
+      }
       const codes = extractCodes(text, !!b.withRates);
       if (!codes.length) return reply.code(400).send({ error: 'No tariff numbers detected' });
       return { ...saveCodeList(db, b.measureId, codes, { replace: b.replace, source: b.url ?? 'pasted', rate: b.rate ?? null }), sample: codes.slice(0, 10) };

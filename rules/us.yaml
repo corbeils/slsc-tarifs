@@ -73,6 +73,20 @@ programs:
       mode: nonUsContent
       partsExemptOption: usmcaAutoPart
     note: "Only one Section 232 program per article: autos take priority over metals."
+    lists:
+      - id: US-232-AUTO-VEH
+        label: "Passenger vehicles and light trucks"
+        rate: 25
+        ch99: "9903.94.01"
+        prefixes: ["8703.21", "8703.22", "8703.23", "8703.24", "8703.31", "8703.32", "8703.33", "8703.40", "8703.50", "8703.60", "8703.70", "8703.80", "8703.90", "8704.21", "8704.31", "8704.41", "8704.51"]
+        status: verified
+      - id: US-232-AUTO-PARTS
+        label: "Automobile parts (Annex I parts list)"
+        rate: 25
+        ch99: "9903.94.05"
+        prefixes: ["8706", "8707", "8708", "8407.31", "8407.32", "8407.33", "8407.34", "8408.20", "4011.10", "4011.20", "8544.30"]
+        status: to verify
+        note: "Indicative prefixes; import the official parts list (CBP CSMS / Federal Register annex)."
 
   - id: US-232-MHDV
     name: "Section 232 — medium/heavy-duty trucks, buses and parts"
@@ -83,6 +97,17 @@ programs:
       mode: nonUsContent
       partsExemptOption: usmcaAutoPart
     note: "Trucks 25%, buses 10%; USMCA: 25% on non-U.S. content (CSMS 68559236)."
+    lists:
+      - id: US-232-MHDV-TRUCKS
+        label: "Medium and heavy-duty trucks, tractors and parts"
+        rate: 25
+        prefixes: ["8701.21", "8701.22", "8701.23", "8701.24", "8701.29", "8704.22", "8704.23", "8704.32", "8704.42", "8704.43", "8704.52"]
+        status: to verify
+      - id: US-232-MHDV-BUSES
+        label: "Buses"
+        rate: 10
+        prefixes: ["8702"]
+        status: to verify
 
   - id: US-232-METALS
     name: "Section 232 — steel, aluminum, copper and derivatives"
@@ -110,6 +135,30 @@ programs:
         floorPct: 15
         status: to verify
         note: "Exact scope (Annex I-C vs. all derivatives) to be confirmed with CSMS/CBP — Oct. 2026 clarification on \"U.S. content\"."
+    lists:
+      - id: US-232-ANNEX-IA
+        label: "Annex I-A — steel, aluminum and copper articles (50%)"
+        rate: 50
+        prefixes: ["7206", "7207", "7208", "7209", "7210", "7211", "7212", "7213", "7214", "7215", "7216", "7217", "7218", "7219", "7220", "7221", "7222", "7223", "7224", "7225", "7226", "7227", "7228", "7229", "7301", "7302", "7304", "7305", "7306", "7601", "7604", "7605", "7606", "7607", "7608", "7609", "7407", "7408", "7409", "7410", "7411", "7412", "7413"]
+        status: to verify
+        note: "Indicative prefixes (steel mill, primary aluminum and semi-finished copper); import the official Annex I-A list."
+      - id: US-232-ANNEX-IB
+        label: "Annex I-B — steel and aluminum derivatives (25%)"
+        rate: 25
+        prefixes: ["7307", "7308", "7309", "7310", "7311", "7312", "7313", "7314", "7315", "7316", "7317", "7318", "7320", "7322", "7323", "7324", "7325", "7326", "7610", "7611", "7612", "7613", "7614", "7615", "7616"]
+        status: to verify
+        note: "Indicative prefixes (articles of chapters 73 and 76); import the official Annex I-B list — it also covers many goods outside chapters 73/76."
+      - id: US-232-ANNEX-IC
+        label: "Annex I-C — mobile industrial equipment and machinery (tiered, through Dec. 31, 2027)"
+        rate: 25
+        status: to verify
+        note: "No prefixes: import the official Annex I-C list."
+      - id: US-232-ANNEX-III
+        label: "Annex III — fixed industrial machinery, power, agricultural equipment, residential HVAC"
+        rate: 25
+        capCombinedPct: 15
+        status: to verify
+        note: "No prefixes: import the official Annex III list (combined 15% applied automatically)."
 
   - id: US-232-WOOD
     name: "Section 232 — lumber, timber, upholstered furniture, cabinets"
@@ -117,6 +166,17 @@ programs:
     prefixes: ["9903.76"]
     status: verified
     note: "Softwood lumber and timber 10% (on top of AD/CVD); upholstered furniture/kitchen cabinets/vanities 25%."
+    lists:
+      - id: US-232-WOOD-LUMBER
+        label: "Softwood timber and lumber"
+        rate: 10
+        prefixes: ["4403.11", "4403.21", "4403.22", "4403.23", "4403.24", "4403.25", "4403.26", "4407.11", "4407.12", "4407.13", "4407.14", "4407.19"]
+        status: to verify
+      - id: US-232-WOOD-FURN
+        label: "Upholstered wooden furniture, kitchen cabinets and vanities"
+        rate: 25
+        prefixes: ["9401.61", "9403.40", "9403.60"]
+        status: to verify
 
   - id: US-232-SEMI
     name: "Section 232 — semiconductors"
@@ -138,6 +198,27 @@ programs:
     url: "https://www.cbp.gov/trade/remedies"
     status: verified
     note: "No USMCA exemption. Stacks on Section 232, except the dairy list (9903.03.15)."
+    lists:
+      - id: US-338-ALCOHOL
+        label: "Alcohol list (note 51(b)(1))"
+        rate: 50
+        ch99: "9903.03.12"
+        origins: [CA]
+        status: verified
+        note: "Import the list from the Section 338 proclamation annex (as modified Sept. 15, 2026)."
+      - id: US-338-DAIRY
+        label: "Dairy list (note 51(b)(2))"
+        rate: 50
+        ch99: "9903.03.13"
+        origins: [CA]
+        status: verified
+      - id: US-338-MOTOR
+        label: "\"Motor vehicle\" list (chapters 4 to 97)"
+        rate: 50
+        ch99: "9903.03.14"
+        origins: [CA]
+        status: verified
+        note: "554 subheadings at launch; 22 removed effective Oct. 30, 2026 — import the current list."
     headings:
       "9903.03.12": { label: "Alcohol list (note 51(b)(1))", origins: [CA] }
       "9903.03.13": { label: "Dairy list (note 51(b)(2))", origins: [CA], exemptIfFamilies: [s232], exemptionCh99: "9903.03.15" }
@@ -152,6 +233,37 @@ programs:
     defaultOrigins: [CN]
     status: verified
     note: "Exclusion headings (0% rate) are offered as exemptions to claim."
+    lists:
+      - id: US-301-CN-L1
+        label: "List 1 (25%)"
+        rate: 25
+        ch99: "9903.88.01"
+        origins: [CN]
+        status: verified
+      - id: US-301-CN-L2
+        label: "List 2 (25%)"
+        rate: 25
+        ch99: "9903.88.02"
+        origins: [CN]
+        status: verified
+      - id: US-301-CN-L3
+        label: "List 3 (25%)"
+        rate: 25
+        ch99: "9903.88.03"
+        origins: [CN]
+        status: verified
+      - id: US-301-CN-L4A
+        label: "List 4A (7.5%)"
+        rate: 7.5
+        ch99: "9903.88.15"
+        origins: [CN]
+        status: verified
+      - id: US-301-CN-2024
+        label: "2024 four-year review increases (EVs, semiconductors, batteries, steel/aluminum, etc.)"
+        rate: 25
+        origins: [CN]
+        status: to verify
+        note: "Import with \"Read the rate\" ticked: rates vary by product (25% to 100%)."
 
   - id: US-201
     name: "Section 201 — safeguard measures"

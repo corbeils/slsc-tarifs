@@ -4,6 +4,8 @@ import { countryName, matchesOrigin } from '../countries.js';
 import type { Program, Rules } from '../rules.js';
 import { computeDuty, parseRate, parseUsSpecial } from './rates.js';
 import {
+  countList,
+  codeListMatch,
   adcvdFlags,
   anyPrefix,
   euKey,
@@ -19,6 +21,9 @@ import type { CalcInput, CalcLine, CalcResult, ExemptionInfo, Flag, OptionInfo }
 
 interface Heading {
   code: string;
+  listId?: string;
+  via?: string;
+  capCombinedPct?: number;
   label: string;
   description: string;
   addPct: number | null;
@@ -149,9 +154,32 @@ export function calcUS(db: DB, rules: Rules, line: LineRow, input: CalcInput, fx
     // ---------------- Programmes liés au ch. 99 ----------------
     for (const p of R.programs) {
       const mine = refs.filter((r) => !consumed.has(r) && programMatchesRef(db, p, r));
-      if (!mine.length) continue;
       mine.forEach((r) => consumed.add(r));
       const heads = mine.map((r) => resolveHeading(db, p, r));
+      // Annex / list coverage (official list imported in Admin, else indicative prefixes)
+      for (const l of p.lists ?? []) {
+        if (l.exclude && anyPrefix(line.code, l.exclude)) continue;
+        const cl = codeListMatch(db, l.id, line.code);
+        const hasList = countList(db, l.id) > 0;
+        let via = '';
+        if (cl.matched) via = cl.partial ? 'official list (some subdivisions only)' : 'official list';
+        else if (!hasList && anyPrefix(line.code, l.prefixes)) via = 'indicative prefix (official list not imported)';
+        if (!via) continue;
+        if (heads.some((h) => h.code === (l.ch99 ?? l.id))) continue;
+        heads.push({
+          code: l.ch99 ?? l.id,
+          listId: l.id,
+          via,
+          label: l.label,
+          description: l.label,
+          addPct: cl.rate ?? l.rate,
+          kind: 'duty',
+          origins: l.origins ?? p.defaultOrigins ?? null,
+          excludeOrigins: null,
+          capCombinedPct: l.capCombinedPct,
+        });
+      }
+      if (!heads.length) continue;
       const duty = heads.filter(
         (h) =>
           h.kind === 'duty' &&
@@ -197,8 +225,10 @@ export function calcUS(db: DB, rules: Rules, line: LineRow, input: CalcInput, fx
       let rate = chosen.addPct ?? 0;
       let basis = dutiable;
       let floor = 0;
-      let cap: number | undefined;
+      let cap: number | undefined = chosen.capCombinedPct;
       const notes: string[] = [];
+      if (chosen.via) notes.push(`Scope: ${chosen.via}`);
+      if (cap !== undefined) notes.push(`Listed in ${chosen.label}: base duty + 232 capped at ${cap}% combined`);
 
       if (p.lowMetalExemptPct !== undefined) {
         needs.metalWeight = true;
@@ -250,13 +280,13 @@ export function calcUS(db: DB, rules: Rules, line: LineRow, input: CalcInput, fx
         key: p.id,
         label: p.name,
         program: p.family.toUpperCase(),
-        ch99: exempt?.ch99 ?? chosen.code,
+        ch99: exempt?.ch99 ?? (chosen.listId && !/^99/.test(chosen.code) ? undefined : chosen.code),
         ratePct: exempt ? 0 : round2(ratePct ?? 0),
         rateText: chosen.label,
+        status: chosen.via?.startsWith('indicative') ? 'to verify' : p.status,
         basis: round2(basis),
         amount: round2(amount),
         kind: 'additional',
-        status: p.status,
         url: p.url,
         exempted: !!exempt,
         note: [exempt ? `Exempt: ${exempt.label}` : '', ...notes, p.note ?? ''].filter(Boolean).join(' · '),

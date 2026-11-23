@@ -1,12 +1,12 @@
 # =====================================================================
-#  RÈGLES — IMPORTATION AUX ÉTATS-UNIS (CA → US ou autre origine → US)
-#  Mise à jour de référence : 23 novembre 2026
-#  status: "vérifié" = confirmé dans une source officielle ou d'un cabinet reconnu
-#          "à valider" = paramètre plausible, à confirmer (CSMS / Federal Register)
-#  Les taux des rubriques du ch. 99 sont lus AUTOMATIQUEMENT dans l'export USITC
-#  (colonne « General » : "The duty provided in the applicable subheading + X%").
-#  Ce fichier ne sert qu'à dire comment les combiner, à qui elles s'appliquent,
-#  et quelles exemptions existent.
+#  RULES — INBOUND USA (imports into the United States)
+#  Reference date: November 23, 2026
+#  status: "verified"  = confirmed in an official or reputable law-firm source
+#          "to verify" = plausible parameter, to be confirmed (CSMS / Federal Register)
+#  Chapter 99 heading rates are read AUTOMATICALLY from the USITC export
+#  ("General" column: "The duty provided in the applicable subheading + X%").
+#  This file only defines how they combine, who they apply to, and which
+#  exemptions exist.
 # =====================================================================
 
 currency: USD
@@ -15,25 +15,25 @@ fees:
   mpf:
     label: "Merchandise Processing Fee (MPF)"
     pct: 0.3464
-    min: 34.58          # AF 2027, en vigueur le 1er oct. 2026
+    min: 34.58          # FY2027, effective Oct. 1, 2026
     max: 670.86
     formalThreshold: 2500
     informalFlat: 2.77
-    # MPF non perçue sur les marchandises originaires ACEUM/USMCA du Canada ou du Mexique
+    # No MPF on USMCA-originating goods from Canada or Mexico
     exemptPreferentialOrigins: [CA, MX]
-    legal: "19 CFR 24.23 ; avis CBP AF2027 (FR 2026-15530)"
-    status: vérifié
+    legal: "19 CFR 24.23; CBP FY2027 notice (FR 2026-15530)"
+    status: verified
   hmf:
-    label: "Harbor Maintenance Fee (HMF) — maritime seulement"
+    label: "Harbor Maintenance Fee (HMF) — ocean only"
     pct: 0.125
     modes: [ocean]
     legal: "19 CFR 24.24"
-    status: vérifié
+    status: verified
 
-# Pays soumis à la colonne 2 (taux « Other ») plutôt qu'à la colonne 1
+# Countries subject to Column 2 ("Other" rate) instead of Column 1
 column2Countries: [CU, KP, RU, BY]
 
-# Indicateurs de la colonne « Special » admissibles selon l'origine (accords en vigueur)
+# "Special" column indicators available by origin (agreements in force)
 preferentialPrograms:
   CA: [S, S+]
   MX: [S, S+]
@@ -58,122 +58,122 @@ preferentialPrograms:
   NI: [P, P+]
 
 # ---------------------------------------------------------------------
-# PROGRAMMES RELIÉS AU CH. 99 (détection par renvois/notes de la ligne HTS)
-# Ordre = priorité d'évaluation.
+# CHAPTER 99 PROGRAMS (detected from the HTS line's references/footnotes)
+# Order = evaluation priority.
 # ---------------------------------------------------------------------
 programs:
   - id: US-232-AUTO
-    name: "Section 232 — véhicules et pièces automobiles"
+    name: "Section 232 — automobiles and auto parts"
     family: s232
     prefixes: ["9903.94"]
     url: "https://www.cbp.gov/trade/programs-administration/entry-summary/232-tariffs-aluminum-and-steel-faqs"
-    status: vérifié
+    status: verified
     preferential:
-      # Véhicules ACEUM : 25 % sur le contenu non américain ; pièces ACEUM admissibles : exemptées
+      # USMCA vehicles: 25% on non-U.S. content; USMCA-qualifying parts: exempt
       mode: nonUsContent
       partsExemptOption: usmcaAutoPart
-    note: "Un seul programme 232 par article : l'auto a priorité sur les métaux."
+    note: "Only one Section 232 program per article: autos take priority over metals."
 
   - id: US-232-MHDV
-    name: "Section 232 — camions moyens/lourds, autobus et pièces"
+    name: "Section 232 — medium/heavy-duty trucks, buses and parts"
     family: s232
     prefixes: ["9903.74"]
-    status: vérifié
+    status: verified
     preferential:
       mode: nonUsContent
       partsExemptOption: usmcaAutoPart
-    note: "Camions 25 %, autobus 10 % ; ACEUM : 25 % sur le contenu non américain (CSMS 68559236)."
+    note: "Trucks 25%, buses 10%; USMCA: 25% on non-U.S. content (CSMS 68559236)."
 
   - id: US-232-METALS
-    name: "Section 232 — acier, aluminium, cuivre et dérivés"
+    name: "Section 232 — steel, aluminum, copper and derivatives"
     family: s232
     prefixes: ["9903.78", "9903.80", "9903.81", "9903.82", "9903.83", "9903.85"]
     url: "https://www.federalregister.gov/documents/2026/04/09/2026-06960"
-    status: vérifié
+    status: verified
     note: >-
-      Depuis le 6 avr. 2026 (Proclamation 11021) : droit sur la pleine valeur en douane.
-      50 % métaux primaires (Annexe I-A), 25 % la plupart des dérivés (I-B).
-      Depuis le 8 juin 2026 (jusqu'au 31 déc. 2027) : paliers temporaires (Annexes I-C et III).
-    lowMetalExemptPct: 15          # < 15 % du poids en métal visé : non assujetti
+      Since Apr. 6, 2026 (Proclamation 11021): duty on the full customs value.
+      50% primary metals (Annex I-A), 25% most derivatives (I-B).
+      Since June 8, 2026 (through Dec. 31, 2027): temporary tiers (Annexes I-C and III).
+    lowMetalExemptPct: 15          # < 15% covered metal by weight: not subject
     options:
       usMelt85:
-        label: "≥ 85 % du métal fondu/coulé aux É.-U. — total plafonné à 10 %"
+        label: "≥ 85% of the metal melted/poured (smelted/cast) in the U.S. — total capped at 10%"
         capCombinedPct: 10
-        status: vérifié
+        status: verified
       annexIII:
-        label: "Annexe III (machinerie industrielle fixe, équipement électrique, agricole, CVC résidentiel) — total 15 % jusqu'au 31 déc. 2027"
+        label: "Annex III (fixed industrial machinery, power, agricultural equipment, residential HVAC) — 15% total through Dec. 31, 2027"
         capCombinedPct: 15
-        status: vérifié
+        status: verified
       usmca232:
-        label: "Traitement ACEUM 232 : 25 % sur le contenu non américain, plancher 15 % de la valeur (Proclamation du 1er juin 2026)"
+        label: "USMCA 232 treatment: 25% on non-U.S. content, 15% floor on total value (June 1, 2026 Proclamation)"
         nonUsContentRate: 25
         floorPct: 15
-        status: à valider
-        note: "Portée exacte (Annexe I-C vs tous dérivés) à confirmer selon CSMS/CBP — oct. 2026 : précisions sur le « contenu US »."
+        status: to verify
+        note: "Exact scope (Annex I-C vs. all derivatives) to be confirmed with CSMS/CBP — Oct. 2026 clarification on \"U.S. content\"."
 
   - id: US-232-WOOD
-    name: "Section 232 — bois d'œuvre, billes, meubles rembourrés, armoires"
+    name: "Section 232 — lumber, timber, upholstered furniture, cabinets"
     family: s232
     prefixes: ["9903.76"]
-    status: vérifié
-    note: "Bois d'œuvre résineux et billes 10 % (s'ajoute aux droits AD/CVD) ; meubles rembourrés/armoires/vanités 25 %."
+    status: verified
+    note: "Softwood lumber and timber 10% (on top of AD/CVD); upholstered furniture/kitchen cabinets/vanities 25%."
 
   - id: US-232-SEMI
-    name: "Section 232 — semi-conducteurs"
+    name: "Section 232 — semiconductors"
     family: s232
     prefixes: ["9903.79"]
-    status: vérifié
+    status: verified
 
   - id: US-232-OTHER
-    name: "Section 232 — autres programmes (pharma, polysilicium, drones, etc.)"
+    name: "Section 232 — other programs (pharma, polysilicon, drones, etc.)"
     family: s232
     descriptionRegex: "Section 232"
-    status: à valider
+    status: to verify
 
   - id: US-338-CA
-    name: "Section 338 — produits du Canada (+50 %)"
+    name: "Section 338 — products of Canada (+50%)"
     family: s338
     prefixes: ["9903.03"]
     defaultOrigins: [CA]
     url: "https://www.cbp.gov/trade/remedies"
-    status: vérifié
-    note: "Aucune exemption ACEUM. S'ajoute à la Section 232, sauf liste laitière (9903.03.15)."
+    status: verified
+    note: "No USMCA exemption. Stacks on Section 232, except the dairy list (9903.03.15)."
     headings:
-      "9903.03.12": { label: "Liste alcool (note 51(b)(1))", origins: [CA] }
-      "9903.03.13": { label: "Liste produits laitiers (note 51(b)(2))", origins: [CA], exemptIfFamilies: [s232], exemptionCh99: "9903.03.15" }
-      "9903.03.14": { label: "Liste « véhicules automobiles » (ch. 4 à 97)", origins: [CA] }
-      "9903.03.15": { label: "Exclusion — marchandises déjà visées par la Section 232 (liste laitière)", kind: exemption }
-      "9903.03.16": { label: "Exclusion — aéronefs civils, moteurs, pièces", kind: exemption, option: civilAircraft }
+      "9903.03.12": { label: "Alcohol list (note 51(b)(1))", origins: [CA] }
+      "9903.03.13": { label: "Dairy list (note 51(b)(2))", origins: [CA], exemptIfFamilies: [s232], exemptionCh99: "9903.03.15" }
+      "9903.03.14": { label: "\"Motor vehicle\" list (chapters 4 to 97)", origins: [CA] }
+      "9903.03.15": { label: "Exclusion — goods already subject to Section 232 (dairy list)", kind: exemption }
+      "9903.03.16": { label: "Exclusion — civil aircraft, engines, parts", kind: exemption, option: civilAircraft }
 
   - id: US-301-CN
-    name: "Section 301 — Chine (listes 1 à 4A et hausses 2024)"
+    name: "Section 301 — China (Lists 1 to 4A and 2024 increases)"
     family: s301cn
     prefixes: ["9903.88", "9903.91", "9903.92"]
     defaultOrigins: [CN]
-    status: vérifié
-    note: "Les rubriques d'exclusion (taux 0) sont proposées comme exemptions à réclamer."
+    status: verified
+    note: "Exclusion headings (0% rate) are offered as exemptions to claim."
 
   - id: US-201
-    name: "Section 201 — mesures de sauvegarde"
+    name: "Section 201 — safeguard measures"
     family: s201
     prefixes: ["9903.45"]
-    status: à valider
+    status: to verify
 
 # ---------------------------------------------------------------------
-# MESURES APPLIQUÉES PAR PAYS D'ORIGINE (non rattachées aux lignes HTS)
+# MEASURES APPLIED BY COUNTRY OF ORIGIN (not tied to HTS lines)
 # ---------------------------------------------------------------------
 measures:
   - id: US-301-FL
-    name: "Section 301 — travail forcé (60 économies)"
+    name: "Section 301 — forced labor (60 economies)"
     program: "Section 301"
-    legal: "USTR, 91 FR 47318 (23 juil. 2026) — note 52 du ch. 99"
+    legal: "USTR, 91 FR 47318 (July 23, 2026) — Chapter 99 note 52"
     url: "https://ustr.gov"
-    status: vérifié
+    status: verified
     from: "2026-07-24"
     scope: { all: true }
-    # Rubriques par pays détectées automatiquement dans 9903.05.20 à 9903.05.84 si l'export USITC est importé.
+    # Country headings detected automatically in 9903.05.20 to 9903.05.84 once the USITC export is imported.
     autoFromCh99Range: ["9903.05.20", "9903.05.84"]
-    # Valeurs de repli si le ch. 99 n'est pas encore importé :
+    # Fallback values if Chapter 99 has not been imported yet:
     originRates:
       CA: 10
       MX: 10
@@ -202,7 +202,7 @@ measures:
       CA: "9903.05.29"
       MX: "9903.05.55"
       CN: "9903.05.31"
-    # Plafond combiné NPF + 301 (« net of MFN »)
+    # Combined MFN + 301 cap ("net of MFN")
     originCaps:
       EU: 10
       TW: 10
@@ -210,53 +210,53 @@ measures:
       KR: 12.5
       CH: 12.5
     exemptIf:
-      - { preferentialDutyFree: true, origins: [CA], ch99: "9903.05.93", label: "Marchandise du Canada admise en franchise ACEUM" }
-      - { preferentialDutyFree: true, origins: [MX], ch99: "9903.05.94", label: "Marchandise du Mexique admise en franchise ACEUM" }
-      - { families: [s232], ch99: "9903.05.90", label: "Article visé par un programme 232 (acier/alu/cuivre, autos, camions, bois, semi-conducteurs)" }
-      - { refs: ["9903.05.86"], ch99: "9903.05.86", label: "Produit inscrit à la liste d'exemption (aliments, énergie, métaux, haute techno.)" }
-      - { option: civilAircraft, ch99: "9903.05.88", label: "Aéronef civil, moteurs, pièces" }
-      - { option: humanitarian, ch99: "9903.05.91", label: "Dons humanitaires (aliments, vêtements, médicaments)" }
-    note: "Liste complète des 60 économies : rubriques 9903.05.20 à 9903.05.84 (importées automatiquement)."
+      - { preferentialDutyFree: true, origins: [CA], ch99: "9903.05.93", label: "Product of Canada entered duty-free under USMCA" }
+      - { preferentialDutyFree: true, origins: [MX], ch99: "9903.05.94", label: "Product of Mexico entered duty-free under USMCA" }
+      - { families: [s232], ch99: "9903.05.90", label: "Article subject to a Section 232 program (steel/aluminum/copper, autos, trucks, wood, semiconductors)" }
+      - { refs: ["9903.05.86"], ch99: "9903.05.86", label: "Product on the exemption list (food, energy, metals, high-tech)" }
+      - { option: civilAircraft, ch99: "9903.05.88", label: "Civil aircraft, engines, parts" }
+      - { option: humanitarian, ch99: "9903.05.91", label: "Humanitarian donations (food, clothing, medicine)" }
+    note: "Full list of the 60 economies: headings 9903.05.20 to 9903.05.84 (imported automatically)."
 
   - id: US-338-BAN
-    name: "Section 338 — INTERDICTION d'importation (produits du Canada)"
+    name: "Section 338 — IMPORT PROHIBITION (products of Canada)"
     program: "Section 338"
     kind: ban
     from: "2026-09-29"
     origins: [CA]
     scope:
       prefixes: ["8711.50.00"]
-      codeList: true      # ajouter les listes alcool/produits laitiers via Admin → Listes de codes
-    status: vérifié
-    note: "Motocyclettes 8711.50.00 confirmées ; certaines boissons alcoolisées et produits laitiers : importer les annexes des proclamations du 8 sept. 2026."
+      codeList: true      # add the alcohol/dairy lists via Admin → Code lists
+    status: verified
+    note: "Motorcycles 8711.50.00 confirmed; certain alcoholic beverages and dairy products: import the annexes of the Sept. 8, 2026 proclamations."
 
 # ---------------------------------------------------------------------
-# RÉGIMES SPÉCIAUX (ch. 98) proposés dans le simulateur
+# SPECIAL REGIMES (Chapter 98) offered in the simulator
 # ---------------------------------------------------------------------
 regimes:
   - id: none
-    label: "Importation ordinaire"
+    label: "Ordinary import"
   - id: us-goods-returned
     code: "9801.00.10"
-    label: "Marchandises américaines retournées (sans amélioration)"
+    label: "American goods returned (not advanced in value)"
     effect: { baseFree: true, skipAdditional: true }
-    note: "Produits des É.-U. : les droits additionnels du ch. 99 (232/301/338) ne visent pas l'origine américaine. Documentation d'exportation requise (CBP 4811/déclaration)."
-    status: vérifié
+    note: "Products of the U.S.: Chapter 99 additional duties (232/301/338) do not apply to U.S. origin. Export documentation required (declaration / CBP 4811)."
+    status: verified
   - id: repair-warranty
     code: "9802.00.40"
-    label: "Réparation sous garantie à l'étranger"
+    label: "Repair under warranty abroad"
     effect: { baseFree: true, onRepairValue: true }
-    note: "Droits additionnels du ch. 99 calculés sur la valeur de la réparation — à valider selon le programme (CSMS)."
-    status: à valider
+    note: "Chapter 99 additional duties calculated on the repair value — to verify per program (CSMS)."
+    status: to verify
   - id: repair
     code: "9802.00.50"
-    label: "Réparation / modification à l'étranger (droit sur la valeur ajoutée)"
+    label: "Repair / alteration abroad (duty on the value added)"
     effect: { onRepairValue: true, freeIfPreferential: [CA, MX] }
-    note: "Franchise pour réparations effectuées au Canada/Mexique (ACEUM). Droits additionnels du ch. 99 : sur la valeur de la réparation — à valider."
-    status: à valider
+    note: "Duty-free for repairs performed in Canada/Mexico (USMCA). Chapter 99 additional duties: on the repair value — to verify."
+    status: to verify
   - id: tib
     code: "9813.00.xx"
-    label: "Admission temporaire sous caution (TIB) — réexportation ≤ 1 an"
+    label: "Temporary Importation under Bond (TIB) — re-export within 1 year"
     effect: { deferred: true, bondMultiple: 2 }
-    note: "Aucun droit perçu si réexporté dans les délais ; cautionnement ≈ 2 × droits estimés. Usages admissibles limités (19 CFR 10.31)."
-    status: vérifié
+    note: "No duty collected if re-exported in time; bond ≈ 2 × estimated duties. Limited eligible uses (19 CFR 10.31)."
+    status: verified

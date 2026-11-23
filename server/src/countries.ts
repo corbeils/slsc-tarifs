@@ -23,11 +23,11 @@ export function listCountries(): Country[] {
   const en = countries.getNames('en', { select: 'official' });
   cache = Object.keys(fr)
     .map((code) => ({ code, fr: fr[code], en: en[code] ?? fr[code] }))
-    .sort((a, b) => a.fr.localeCompare(b.fr, 'fr'));
+    .sort((a, b) => a.en.localeCompare(b.en, 'en'));
   return cache;
 }
 
-export function countryName(code: string, lang: 'fr' | 'en' = 'fr'): string {
+export function countryName(code: string, lang: 'fr' | 'en' = 'en'): string {
   if (code === 'EU') return lang === 'fr' ? 'Union européenne' : 'European Union';
   return countries.getName(code, lang) ?? code;
 }

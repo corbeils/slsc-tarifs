@@ -26,7 +26,7 @@ export interface CalcInput {
   fxUsdCad?: number;
 }
 
-export type Status = 'vérifié' | 'à valider';
+export type Status = 'verified' | 'to verify';
 
 export interface CalcLine {
   key: string;

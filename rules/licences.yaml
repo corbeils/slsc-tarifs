@@ -1,62 +1,62 @@
 # =====================================================================
-#  LICENCES, PERMIS ET EXIGENCES DES AUTRES MINISTÈRES / AGENCES
-#  level: "requis" | "peut être requis" | "info"
-#  prefixes: début de code HS (2, 4, 6, 8 ou 10 chiffres, points facultatifs)
-#  origins / excludeOrigins : restreindre selon l'origine (facultatif)
-#  Les indicateurs PGA officiels de CBP (FD1, EP3, AM8…) peuvent être importés via Admin.
+#  LICENCES, PERMITS AND OTHER GOVERNMENT AGENCY REQUIREMENTS
+#  level: "required" | "may be required" | "info"
+#  prefixes: start of the HS code (2, 4, 6, 8 or 10 digits, dots optional)
+#  origins / excludeOrigins: restrict by origin (optional)
+#  Official CBP PGA flags (FD1, EP3, AM8…) can be imported via Admin.
 # =====================================================================
 
 us:
-  - { agency: "Commerce — SIMA", label: "Licence d'importation d'acier (Steel Import Monitoring and Analysis)", level: requis, prefixes: ["7206", "7207", "7208", "7209", "7210", "7211", "7212", "7213", "7214", "7215", "7216", "7217", "7218", "7219", "7220", "7221", "7222", "7223", "7224", "7225", "7226", "7227", "7228", "7229", "7301", "7302", "7303", "7304", "7305", "7306"], url: "https://www.trade.gov/steel-import-monitoring-analysis-sima-system" }
-  - { agency: "Commerce — AIM", label: "Licence d'importation d'aluminium (Aluminum Import Monitoring)", level: requis, prefixes: ["7601", "7604", "7605", "7606", "7607", "7608", "7609", "7616.99.51"], url: "https://www.trade.gov/aluminum-import-monitor" }
-  - { agency: "FDA", label: "Aliments : enregistrement de l'installation + Prior Notice (FD1/FD2)", level: requis, prefixes: ["02", "03", "04", "07", "08", "09", "10", "11", "12", "15", "16", "17", "18", "19", "20", "21", "22", "23"] }
-  - { agency: "FDA", label: "Médicaments (FD3/FD4)", level: requis, prefixes: ["3001", "3002", "3003", "3004", "3005", "3006"] }
-  - { agency: "FDA", label: "Cosmétiques (enregistrement MoCRA)", level: "peut être requis", prefixes: ["3303", "3304", "3305", "3307"] }
-  - { agency: "FDA / CDRH", label: "Dispositifs médicaux et appareils émettant des radiations (formulaire FDA 2877)", level: "peut être requis", prefixes: ["9018", "9019", "9020", "9021", "9022", "8528", "9013.20", "8539.5"] }
-  - { agency: "USDA APHIS", label: "Animaux, végétaux, semences, produits agricoles (permis PPQ/VS)", level: "peut être requis", prefixes: ["01", "05", "06", "07", "08", "10", "12", "14", "4401", "4403"] }
-  - { agency: "USDA FSIS", label: "Viandes, volailles, ovoproduits — certificat d'inspection étranger", level: requis, prefixes: ["0201", "0202", "0203", "0204", "0206", "0207", "0209", "0210", "1601", "1602", "0408"] }
-  - { agency: "USDA FAS", label: "Licence d'importation de produits laitiers (fromages sous contingent)", level: "peut être requis", prefixes: ["0401", "0402", "0403", "0404", "0405", "0406"] }
-  - { agency: "USDA APHIS — Lacey Act", label: "Déclaration Lacey Act (PPQ 505) — produits du bois/végétaux", level: requis, prefixes: ["44", "4701", "4702", "4703", "4704", "4705", "4706", "9401.61", "9401.69", "9403.30", "9403.40", "9403.50", "9403.60", "9504.40"] }
-  - { agency: "EPA", label: "Moteurs et véhicules : conformité émissions (EPA 3520-1 / 3520-21)", level: requis, prefixes: ["8407", "8408", "8427", "8429", "8433", "8701", "8702", "8703", "8704", "8711"] }
-  - { agency: "EPA", label: "Pesticides et dispositifs (avis EPA 3540-1)", level: requis, prefixes: ["3808"] }
-  - { agency: "EPA — TSCA", label: "Certification TSCA positive/négative (substances chimiques)", level: "peut être requis", prefixes: ["28", "29", "32", "34", "35", "38", "39"] }
-  - { agency: "EPA — AIM Act", label: "HFC : allocation/consommation (hydrofluorocarbures)", level: "peut être requis", prefixes: ["2903.4", "3824.7", "8415", "8418"] }
-  - { agency: "NHTSA", label: "Normes FMVSS — formulaire HS-7", level: requis, prefixes: ["8702", "8703", "8704", "8705", "8711", "8716", "4011", "7007.21", "8512.20", "8708.21"] }
-  - { agency: "ATF", label: "Armes, munitions, explosifs (ATF Form 6 / 6A)", level: requis, prefixes: ["9301", "9302", "9303", "9304", "9305", "9306", "3601", "3602", "3603", "3604"] }
-  - { agency: "DEA", label: "Substances contrôlées et précurseurs", level: "peut être requis", prefixes: ["2939", "2933", "3003", "3004"] }
-  - { agency: "FCC", label: "Appareils RF : autorisation FCC / formulaire 740", level: "peut être requis", prefixes: ["8471", "8517", "8525", "8526", "8527", "8528", "8529", "8543"] }
-  - { agency: "CPSC", label: "Certificat de conformité (eFiling CPSC) — produits de consommation / enfants", level: "peut être requis", prefixes: ["95", "9401.71", "9403.70", "6111", "6209", "8712"] }
-  - { agency: "TTB", label: "Boissons alcoolisées : permis d'importateur + COLA", level: requis, prefixes: ["2203", "2204", "2205", "2206", "2207", "2208"] }
-  - { agency: "USFWS", label: "Faune / CITES (formulaire 3-177)", level: "peut être requis", prefixes: ["01", "03", "0505", "0506", "0507", "0508", "41", "42", "43", "9601"] }
-  - { agency: "NRC", label: "Matières nucléaires et radioactives", level: requis, prefixes: ["2844", "8401"] }
-  - { agency: "DOE", label: "Efficacité énergétique (EPCA) — produits réglementés", level: "peut être requis", prefixes: ["8415", "8418", "8450", "8516.60", "8539.5", "8504.40"] }
-  - { agency: "CBP", label: "Déclaration textile / règles d'origine textiles", level: "peut être requis", prefixes: ["50", "51", "52", "53", "54", "55", "56", "57", "58", "59", "60", "61", "62", "63"] }
-  - { agency: "CBP", label: "Marquage du pays d'origine (19 U.S.C. 1304)", level: info, prefixes: [""] }
-  - { agency: "USDA APHIS", label: "Emballages en bois : norme NIMP-15 (ISPM-15)", level: info, prefixes: [""] }
+  - { agency: "Commerce — SIMA", label: "Steel import license (Steel Import Monitoring and Analysis)", level: required, prefixes: ["7206", "7207", "7208", "7209", "7210", "7211", "7212", "7213", "7214", "7215", "7216", "7217", "7218", "7219", "7220", "7221", "7222", "7223", "7224", "7225", "7226", "7227", "7228", "7229", "7301", "7302", "7303", "7304", "7305", "7306"], url: "https://www.trade.gov/steel-import-monitoring-analysis-sima-system" }
+  - { agency: "Commerce — AIM", label: "Aluminum import license (Aluminum Import Monitoring)", level: required, prefixes: ["7601", "7604", "7605", "7606", "7607", "7608", "7609", "7616.99.51"], url: "https://www.trade.gov/aluminum-import-monitor" }
+  - { agency: "FDA", label: "Food: facility registration + Prior Notice (FD1/FD2)", level: required, prefixes: ["02", "03", "04", "07", "08", "09", "10", "11", "12", "15", "16", "17", "18", "19", "20", "21", "22", "23"] }
+  - { agency: "FDA", label: "Drugs (FD3/FD4)", level: required, prefixes: ["3001", "3002", "3003", "3004", "3005", "3006"] }
+  - { agency: "FDA", label: "Cosmetics (MoCRA registration)", level: "may be required", prefixes: ["3303", "3304", "3305", "3307"] }
+  - { agency: "FDA / CDRH", label: "Medical devices and radiation-emitting products (FDA Form 2877)", level: "may be required", prefixes: ["9018", "9019", "9020", "9021", "9022", "8528", "9013.20", "8539.5"] }
+  - { agency: "USDA APHIS", label: "Animals, plants, seeds, agricultural products (PPQ/VS permits)", level: "may be required", prefixes: ["01", "05", "06", "07", "08", "10", "12", "14", "4401", "4403"] }
+  - { agency: "USDA FSIS", label: "Meat, poultry, egg products — foreign inspection certificate", level: required, prefixes: ["0201", "0202", "0203", "0204", "0206", "0207", "0209", "0210", "1601", "1602", "0408"] }
+  - { agency: "USDA FAS", label: "Dairy import license (cheese under quota)", level: "may be required", prefixes: ["0401", "0402", "0403", "0404", "0405", "0406"] }
+  - { agency: "USDA APHIS — Lacey Act", label: "Lacey Act declaration (PPQ 505) — wood/plant products", level: required, prefixes: ["44", "4701", "4702", "4703", "4704", "4705", "4706", "9401.61", "9401.69", "9403.30", "9403.40", "9403.50", "9403.60", "9504.40"] }
+  - { agency: "EPA", label: "Engines and vehicles: emissions compliance (EPA 3520-1 / 3520-21)", level: required, prefixes: ["8407", "8408", "8427", "8429", "8433", "8701", "8702", "8703", "8704", "8711"] }
+  - { agency: "EPA", label: "Pesticides and devices (EPA Notice 3540-1)", level: required, prefixes: ["3808"] }
+  - { agency: "EPA — TSCA", label: "TSCA positive/negative certification (chemical substances)", level: "may be required", prefixes: ["28", "29", "32", "34", "35", "38", "39"] }
+  - { agency: "EPA — AIM Act", label: "HFCs: allowance/consumption (hydrofluorocarbons)", level: "may be required", prefixes: ["2903.4", "3824.7", "8415", "8418"] }
+  - { agency: "NHTSA", label: "FMVSS standards — HS-7 declaration", level: required, prefixes: ["8702", "8703", "8704", "8705", "8711", "8716", "4011", "7007.21", "8512.20", "8708.21"] }
+  - { agency: "ATF", label: "Firearms, ammunition, explosives (ATF Form 6 / 6A)", level: required, prefixes: ["9301", "9302", "9303", "9304", "9305", "9306", "3601", "3602", "3603", "3604"] }
+  - { agency: "DEA", label: "Controlled substances and precursors", level: "may be required", prefixes: ["2939", "2933", "3003", "3004"] }
+  - { agency: "FCC", label: "RF devices: FCC authorization / Form 740", level: "may be required", prefixes: ["8471", "8517", "8525", "8526", "8527", "8528", "8529", "8543"] }
+  - { agency: "CPSC", label: "Certificate of compliance (CPSC eFiling) — consumer / children's products", level: "may be required", prefixes: ["95", "9401.71", "9403.70", "6111", "6209", "8712"] }
+  - { agency: "TTB", label: "Alcoholic beverages: importer's permit + COLA", level: required, prefixes: ["2203", "2204", "2205", "2206", "2207", "2208"] }
+  - { agency: "USFWS", label: "Wildlife / CITES (Form 3-177)", level: "may be required", prefixes: ["01", "03", "0505", "0506", "0507", "0508", "41", "42", "43", "9601"] }
+  - { agency: "NRC", label: "Nuclear and radioactive materials", level: required, prefixes: ["2844", "8401"] }
+  - { agency: "DOE", label: "Energy efficiency (EPCA) — covered products", level: "may be required", prefixes: ["8415", "8418", "8450", "8516.60", "8539.5", "8504.40"] }
+  - { agency: "CBP", label: "Textile declaration / textile rules of origin", level: "may be required", prefixes: ["50", "51", "52", "53", "54", "55", "56", "57", "58", "59", "60", "61", "62", "63"] }
+  - { agency: "CBP", label: "Country of origin marking (19 U.S.C. 1304)", level: info, prefixes: [""] }
+  - { agency: "USDA APHIS", label: "Wood packaging material: ISPM-15", level: info, prefixes: [""] }
 
 ca:
-  - { agency: "AMC — LMIC art. 82", label: "Permis d'importation par expédition — acier (contingents, origines hors ACEUM)", level: requis, excludeOrigins: [US, MX, CA], prefixes: ["7206", "7207", "7208", "7209", "7210", "7211", "7212", "7213", "7214", "7215", "7216", "7217", "7218", "7219", "7220", "7221", "7222", "7223", "7224", "7225", "7226", "7227", "7228", "7229", "7301", "7302", "7303", "7304", "7305", "7306"], url: "https://www.international.gc.ca/trade-commerce/controls-controles/notices-avis/1163.aspx?lang=eng" }
-  - { agency: "AMC — LMIC", label: "Permis général d'importation (GIP 80/81) — surveillance de l'acier : indiquer sur la déclaration", level: "peut être requis", prefixes: ["72", "7301", "7302", "7303", "7304", "7305", "7306"] }
-  - { agency: "AMC — LMIC", label: "Gestion de l'offre : produits laitiers (permis dans l'engagement d'accès)", level: requis, prefixes: ["0401", "0402", "0403", "0404", "0405", "0406", "2105", "1901.90", "2202.99", "3501"] }
-  - { agency: "AMC — LMIC", label: "Gestion de l'offre : volaille, dindon, œufs, poulets de chair", level: requis, prefixes: ["0105", "0207", "0407", "0408", "1601", "1602.31", "1602.32", "3502.11", "3502.19"] }
-  - { agency: "AMC — LMIC", label: "Bœuf et veau (hors ALE) / blé et orge", level: "peut être requis", prefixes: ["0201", "0202", "1001", "1003", "1101", "1103.11", "1107"] }
-  - { agency: "AMC — LMIC", label: "Contingent de véhicules électriques chinois — permis d'importation", level: requis, origins: [CN], prefixes: ["8703.40", "8703.60", "8703.70", "8703.80"] }
-  - { agency: "AMC / GRC (PCAF)", label: "Armes à feu, armes prohibées, munitions — permis LMIC + PCAF", level: requis, prefixes: ["9301", "9302", "9303", "9304", "9305", "9306"] }
-  - { agency: "RNCan", label: "Diamants bruts — certificat du Processus de Kimberley", level: requis, prefixes: ["7102.10", "7102.21", "7102.31"] }
-  - { agency: "RNCan", label: "Explosifs — permis d'importation", level: requis, prefixes: ["3601", "3602", "3603", "3604"] }
-  - { agency: "RNCan — OEE", label: "Règlement sur l'efficacité énergétique — rapport (produits réglementés)", level: "peut être requis", prefixes: ["8415", "8418", "8450", "8451", "8516", "8528", "8539", "8504.21", "8504.22", "8504.23", "8504.40"] }
-  - { agency: "ACIA", label: "Aliments, végétaux, animaux : exigences SARI (AIRS) / licence SAC", level: requis, prefixes: ["01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23", "31"] }
-  - { agency: "ACIA", label: "Bois, billes, emballages en bois (NIMP-15 hors É.-U.)", level: "peut être requis", prefixes: ["4401", "4403", "4404", "4406", "4407", "4415"] }
-  - { agency: "Santé Canada", label: "Médicaments — licence d'établissement (LEPP/DEL)", level: requis, prefixes: ["3001", "3002", "3003", "3004", "3005", "3006"] }
-  - { agency: "Santé Canada", label: "Instruments médicaux — LEIM (MDEL)", level: requis, prefixes: ["9018", "9019", "9020", "9021", "9022"] }
-  - { agency: "Santé Canada — ARLA", label: "Produits antiparasitaires (homologation)", level: requis, prefixes: ["3808"] }
-  - { agency: "Santé Canada", label: "Cosmétiques (déclaration) / produits de consommation (LCSPC)", level: "peut être requis", prefixes: ["3303", "3304", "3305", "3307", "95"] }
-  - { agency: "Santé Canada", label: "Dispositifs émettant des radiations", level: "peut être requis", prefixes: ["8528", "9022", "9013.20", "8543"] }
-  - { agency: "Transports Canada", label: "Véhicules : conformité NSVAC, RIV (formulaire 1)", level: requis, prefixes: ["8702", "8703", "8704", "8705", "8711", "8716"] }
-  - { agency: "Transports Canada", label: "Pneus (NSPNC) / équipements réglementés", level: "peut être requis", prefixes: ["4011", "9401.20"] }
-  - { agency: "ECCC", label: "Halocarbures / HFC — permis d'importation", level: requis, prefixes: ["2903.4", "3824.7"] }
-  - { agency: "ECCC", label: "Équipements de réfrigération/climatisation contenant des HFC", level: "peut être requis", prefixes: ["8415", "8418"] }
-  - { agency: "ECCC", label: "Déchets dangereux / matières recyclables dangereuses — permis", level: "peut être requis", prefixes: ["2618", "2619", "2620", "3825", "7112", "8548"] }
-  - { agency: "ECCC — CITES", label: "Espèces sauvages (CITES / LPEAVSRRIP)", level: "peut être requis", prefixes: ["01", "03", "0505", "0506", "0507", "0508", "41", "42", "43", "9601"] }
-  - { agency: "ISDE", label: "Matériel radio : homologation (ISDE) — vérification à la vente", level: info, prefixes: ["8517", "8525", "8526", "8527", "8529"] }
-  - { agency: "ASFC", label: "Marquage du pays d'origine (règlement sur le marquage) — certaines marchandises", level: info, prefixes: [""] }
+  - { agency: "GAC — ICL item 82", label: "Shipment-specific import permit — steel (TRQ, non-CUSMA origins)", level: required, excludeOrigins: [US, MX, CA], prefixes: ["7206", "7207", "7208", "7209", "7210", "7211", "7212", "7213", "7214", "7215", "7216", "7217", "7218", "7219", "7220", "7221", "7222", "7223", "7224", "7225", "7226", "7227", "7228", "7229", "7301", "7302", "7303", "7304", "7305", "7306"], url: "https://www.international.gc.ca/trade-commerce/controls-controles/notices-avis/1163.aspx?lang=eng" }
+  - { agency: "GAC — ICL", label: "General Import Permit (GIP 80/81) — steel monitoring: indicate on the declaration", level: "may be required", prefixes: ["72", "7301", "7302", "7303", "7304", "7305", "7306"] }
+  - { agency: "GAC — ICL", label: "Supply management: dairy (permit within access commitment)", level: required, prefixes: ["0401", "0402", "0403", "0404", "0405", "0406", "2105", "1901.90", "2202.99", "3501"] }
+  - { agency: "GAC — ICL", label: "Supply management: chicken, turkey, eggs, broiler hatching", level: required, prefixes: ["0105", "0207", "0407", "0408", "1601", "1602.31", "1602.32", "3502.11", "3502.19"] }
+  - { agency: "GAC — ICL", label: "Beef and veal (non-FTA) / wheat and barley", level: "may be required", prefixes: ["0201", "0202", "1001", "1003", "1101", "1103.11", "1107"] }
+  - { agency: "GAC — ICL", label: "Chinese electric vehicle quota — import permit", level: required, origins: [CN], prefixes: ["8703.40", "8703.60", "8703.70", "8703.80"] }
+  - { agency: "GAC / RCMP (CFP)", label: "Firearms, prohibited weapons, ammunition — ICL permit + CFP", level: required, prefixes: ["9301", "9302", "9303", "9304", "9305", "9306"] }
+  - { agency: "NRCan", label: "Rough diamonds — Kimberley Process certificate", level: required, prefixes: ["7102.10", "7102.21", "7102.31"] }
+  - { agency: "NRCan", label: "Explosives — import permit", level: required, prefixes: ["3601", "3602", "3603", "3604"] }
+  - { agency: "NRCan — OEE", label: "Energy Efficiency Regulations — energy efficiency report (regulated products)", level: "may be required", prefixes: ["8415", "8418", "8450", "8451", "8516", "8528", "8539", "8504.21", "8504.22", "8504.23", "8504.40"] }
+  - { agency: "CFIA", label: "Food, plants, animals: AIRS requirements / SFC licence", level: required, prefixes: ["01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23", "31"] }
+  - { agency: "CFIA", label: "Wood, logs, wood packaging (ISPM-15 for non-U.S.)", level: "may be required", prefixes: ["4401", "4403", "4404", "4406", "4407", "4415"] }
+  - { agency: "Health Canada", label: "Drugs — Drug Establishment Licence (DEL)", level: required, prefixes: ["3001", "3002", "3003", "3004", "3005", "3006"] }
+  - { agency: "Health Canada", label: "Medical devices — Medical Device Establishment Licence (MDEL)", level: required, prefixes: ["9018", "9019", "9020", "9021", "9022"] }
+  - { agency: "Health Canada — PMRA", label: "Pest control products (registration)", level: required, prefixes: ["3808"] }
+  - { agency: "Health Canada", label: "Cosmetics (notification) / consumer products (CCPSA)", level: "may be required", prefixes: ["3303", "3304", "3305", "3307", "95"] }
+  - { agency: "Health Canada", label: "Radiation-emitting devices", level: "may be required", prefixes: ["8528", "9022", "9013.20", "8543"] }
+  - { agency: "Transport Canada", label: "Vehicles: CMVSS compliance, RIV (Form 1)", level: required, prefixes: ["8702", "8703", "8704", "8705", "8711", "8716"] }
+  - { agency: "Transport Canada", label: "Tires (CMVTSS) / regulated equipment", level: "may be required", prefixes: ["4011", "9401.20"] }
+  - { agency: "ECCC", label: "Halocarbons / HFCs — import permit", level: required, prefixes: ["2903.4", "3824.7"] }
+  - { agency: "ECCC", label: "Refrigeration/air-conditioning equipment containing HFCs", level: "may be required", prefixes: ["8415", "8418"] }
+  - { agency: "ECCC", label: "Hazardous waste / hazardous recyclable material — permit", level: "may be required", prefixes: ["2618", "2619", "2620", "3825", "7112", "8548"] }
+  - { agency: "ECCC — CITES", label: "Wildlife (CITES / WAPPRIITA)", level: "may be required", prefixes: ["01", "03", "0505", "0506", "0507", "0508", "41", "42", "43", "9601"] }
+  - { agency: "ISED", label: "Radio equipment: ISED certification — checked at sale", level: info, prefixes: ["8517", "8525", "8526", "8527", "8529"] }
+  - { agency: "CBSA", label: "Country of origin marking (Marking Regulations) — certain goods", level: info, prefixes: [""] }

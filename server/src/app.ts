@@ -16,6 +16,7 @@ import { importCaFile, importCaUrl } from './importers/ca-tariff.js';
 import { extractCodes, fetchText, importAdcvdCsv, importFx, importPgaCsv, saveCodeList, setFxManual } from './importers/misc.js';
 import { runBatch } from './batch.js';
 import { clearListCache } from './engine/common.js';
+import { changePassword, createUser, deleteUser, listUsers, login, logout, resetPassword, sessionUser } from './auth.js';
 
 type Job = { id: string; kind: string; status: 'running' | 'done' | 'error'; log: string[]; result?: unknown; error?: string; started: string };
 const jobs = new Map<string, Job>();
@@ -39,11 +40,33 @@ export async function buildApp(db: DB) {
   const app = Fastify({ logger: { level: process.env.LOG_LEVEL ?? 'info' }, bodyLimit: 20 * 1024 * 1024 });
   await app.register(multipart, { limits: { fileSize: 200 * 1024 * 1024 } });
 
+  const bearer = (req: FastifyRequest) => (req.headers.authorization ?? '').replace(/^Bearer\s+/i, '').trim();
   const admin = async (req: FastifyRequest, reply: FastifyReply) => {
-    if (!config.adminToken) return reply.code(403).send({ error: 'Admin désactivé : définir la variable ADMIN_TOKEN.' });
-    const h = (req.headers['x-admin-token'] as string) ?? (req.headers.authorization ?? '').replace(/^Bearer\s+/i, '');
-    if (h !== config.adminToken) return reply.code(401).send({ error: 'Jeton admin invalide' });
+    const t = bearer(req);
+    // ADMIN_TOKEN (optional) still works for scripts / API calls
+    if (config.adminToken && (t === config.adminToken || req.headers['x-admin-token'] === config.adminToken)) {
+      (req as FastifyRequest & { user?: unknown }).user = { id: '_token', username: 'API token', mustChange: false };
+      return;
+    }
+    const u = sessionUser(db, t);
+    if (!u) return reply.code(401).send({ error: 'Please sign in' });
+    (req as FastifyRequest & { user?: unknown }).user = u;
   };
+  const userOf = (req: FastifyRequest) => (req as FastifyRequest & { user: { id: string; username: string; mustChange: boolean } }).user;
+
+  app.post('/api/auth/login', async (req, reply) => {
+    const b = (req.body ?? {}) as { username?: string; password?: string };
+    const r = login(db, b.username ?? '', b.password ?? '');
+    if (!r) {
+      await new Promise((ok) => setTimeout(ok, 600));
+      return reply.code(401).send({ error: 'Invalid username or password' });
+    }
+    return r;
+  });
+  app.post('/api/auth/logout', async (req) => {
+    logout(db, bearer(req));
+    return { ok: true };
+  });
 
   app.get('/api/health', async () => ({ ok: true }));
 
@@ -57,7 +80,6 @@ export async function buildApp(db: DB) {
       fx: currentFx(db),
       rulesLoadedAt: getRules().loadedAt,
       codeLists: lists,
-      adminEnabled: !!config.adminToken,
     };
   });
 
@@ -99,7 +121,7 @@ export async function buildApp(db: DB) {
     const j = q.j === 'CA' ? 'CA' : 'US';
     const c = digits(q.code ?? '');
     const line = db.prepare('SELECT * FROM lines WHERE j = ? AND code = ?').get(j, c);
-    if (!line) return reply.code(404).send({ error: 'introuvable' });
+    if (!line) return reply.code(404).send({ error: 'not found' });
     const children = db
       .prepare('SELECT code, display, description, general, is_leaf FROM lines WHERE j = ? AND code LIKE ? AND code != ? ORDER BY code LIMIT 200')
       .all(j, c + '%', c);
@@ -108,7 +130,7 @@ export async function buildApp(db: DB) {
 
   app.post('/api/calc', async (req, reply) => {
     const input = req.body as CalcInput;
-    if (!input?.code || !input.direction) return reply.code(400).send({ error: 'code et direction requis' });
+    if (!input?.code || !input.direction) return reply.code(400).send({ error: 'code and direction required' });
     return calculate(db, getRules(), { ...input, value: Number(input.value) || 0 });
   });
 
@@ -120,7 +142,7 @@ export async function buildApp(db: DB) {
       if (p.type === 'file') file = { buf: await p.toBuffer(), name: p.filename };
       else fields[p.fieldname] = String(p.value);
     }
-    if (!file) return reply.code(400).send({ error: 'Fichier manquant' });
+    if (!file) return reply.code(400).send({ error: 'Missing file' });
     const r = await runBatch(db, getRules(), file.buf, file.name, {
       direction: fields.direction === 'US-CA' ? 'US-CA' : 'CA-US',
       origin: (fields.origin || 'CA').toUpperCase(),
@@ -165,7 +187,42 @@ export async function buildApp(db: DB) {
   app.register(async (a) => {
     a.addHook('preHandler', admin);
 
-    a.get('/api/admin/check', async () => ({ ok: true }));
+    a.get('/api/admin/me', async (req) => userOf(req));
+    a.post('/api/admin/password', async (req, reply) => {
+      const b = req.body as { current: string; next: string };
+      try {
+        changePassword(db, userOf(req).id, b.current ?? '', b.next ?? '');
+        return { ok: true };
+      } catch (e) {
+        return reply.code(400).send({ error: (e as Error).message });
+      }
+    });
+    a.get('/api/admin/users', async () => listUsers(db));
+    a.post('/api/admin/users', async (req, reply) => {
+      const b = req.body as { username: string; password: string };
+      try {
+        createUser(db, b.username ?? '', b.password ?? '', true);
+        return { ok: true };
+      } catch (e) {
+        return reply.code(400).send({ error: (e as Error).message });
+      }
+    });
+    a.post('/api/admin/users/:u/reset', async (req, reply) => {
+      try {
+        resetPassword(db, (req.params as { u: string }).u, (req.body as { password: string }).password ?? '');
+        return { ok: true };
+      } catch (e) {
+        return reply.code(400).send({ error: (e as Error).message });
+      }
+    });
+    a.delete('/api/admin/users/:u', async (req, reply) => {
+      try {
+        deleteUser(db, (req.params as { u: string }).u, userOf(req).id);
+        return { ok: true };
+      } catch (e) {
+        return reply.code(400).send({ error: (e as Error).message });
+      }
+    });
 
     a.post('/api/admin/import/us', async () => {
       const job = startJob('import-us', (log) => importUsOnline(db, log));
@@ -173,7 +230,7 @@ export async function buildApp(db: DB) {
     });
     a.post('/api/admin/import/us-file', async (req, reply) => {
       const f = await req.file();
-      if (!f) return reply.code(400).send({ error: 'Fichier manquant' });
+      if (!f) return reply.code(400).send({ error: 'Missing file' });
       const tmp = path.join(os.tmpdir(), `usitc-${Date.now()}.json`);
       fs.writeFileSync(tmp, await f.toBuffer());
       try {
@@ -184,7 +241,7 @@ export async function buildApp(db: DB) {
     });
     a.post('/api/admin/import/ca-file', async (req, reply) => {
       const f = await req.file();
-      if (!f) return reply.code(400).send({ error: 'Fichier manquant' });
+      if (!f) return reply.code(400).send({ error: 'Missing file' });
       const tmp = path.join(os.tmpdir(), `ca-${Date.now()}${path.extname(f.filename) || '.xlsx'}`);
       fs.writeFileSync(tmp, await f.toBuffer());
       try {
@@ -203,7 +260,7 @@ export async function buildApp(db: DB) {
 
     a.get('/api/admin/jobs/:id', async (req, reply) => {
       const j = jobs.get((req.params as { id: string }).id);
-      return j ?? reply.code(404).send({ error: 'tâche inconnue' });
+      return j ?? reply.code(404).send({ error: 'unknown job' });
     });
 
     a.get('/api/admin/codes/:id', async (req) =>
@@ -211,11 +268,11 @@ export async function buildApp(db: DB) {
     );
     a.post('/api/admin/codes', async (req, reply) => {
       const b = req.body as { measureId: string; text?: string; url?: string; replace?: boolean; withRates?: boolean; rate?: number | null };
-      if (!b.measureId) return reply.code(400).send({ error: 'measureId requis' });
+      if (!b.measureId) return reply.code(400).send({ error: 'measureId required' });
       const text = b.url ? await fetchText(b.url) : b.text ?? '';
       const codes = extractCodes(text, !!b.withRates);
-      if (!codes.length) return reply.code(400).send({ error: 'Aucun numéro tarifaire détecté' });
-      return { ...saveCodeList(db, b.measureId, codes, { replace: b.replace, source: b.url ?? 'collé', rate: b.rate ?? null }), sample: codes.slice(0, 10) };
+      if (!codes.length) return reply.code(400).send({ error: 'No tariff numbers detected' });
+      return { ...saveCodeList(db, b.measureId, codes, { replace: b.replace, source: b.url ?? 'pasted', rate: b.rate ?? null }), sample: codes.slice(0, 10) };
     });
     a.delete('/api/admin/codes/:id', async (req) => {
       db.prepare('DELETE FROM code_lists WHERE measure_id = ?').run((req.params as { id: string }).id);
@@ -225,23 +282,23 @@ export async function buildApp(db: DB) {
 
     a.post('/api/admin/import/pga', async (req, reply) => {
       const f = await req.file();
-      if (!f) return reply.code(400).send({ error: 'Fichier manquant' });
+      if (!f) return reply.code(400).send({ error: 'Missing file' });
       return importPgaCsv(db, (await f.toBuffer()).toString('utf8'));
     });
     a.post('/api/admin/import/adcvd', async (req, reply) => {
       const f = await req.file();
-      if (!f) return reply.code(400).send({ error: 'Fichier manquant' });
+      if (!f) return reply.code(400).send({ error: 'Missing file' });
       return importAdcvdCsv(db, (await f.toBuffer()).toString('utf8'));
     });
 
     a.get('/api/admin/rules/:key', async (req, reply) => {
       const k = (req.params as { key: string }).key as RuleKey;
-      if (!(k in RULE_FILES)) return reply.code(404).send({ error: 'fichier inconnu' });
+      if (!(k in RULE_FILES)) return reply.code(404).send({ error: 'unknown file' });
       return { key: k, file: RULE_FILES[k].file, text: readRuleFile(k) };
     });
     a.put('/api/admin/rules/:key', async (req, reply) => {
       const k = (req.params as { key: string }).key as RuleKey;
-      if (!(k in RULE_FILES)) return reply.code(404).send({ error: 'fichier inconnu' });
+      if (!(k in RULE_FILES)) return reply.code(404).send({ error: 'unknown file' });
       try {
         const r = writeRuleFile(k, (req.body as { text: string }).text);
         return { ok: true, loadedAt: r.loadedAt };
@@ -256,7 +313,7 @@ export async function buildApp(db: DB) {
   if (fs.existsSync(config.webDist)) {
     await app.register(fastifyStatic, { root: config.webDist });
     app.setNotFoundHandler((req, reply) => {
-      if (req.url.startsWith('/api/')) return reply.code(404).send({ error: 'introuvable' });
+      if (req.url.startsWith('/api/')) return reply.code(404).send({ error: 'not found' });
       return reply.sendFile('index.html');
     });
   }

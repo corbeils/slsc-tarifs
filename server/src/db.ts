@@ -2,6 +2,7 @@ import Database from 'better-sqlite3';
 import fs from 'node:fs';
 import path from 'node:path';
 import { config } from './config.js';
+import { migrateAuth } from './auth.js';
 
 export type DB = Database.Database;
 
@@ -42,6 +43,7 @@ export function openDb(file = path.join(config.dataDir, 'tarifs.sqlite')): DB {
   db.pragma('journal_mode = WAL');
   db.pragma('synchronous = NORMAL');
   migrate(db);
+  migrateAuth(db);
   return db;
 }
 

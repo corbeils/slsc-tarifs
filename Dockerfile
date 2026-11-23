@@ -30,6 +30,7 @@ COPY --from=build /app/web/dist ./web/dist
 COPY package.json ./
 COPY seed ./seed
 COPY rules ./rules.default
+COPY rules-history.sha256 ./rules-history.sha256
 COPY docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
 RUN chmod +x /usr/local/bin/docker-entrypoint.sh && mkdir -p /data /app/rules
 VOLUME ["/data", "/app/rules"]

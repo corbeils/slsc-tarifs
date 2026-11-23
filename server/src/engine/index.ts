@@ -11,7 +11,7 @@ export const DEFAULT_FX = 1.38;
 export function currentFx(db: DB): { usdCad: number; source: string; date?: string } {
   const fx = getMeta<{ rate: number; date: string; source: string }>(db, 'fx:USDCAD');
   if (fx) return { usdCad: fx.rate, source: fx.source, date: fx.date };
-  return { usdCad: DEFAULT_FX, source: 'valeur par défaut (importer le taux BdC)' };
+  return { usdCad: DEFAULT_FX, source: 'default value (import the Bank of Canada rate)' };
 }
 
 /** Ajoute aux règles les dossiers AD/CVD importés par CSV (table adcvd_import). */
@@ -36,7 +36,7 @@ export function withImportedAdcvd(db: DB, rules: Rules): Rules {
     allOthers: r.ad_rate !== null || r.cvd_rate !== null ? { ad: r.ad_rate ?? undefined, cvd: r.cvd_rate ?? undefined } : undefined,
     note: r.note || undefined,
     url: r.url || undefined,
-    status: 'à valider' as const,
+    status: 'to verify' as const,
   });
   return {
     ...rules,
@@ -51,14 +51,14 @@ export function calculate(db: DB, baseRules: Rules, input: CalcInput): CalcResul
   const rules = withImportedAdcvd(db, baseRules);
   const j = input.direction === 'CA-US' ? 'US' : 'CA';
   const fxInfo = currentFx(db);
-  const fx = input.fxUsdCad && input.fxUsdCad > 0 ? { usdCad: input.fxUsdCad, source: 'saisi manuellement' } : fxInfo;
+  const fx = input.fxUsdCad && input.fxUsdCad > 0 ? { usdCad: input.fxUsdCad, source: 'entered manually' } : fxInfo;
   const info = dataInfo(db, j);
   const data = { importedAt: info.importedAt, source: info.source, rulesLoadedAt: rules.loadedAt, seed: info.seed };
   const line = getLine(db, j, input.code);
   if (!line) {
     return {
       ok: false,
-      error: `Code ${input.code} introuvable dans le tarif ${j === 'US' ? 'américain (HTSUS)' : 'canadien'}.`,
+      error: `Code ${input.code} not found in the ${j === 'US' ? 'U.S. tariff (HTSUS)' : 'Canadian Customs Tariff'}.`,
       direction: input.direction,
       destination: j,
       currency: j === 'US' ? 'USD' : 'CAD',
@@ -81,14 +81,14 @@ export function calculate(db: DB, baseRules: Rules, input: CalcInput): CalcResul
   if (data.seed)
     r.flags.warnings.unshift({
       level: 'warning',
-      title: 'Données de démonstration',
-      detail: 'Le tarif officiel n\'a pas encore été importé. Lancer l\'import dans Admin pour des taux à jour.',
+      title: 'Demo data',
+      detail: 'The official tariff has not been imported yet. Run the import in Admin for current rates.',
     });
   if (!line.is_leaf)
     r.flags.warnings.push({
       level: 'warning',
-      title: 'Code non terminal',
-      detail: 'Ce code a des subdivisions : choisir la ligne tarifaire complète (8/10 chiffres) pour un calcul exact.',
+      title: 'Non-terminal code',
+      detail: 'This code has subdivisions: choose the full tariff line (8/10 digits) for an exact calculation.',
     });
   return {
     ...r,

@@ -8,7 +8,7 @@ export default function CountrySelect({ countries, value, onChange }: { countrie
       <select className="input" value={value} onChange={(e) => onChange(e.target.value)}>
         {countries.map((c) => (
           <option key={c.code} value={c.code}>
-            {c.fr} ({c.code})
+            {c.en} ({c.code})
           </option>
         ))}
       </select>

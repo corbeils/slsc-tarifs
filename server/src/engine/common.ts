@@ -63,7 +63,7 @@ export function scopeMatch(
 ): { matched: boolean; partial: boolean; rateOverride: number | null; via: string } {
   const s = m.scope;
   if (s.exclude && anyPrefix(line.code, s.exclude)) return { matched: false, partial: false, rateOverride: null, via: '' };
-  if (s.all) return { matched: true, partial: false, rateOverride: null, via: 'toutes marchandises' };
+  if (s.all) return { matched: true, partial: false, rateOverride: null, via: 'all goods' };
   if (s.codeList) {
     const cl = codeListMatch(db, m.id, line.code);
     if (cl.matched)
@@ -71,17 +71,17 @@ export function scopeMatch(
         matched: true,
         partial: cl.partial,
         rateOverride: cl.rate,
-        via: cl.partial ? 'liste importée (sous-positions seulement)' : 'liste importée',
+        via: cl.partial ? 'imported list (some subdivisions only)' : 'imported list',
       };
   }
   if (s.prefixes && anyPrefix(line.code, s.prefixes)) {
     const listCount = s.codeList ? countList(db, m.id) : -1;
     // Si une liste officielle a été importée, elle fait foi ; les préfixes ne sont qu'un amorçage.
     if (s.codeList && listCount > 0) return { matched: false, partial: false, rateOverride: null, via: '' };
-    return { matched: true, partial: false, rateOverride: null, via: 'préfixe indicatif (liste non importée)' };
+    return { matched: true, partial: false, rateOverride: null, via: 'indicative prefix (list not imported)' };
   }
   if (s.refs && lineRefs(line).some((r) => s.refs!.includes(r)))
-    return { matched: true, partial: false, rateOverride: null, via: 'renvoi ch. 99' };
+    return { matched: true, partial: false, rateOverride: null, via: 'Chapter 99 reference' };
   return { matched: false, partial: false, rateOverride: null, via: '' };
 }
 
@@ -135,14 +135,14 @@ export function adcvdFlags(
     if (!anyPrefix(code, c.prefixes)) continue;
     const rates =
       c.allOthers && (c.allOthers.ad !== undefined || c.allOthers.cvd !== undefined)
-        ? ` — taux « tous les autres » : AD ${c.allOthers.ad ?? 0} % + CVD ${c.allOthers.cvd ?? 0} %`
+        ? ` — "all others" rate: AD ${c.allOthers.ad ?? 0}% + CVD ${c.allOthers.cvd ?? 0}%`
         : '';
     out.push({
       c,
       flag: {
         level: 'danger',
         title: `${c.case} — ${c.product}`,
-        detail: (c.note ? c.note + ' ' : '') + rates + ' Portée à confirmer selon la description du produit.',
+        detail: (c.note ? c.note + ' ' : '') + rates + ' Scope to be confirmed against the product description.',
         url: c.url,
       },
     });
@@ -177,10 +177,10 @@ export function licenceFlags(db: DB | null, list: Licence[], code: string, origi
     if (!anyPrefix(code, l.prefixes)) continue;
     if (!originAllowed(l, origin)) continue;
     flags.push({
-      level: l.level === 'requis' ? 'danger' : l.level === 'info' ? 'info' : 'warning',
+      level: l.level === 'required' ? 'danger' : l.level === 'info' ? 'info' : 'warning',
       title: l.label,
       agency: l.agency,
-      detail: (l.level === 'requis' ? 'Requis' : l.level === 'info' ? 'Information' : 'Peut être requis') + (l.note ? ' — ' + l.note : ''),
+      detail: (l.level === 'required' ? 'Required' : l.level === 'info' ? 'Information' : 'May be required') + (l.note ? ' — ' + l.note : ''),
       url: l.url,
     });
   }
@@ -194,9 +194,9 @@ export function licenceFlags(db: DB | null, list: Licence[], code: string, origi
       const lvl = /2$/.test(r.flag) ? 'danger' : 'warning';
       flags.push({
         level: lvl,
-        title: `Indicateur PGA ACE : ${r.flag}`,
+        title: `ACE PGA flag: ${r.flag}`,
         agency: ag,
-        detail: lvl === 'danger' ? 'Données PGA requises (indicateur officiel CBP)' : 'Données PGA possiblement requises (indicateur officiel CBP)',
+        detail: lvl === 'danger' ? 'PGA data required (official CBP flag)' : 'PGA data may be required (official CBP flag)',
       });
     }
   }
@@ -206,5 +206,5 @@ export function licenceFlags(db: DB | null, list: Licence[], code: string, origi
 
 export function dataInfo(db: DB, j: 'US' | 'CA') {
   const meta = getMeta<{ at: string; source: string; count: number }>(db, `import:${j}`);
-  return { importedAt: meta?.at ?? null, source: meta?.source ?? 'aucune', seed: (meta?.source ?? 'seed').startsWith('seed') };
+  return { importedAt: meta?.at ?? null, source: meta?.source ?? 'none', seed: (meta?.source ?? 'seed').startsWith('seed') };
 }

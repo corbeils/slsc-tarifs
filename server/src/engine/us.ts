@@ -94,19 +94,19 @@ export function calcUS(db: DB, rules: Rules, line: LineRow, input: CalcInput, fx
   // exemption 301 et MPF) — cf. 9903.05.93.
   const prefEligible = (!!prefCode || isNA) && !column2;
   const claimed = !!input.preferential && prefEligible;
-  const prefLabel = isNA ? 'ACEUM / USMCA' : 'Accord de libre-échange';
+  const prefLabel = isNA ? 'USMCA' : 'Free trade agreement';
 
   let baseText = column2 ? line.other ?? '' : claimed && prefCode ? special[prefCode] : line.general ?? '';
   let baseNote = column2
-    ? `Colonne 2 (${countryName(origin)})`
+    ? `Column 2 (${countryName(origin, 'en')})`
     : claimed && prefCode
-      ? `Taux préférentiel ${prefLabel} (indicateur ${prefCode})`
+      ? `${prefLabel} preferential rate (SPI ${prefCode})`
       : claimed
-        ? `Colonne 1 — Général (originaire ${prefLabel} réclamé)`
-        : 'Colonne 1 — Général (NPF)';
+        ? `Column 1 — General (${prefLabel} origin claimed)`
+        : 'Column 1 — General (MFN)';
   if (eff.baseFree || (eff.freeIfPreferential?.includes(origin) && input.preferential)) {
     baseText = 'Free';
-    baseNote = `Régime ${regime.code} — ${regime.label}`;
+    baseNote = `Regime ${regime.code} — ${regime.label}`;
   }
   const parsed = parseRate(baseText);
   const base = computeDuty(parsed, dutiable, qty);
@@ -114,20 +114,20 @@ export function calcUS(db: DB, rules: Rules, line: LineRow, input: CalcInput, fx
   if (parsed.complex)
     flags.warnings.push({
       level: 'warning',
-      title: 'Taux de base complexe',
-      detail: `« ${parsed.raw} » n'a pas pu être entièrement interprété ; vérifier manuellement.`,
+      title: 'Complex base rate',
+      detail: `"${parsed.raw}" could not be fully interpreted; verify manually.`,
     });
   lines.push({
     key: 'base',
-    label: 'Droit de douane de base',
+    label: 'Base customs duty',
     program: 'HTSUS',
     rateText: parsed.raw || '—',
     ratePct: parsed.specific.length ? null : parsed.adValorem,
     basis: dutiable,
     amount: round2(base.amount),
     kind: 'base',
-    status: 'vérifié',
-    note: baseNote + (line.rate_from && line.rate_from !== line.code ? ` · taux de la ligne ${fmt(line.rate_from)}` : ''),
+    status: 'verified',
+    note: baseNote + (line.rate_from && line.rate_from !== line.code ? ` · rate from line ${fmt(line.rate_from)}` : ''),
   });
   const basePct = base.effectivePct;
 
@@ -136,8 +136,8 @@ export function calcUS(db: DB, rules: Rules, line: LineRow, input: CalcInput, fx
   if (origin === 'US' && !eff.skipAdditional)
     flags.info.push({
       level: 'info',
-      title: 'Origine américaine',
-      detail: 'Marchandise d\'origine É.-U. retournée : envisager le n° 9801.00.10 (aucun droit additionnel du ch. 99).',
+      title: 'U.S. origin',
+      detail: 'U.S.-origin goods returned: consider 9801.00.10 (no Chapter 99 additional duties).',
     });
 
   const appliedFamilies = new Set<string>();
@@ -160,14 +160,14 @@ export function calcUS(db: DB, rules: Rules, line: LineRow, input: CalcInput, fx
       );
       const exHeads = heads.filter((h) => h.kind === 'exemption');
       for (const b of heads.filter((h) => h.kind === 'ban' && (h.origins === null || matchesOrigin(origin, h.origins))))
-        flags.bans.push({ level: 'danger', title: `${b.code} — ${b.label}`, detail: 'Importation interdite.' });
+        flags.bans.push({ level: 'danger', title: `${b.code} — ${b.label}`, detail: 'Importation prohibited.' });
       if (!duty.length) continue;
 
       if (p.family === 's232' && appliedFamilies.has('s232')) {
         flags.info.push({
           level: 'info',
-          title: `${p.name} : non cumulé`,
-          detail: 'Un seul programme 232 s\'applique par article (priorité : autos > camions > métaux > bois).',
+          title: `${p.name}: not stacked`,
+          detail: 'Only one Section 232 program applies per article (priority: autos > trucks > metals > wood).',
         });
         continue;
       }
@@ -180,7 +180,7 @@ export function calcUS(db: DB, rules: Rules, line: LineRow, input: CalcInput, fx
 
       let exempt: { label: string; ch99?: string } | null = null;
       if (chosen.exemptIfFamilies?.some((f) => appliedFamilies.has(f)))
-        exempt = { label: 'Déjà visé par un programme exclusif', ch99: chosen.exemptionCh99 };
+        exempt = { label: 'Already subject to an exclusive program', ch99: chosen.exemptionCh99 };
       for (const eh of exHeads) {
         if (eh.option) {
           options.push({ key: eh.option, label: `${eh.label} (${eh.code})`, context: p.name });
@@ -203,19 +203,19 @@ export function calcUS(db: DB, rules: Rules, line: LineRow, input: CalcInput, fx
       if (p.lowMetalExemptPct !== undefined) {
         needs.metalWeight = true;
         if (input.metalWeightPct !== undefined && input.metalWeightPct < p.lowMetalExemptPct)
-          exempt = { label: `Teneur en métal < ${p.lowMetalExemptPct} % du poids` };
+          exempt = { label: `Metal content < ${p.lowMetalExemptPct}% by weight` };
       }
       const naOrigin = origin === 'CA' || origin === 'MX';
       if (p.preferential && naOrigin) {
         if (p.preferential.partsExemptOption) {
-          options.push({ key: p.preferential.partsExemptOption, label: 'Pièce automobile admissible ACEUM (exemptée)', context: p.name });
-          if (opts[p.preferential.partsExemptOption] && claimed) exempt = { label: 'Pièce ACEUM admissible' };
+          options.push({ key: p.preferential.partsExemptOption, label: 'USMCA-qualifying auto part (exempt)', context: p.name });
+          if (opts[p.preferential.partsExemptOption] && claimed) exempt = { label: 'USMCA-qualifying part' };
         }
         if (p.preferential.mode === 'nonUsContent' && claimed && !exempt) {
           needs.usContent = true;
           const us = input.usContentPct ?? 0;
           basis = dutiable * (1 - us / 100);
-          notes.push(`ACEUM : sur le contenu non américain (${round2(100 - us)} % de la valeur)`);
+          notes.push(`USMCA: on non-U.S. content (${round2(100 - us)}% of value)`);
         }
       }
       for (const [key, o] of Object.entries(p.options ?? {})) {
@@ -223,7 +223,7 @@ export function calcUS(db: DB, rules: Rules, line: LineRow, input: CalcInput, fx
         if (!opts[key]) continue;
         if (o.capCombinedPct !== undefined) {
           cap = o.capCombinedPct;
-          notes.push(`Total droit de base + 232 plafonné à ${cap} %`);
+          notes.push(`Base duty + 232 capped at ${cap}% combined`);
         }
         if (o.nonUsContentRate !== undefined) {
           if (claimed && naOrigin) {
@@ -231,8 +231,8 @@ export function calcUS(db: DB, rules: Rules, line: LineRow, input: CalcInput, fx
             rate = o.nonUsContentRate;
             basis = dutiable * (1 - (input.usContentPct ?? 0) / 100);
             floor = o.floorPct ?? 0;
-            notes.push(`${rate} % sur le contenu non américain, plancher ${floor} %`);
-          } else notes.push('Option ACEUM 232 ignorée : traitement ACEUM non réclamé ou origine hors Canada/Mexique');
+            notes.push(`${rate}% on non-U.S. content, ${floor}% floor`);
+          } else notes.push('USMCA 232 option ignored: USMCA not claimed or origin outside Canada/Mexico');
         }
       }
 
@@ -259,7 +259,7 @@ export function calcUS(db: DB, rules: Rules, line: LineRow, input: CalcInput, fx
         status: p.status,
         url: p.url,
         exempted: !!exempt,
-        note: [exempt ? `Exempté : ${exempt.label}` : '', ...notes, p.note ?? ''].filter(Boolean).join(' · '),
+        note: [exempt ? `Exempt: ${exempt.label}` : '', ...notes, p.note ?? ''].filter(Boolean).join(' · '),
         alternatives: alternatives.length ? alternatives : undefined,
       });
       if (!exempt) {
@@ -278,20 +278,20 @@ export function calcUS(db: DB, rules: Rules, line: LineRow, input: CalcInput, fx
         const amount = (row.add_pct / 100) * dutiable;
         lines.push({
           key: `ch99:${r}`,
-          label: 'Mesure du ch. 99 (non cartographiée)',
+          label: 'Chapter 99 measure (unmapped)',
           ch99: r,
           ratePct: row.add_pct,
           rateText: shorten(row.description),
           basis: dutiable,
           amount: round2(amount),
           kind: 'additional',
-          status: 'à valider',
-          note: 'Ajouter un programme dans rules/us.yaml pour préciser exclusions et cumul.',
+          status: 'to verify',
+          note: 'Add a program in rules/us.yaml to define exclusions and stacking.',
         });
       } else if (!countries.length) {
         flags.warnings.push({
           level: 'warning',
-          title: `Renvoi ${r} (+${row.add_pct} %) à vérifier`,
+          title: `Reference ${r} (+${row.add_pct}%) to verify`,
           detail: shorten(row.description, 260),
         });
       }
@@ -307,7 +307,7 @@ export function calcUS(db: DB, rules: Rules, line: LineRow, input: CalcInput, fx
         flags.bans.push({
           level: 'danger',
           title: m.name,
-          detail: `${m.note ?? ''} ${sm.partial ? '(certaines sous-positions seulement)' : ''}`.trim(),
+          detail: `${m.note ?? ''} ${sm.partial ? '(some subdivisions only)' : ''}`.trim(),
           url: m.url,
         });
         continue;
@@ -358,13 +358,13 @@ export function calcUS(db: DB, rules: Rules, line: LineRow, input: CalcInput, fx
         legal: m.legal,
         url: m.url,
         ratePct: exempt ? 0 : round2(ratePct),
-        rateText: cap !== undefined ? `plafond combiné ${cap} %` : undefined,
+        rateText: cap !== undefined ? `combined cap ${cap}%` : undefined,
         basis: dutiable,
         amount: round2(amount),
         kind: 'additional',
         status: m.status,
         exempted: !!exempt,
-        note: [exempt ? `Exempté : ${exempt.label}` : '', sm.via !== 'toutes marchandises' ? `Portée : ${sm.via}` : '', m.note ?? '']
+        note: [exempt ? `Exempt: ${exempt.label}` : '', sm.via !== 'all goods' ? `Scope: ${sm.via}` : '', m.note ?? '']
           .filter(Boolean)
           .join(' · '),
       });
@@ -386,11 +386,11 @@ export function calcUS(db: DB, rules: Rules, line: LineRow, input: CalcInput, fx
         if (v === undefined) continue;
         lines.push({
           key: `adcvd:${c.case}:${k}`,
-          label: `Dépôt ${k === 'AD' ? 'antidumping' : 'compensateur'} — ${c.product}`,
+          label: `${k === 'AD' ? 'Anti-dumping' : 'Countervailing'} cash deposit — ${c.product}`,
           program: 'ADD/CVD',
           legal: c.case,
           ratePct: v,
-          rateText: comp ? comp.name : 'Tous les autres',
+          rateText: comp ? comp.name : 'All others',
           basis: value,
           amount: round2((v / 100) * value),
           kind: 'adcvd',
@@ -403,8 +403,8 @@ export function calcUS(db: DB, rules: Rules, line: LineRow, input: CalcInput, fx
   if (!ad.length && matchesOrigin(origin, rules.adcvd.us.riskOrigins) && anyPrefix(line.code, rules.adcvd.us.riskPrefixes))
     flags.adcvd.push({
       level: 'warning',
-      title: 'Exposition AD/CVD possible',
-      detail: `Origine ${countryName(origin)} et chapitre à forte concentration d'ordonnances : vérifier dans CBP ADCVD Search.`,
+      title: 'Possible AD/CVD exposure',
+      detail: `Origin ${countryName(origin, 'en')} and a chapter with many orders: check CBP ADCVD Search.`,
       url: rules.adcvd.us.searchUrl,
     });
 
@@ -416,14 +416,14 @@ export function calcUS(db: DB, rules: Rules, line: LineRow, input: CalcInput, fx
   const mpfExempt = claimed && mpf.exemptPreferentialOrigins.includes(origin);
   let mpfAmt = 0;
   let mpfNote = '';
-  if (mpfExempt) mpfNote = 'Exemptée : marchandise originaire ACEUM';
+  if (mpfExempt) mpfNote = 'Exempt: USMCA-originating goods';
   else if (value < mpf.formalThreshold) {
     mpfAmt = mpf.informalFlat;
-    mpfNote = `Entrée informelle (< ${mpf.formalThreshold} $) — montant forfaitaire automatisé`;
+    mpfNote = `Informal entry (< $${mpf.formalThreshold}) — automated flat fee`;
   } else {
     const raw = (mpf.pct / 100) * dutiable;
     mpfAmt = Math.min(Math.max(raw, mpf.min), mpf.max);
-    mpfNote = `${mpf.pct} % (min. ${mpf.min} $, max. ${mpf.max} $)`;
+    mpfNote = `${mpf.pct}% (min. $${mpf.min}, max. $${mpf.max})`;
   }
   lines.push({
     key: 'mpf',
@@ -453,21 +453,21 @@ export function calcUS(db: DB, rules: Rules, line: LineRow, input: CalcInput, fx
   if (prefEligible && !input.preferential)
     flags.info.push({
       level: 'success',
-      title: `Traitement ${prefLabel}${prefCode ? ` (${prefCode})` : ''} possible`,
-      detail: `${prefCode ? `Taux préférentiel : ${special[prefCode]}. ` : 'Taux général déjà applicable ; l\'origine ACEUM exempte néanmoins de la 301 et de la MPF. '}Cocher « Réclamer » si la marchandise est originaire (certification d'origine requise).`,
+      title: `${prefLabel} treatment${prefCode ? ` (${prefCode})` : ''} available`,
+      detail: `${prefCode ? `Preferential rate: ${special[prefCode]}. ` : 'The general rate already applies; USMCA origin still exempts from Section 301 and the MPF. '}Tick "Claim" if the goods are originating (certification of origin required).`,
     });
 
   if (eff.deferred) {
-    flags.info.push({ level: 'info', title: `Régime ${regime.label}`, detail: regime.note });
+    flags.info.push({ level: 'info', title: `Regime ${regime.label}`, detail: regime.note });
   } else if (regime.id !== 'none' && regime.note) {
-    flags.info.push({ level: regime.status === 'vérifié' ? 'info' : 'warning', title: `Régime ${regime.code ?? ''} — ${regime.label}`, detail: regime.note });
+    flags.info.push({ level: regime.status === 'verified' ? 'info' : 'warning', title: `Regime ${regime.code ?? ''} — ${regime.label}`, detail: regime.note });
   }
 
   const totals = summarize(lines, value);
   const deferred = eff.deferred
     ? {
         bond: round2((totals.duties + totals.adcvd) * (eff.bondMultiple ?? 2)),
-        note: 'Droits non perçus si les conditions du régime sont respectées ; montant de cautionnement estimatif.',
+        note: 'Duties are not collected if the regime conditions are met; estimated bond amount.',
       }
     : undefined;
 

@@ -195,3 +195,5 @@ table { border-collapse: collapse; width: 100%; }
 .notice-text { line-height: 1.55; text-align: center; }
 .notice-dates { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px 28px; border-top: 1px solid #f0dcae; padding-top: 8px; font-size: 12px; color: var(--navy); }
 @media print { .notice { display: flex !important; } }
+.userbar { display: flex; justify-content: space-between; align-items: center; padding: 10px 18px; }
+.login { max-width: 420px; }

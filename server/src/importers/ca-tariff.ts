@@ -132,7 +132,7 @@ export async function importCaFile(db: DB, file: string, source = path.basename(
   const m = detectMapping(rows);
   if (!m)
     throw new Error(
-      'En-têtes non reconnus : il faut au minimum une colonne « Tariff Item / Numéro tarifaire » et une colonne « MFN / NPF » ou « Preferential ».',
+      'Headers not recognized: at least a "Tariff Item" column and an "MFN" or "Preferential" column are required.',
     );
   return importCaRows(db, rows, m, source);
 }
@@ -272,7 +272,7 @@ function describeMapping(m: Mapping) {
 
 export async function importCaUrl(db: DB, url: string) {
   const res = await fetch(url);
-  if (!res.ok) throw new Error(`HTTP ${res.status} pour ${url}`);
+  if (!res.ok) throw new Error(`HTTP ${res.status} for ${url}`);
   const buf = Buffer.from(await res.arrayBuffer());
   const ext = /\.csv(\?|$)/i.test(url) ? '.csv' : '.xlsx';
   const tmp = path.join(process.env.TMPDIR ?? '/tmp', `ca-tariff-${Date.now()}${ext}`);

@@ -6,9 +6,9 @@ import Admin from './pages/Admin';
 import { api, fmtDate } from './api';
 
 const PAGES = [
-  { id: 'simulateur', label: 'Simulateur' },
-  { id: 'lot', label: 'Lot Excel' },
-  { id: 'mesures', label: 'Mesures en vigueur' },
+  { id: 'simulateur', label: 'Simulator' },
+  { id: 'lot', label: 'Excel batch' },
+  { id: 'mesures', label: 'Measures in force' },
   { id: 'admin', label: 'Admin' },
 ] as const;
 type PageId = (typeof PAGES)[number]['id'];
@@ -30,7 +30,7 @@ export default function App() {
   useEffect(() => {
     api.meta().then(setMeta).catch(() => {});
   }, [page]);
-  const upd = (m: any) => (m?.at ? `${fmtDate(m.at)}${m.source?.startsWith('seed') ? ' (démo)' : ''}` : '—');
+  const upd = (m: any) => (m?.at ? `${fmtDate(m.at)}${m.source?.startsWith('seed') ? ' (demo)' : ''}` : '—');
   return (
     <div className="app">
       <header className="topbar">
@@ -42,7 +42,7 @@ export default function App() {
           </svg>
           <div>
             <div className="brand-title">SLSC TARIFF SIMULATOR</div>
-            <div className="brand-sub">Simulateur de droits Canada ⇄ États-Unis</div>
+            <div className="brand-sub">Canada ⇄ United States duty simulator</div>
           </div>
         </div>
         <nav>
@@ -75,7 +75,7 @@ export default function App() {
             <b>ASFC LAST UPDATE</b> : {upd(meta?.ca)}
           </span>
           <span>
-            <b>CURRENCY CONVERTER UPDATE</b> : {meta?.fx?.date ? `${meta.fx.date} (1 USD = ${meta.fx.usdCad.toFixed(4)} CAD)` : '— (taux par défaut)'}
+            <b>CURRENCY CONVERTER UPDATE</b> : {meta?.fx?.date ? `${meta.fx.date} (1 USD = ${meta.fx.usdCad.toFixed(4)} CAD)` : '— (default rate)'}
           </span>
         </div>
       </footer>

@@ -8,7 +8,6 @@
 sudo mkdir -p /opt/slsc-tarifs && cd /opt/slsc-tarifs
 sudo curl -fsSL -o docker-compose.yml https://raw.githubusercontent.com/corbeils/slsc-tarifs/main/deploy/docker-compose.yml
 printf 'ADMIN_TOKEN=%s\nCRON_US=30 3 * * 1\nCRON_FX=15 17 * * 1-5\nTZ=America/Toronto\n' "$(openssl rand -hex 24)" | sudo tee .env
-cat .env      # noter l'ADMIN_TOKEN : c'est le mot de passe de la page Admin
 docker compose pull && docker compose up -d
 curl -s http://127.0.0.1:8085/api/health      # → {"ok":true}
 ```
@@ -40,7 +39,10 @@ Ton Watchtower doit surveiller ce conteneur. S'il tourne avec `--label-enable`, 
 
 ## 4. Premier chargement des données
 
-Page **Admin** (jeton = `ADMIN_TOKEN`) :
+Page **Admin** : compte par défaut **CORBEILS / admin**, à changer tout de suite dans *My account*. D'autres administrateurs peuvent être ajoutés dans *Administrator accounts*.
+
+Si tu oublies le mot de passe : `docker compose exec slsc-tarifs node -e "const D=require('better-sqlite3');new D('/data/tarifs.sqlite').exec('DELETE FROM users;DELETE FROM sessions')" && docker compose restart` recrée le compte par défaut.
+
 1. *Tarif américain → Importer en ligne*
 2. *Taux de change → Banque du Canada*
 3. *Tarif canadien* : téléverser le fichier Excel de l'ASFC
@@ -62,3 +64,7 @@ cd /opt/slsc-tarifs && tar czf ~/slsc-tarifs-$(date +%F).tgz data rules
 | `denied` au `pull` | refaire `docker login ghcr.io -u corbeils` avec un jeton `read:packages` |
 | 502 dans NPM | npmplus en mode host : cible `127.0.0.1:8085` (vérifier `curl -s http://127.0.0.1:8085/api/health`) |
 | Le conteneur redémarre | `docker compose logs --tail=50 slsc-tarifs` |
+
+## Règles YAML et mises à jour
+
+Au démarrage, un fichier de `rules/` identique à une version par défaut déjà publiée (donc jamais modifié) est remplacé par la nouvelle version, et l'ancien est gardé en `.bak`. Un fichier que tu as modifié n'est jamais touché. Les empreintes des versions publiées sont dans `rules-history.sha256` : à chaque modification des règles par défaut, ajouter la nouvelle empreinte (`sha256sum rules/*.yaml`).

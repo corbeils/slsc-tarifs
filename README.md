@@ -23,7 +23,7 @@ Le **mode lot** prend un fichier Excel/CSV (une liste de pièces de rechange, pa
 **Local** (construction depuis les sources) :
 
 ```bash
-cp .env.example .env          # définir ADMIN_TOKEN
+cp .env.example .env
 docker compose up -d --build  # http://localhost:8085
 ```
 
@@ -39,6 +39,7 @@ Volumes :
 
 | Étape | Action | Fréquence |
 |---|---|---|
+| 0. Connexion | Admin → compte **CORBEILS / admin**, puis changer le mot de passe dans *My account* | une fois |
 | 1. HTSUS | **Importer en ligne** (USITC, 98 chapitres + ch. 99, ≈ 2–5 min) | automatique chaque lundi (`CRON_US`) |
 | 2. Tarif canadien | Téléverser le fichier **Excel** du Tarif des douanes (format CARM publié par l'ASFC à partir du 1er déc. 2026) ou un CSV | à chaque modification du tarif (`CA_TARIFF_URL` pour automatiser) |
 | 3. Taux USD/CAD | **Banque du Canada (Valet)** | automatique les jours ouvrables (`CRON_FX`) |
@@ -111,7 +112,7 @@ POST /api/calc                          { direction: "CA-US"|"US-CA", code, orig
 POST /api/batch                         multipart : file + direction, origin, currency, preferential, province, mode
 GET  /api/measures                      mesures et programmes actifs
 GET  /api/meta                          fraîcheur des données
-Admin (en-tête x-admin-token) : /api/admin/import/us, /import/us-file, /import/ca-file, /import/ca-url,
+Admin (en-tête `Authorization: Bearer <session ou ADMIN_TOKEN>`) — POST /api/auth/login, /api/admin/me, /password, /users ; /api/admin/import/us, /import/us-file, /import/ca-file, /import/ca-url,
   /import/fx, /fx, /codes, /import/pga, /import/adcvd, /rules/:key
 ```
 

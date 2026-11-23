@@ -58,7 +58,7 @@ export default function CodeSearch({
     <div className="search" ref={box}>
       <input
         className="input mono"
-        placeholder={j === 'US' ? 'Code HTSUS ou mots-clés (ex. 8462.11, presse, gear box)' : 'Numéro tarifaire ou mots-clés'}
+        placeholder={j === 'US' ? 'HTSUS code or keywords (e.g. 8462.11, press, gear box)' : 'Tariff item or keywords'}
         value={q}
         onChange={(e) => {
           setQ(e.target.value);

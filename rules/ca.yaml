@@ -1,30 +1,30 @@
 # =====================================================================
-#  RÈGLES — IMPORTATION AU CANADA (US → CA ou autre origine → CA)
-#  Mise à jour de référence : 23 novembre 2026
-#  Les taux NPF / TÉU (UST) proviennent du fichier du Tarif des douanes (CBSA).
-#  Les surtaxes sont définies par DÉCRETS avec des listes de numéros tarifaires :
-#  importer chaque liste via Admin → Listes de codes (copier-coller de l'annexe
-#  du décret, de l'avis des douanes ou de la page des Finances).
-#  Les « prefixes » ci-dessous ne sont qu'un amorçage indicatif.
+#  RULES — INBOUND CANADA (imports into Canada)
+#  Reference date: November 23, 2026
+#  MFN / UST rates come from the CBSA Customs Tariff file.
+#  Surtaxes are defined by ORDERS with lists of tariff items: import each
+#  list via Admin → Code lists (paste the order's schedule, the customs
+#  notice or the Finance Canada page).
+#  The "prefixes" below are only an indicative starting point.
 # =====================================================================
 
 currency: CAD
 
 taxes:
   gst:
-    label: "TPS"
+    label: "GST"
     pct: 5
-    status: vérifié
-  # TVH perçue à la frontière pour les provinces participantes (partie provinciale incluse)
+    status: verified
+  # HST collected at the border for participating provinces (provincial part included)
   hst:
     ON: 13
     NB: 15
     NL: 15
     NS: 14
     PE: 15
-  note: "Québec : la TVQ n'est pas perçue par l'ASFC (autocotisation / remboursement)."
+  note: "Quebec: QST is not collected by the CBSA (self-assessment / rebate)."
 
-# Traitement tarifaire préférentiel selon l'origine (si réclamé et preuve d'origine valide)
+# Preferential tariff treatment by origin (if claimed with valid proof of origin)
 preferential:
   US: [UST]
   MX: [MXT, CPTPT]
@@ -52,15 +52,15 @@ preferential:
   VN: [CPTPT]
   EU: [CEUT]
 
-# Partenaires ALE hors ACEUM (contingents acier à 75 % des volumes 2024 ; non-ALE : 20 %)
+# Non-CUSMA FTA partners (steel TRQ at 75% of 2024 volumes; non-FTA: 20%)
 ftaPartners: [EU, GB, CH, NO, IS, LI, CL, CO, CR, HN, IL, JO, KR, PA, PE, UA, AU, BN, JP, MY, NZ, SG, VN]
 
 measures:
-  # --------------------------- Contre-mesures visant les É.-U. ---------------------------
+  # --------------------------- Countermeasures against the U.S. ---------------------------
   - id: CA-US-SA
-    name: "Surtaxe É.-U. — acier et aluminium"
-    program: "Contre-mesures canadiennes"
-    legal: "DORS/2025-95, modifié par DORS/2026-187 (50 % dès le 8 sept. 2026)"
+    name: "U.S. surtax — steel and aluminum"
+    program: "Canadian countermeasures"
+    legal: "SOR/2025-95, as amended by SOR/2026-187 (50% from Sept. 8, 2026)"
     url: "https://www.cbsa-asfc.gc.ca/publications/cn-ad/menu-eng.html"
     rate: 50
     origins: [US]
@@ -70,15 +70,15 @@ measures:
       prefixes: ["7206", "7207", "7208", "7209", "7210", "7211", "7212", "7213", "7214", "7215", "7216", "7217", "7218", "7219", "7220", "7221", "7222", "7223", "7224", "7225", "7226", "7227", "7228", "7229", "7301", "7302", "7303", "7304", "7305", "7306", "7601", "7604", "7605", "7606", "7607", "7608", "7609"]
     group: ca-steel
     priority: 10
-    status: vérifié
-    note: "50 % pour la majorité des biens ; certains demeurent à 25 % — importer les listes par taux. Aucune exemption ACEUM."
+    status: verified
+    note: "50% for most goods; some remain at 25% — import the lists by rate. No CUSMA exemption."
     exemptIf:
-      - { option: usSurtaxRemission, label: "Remise horizontale — Décret de remise des surtaxes (É.-U.) 2025 (fabrication, transformation, emballage alimentaire, santé, sécurité publique) — jusqu'au 30 juin 2027" }
+      - { option: usSurtaxRemission, label: "Horizontal remission — United States Surtax Remission Order (2025) (manufacturing, processing, food packaging, health, public safety) — until June 30, 2027" }
 
   - id: CA-US-AUTO
-    name: "Surtaxe É.-U. — véhicules automobiles"
-    program: "Contre-mesures canadiennes"
-    legal: "Décret de surtaxe (véhicules automobiles 2025) ; remise : TR/2026-13"
+    name: "U.S. surtax — motor vehicles"
+    program: "Canadian countermeasures"
+    legal: "United States Surtax Order (Motor Vehicles 2025); remission: SI/2026-13"
     rate: 25
     origins: [US]
     from: "2025-04-09"
@@ -87,83 +87,83 @@ measures:
       prefixes: ["8703.21", "8703.22", "8703.23", "8703.24", "8703.31", "8703.32", "8703.33", "8703.40", "8703.50", "8703.60", "8703.70", "8703.80", "8703.90", "8704.21", "8704.31", "8704.41", "8704.51"]
       exclude: ["8704.60.00"]
     preferentialBasis: nonCaMxContent
-    status: vérifié
-    note: "Véhicules ACEUM : surtaxe sur le contenu non canadien et non mexicain. Exclus : 8704.60.00 et véhicules de plus de 25 ans."
+    status: verified
+    note: "CUSMA vehicles: surtax on non-Canadian, non-Mexican content. Excluded: 8704.60.00 and vehicles over 25 years old."
     exemptIf:
-      - { option: autoRemission, label: "Cadre de remise automobile (constructeurs admissibles, quota) — jusqu'au 8 avr. 2027" }
-      - { option: vehicleOver25, label: "Véhicule fabriqué il y a plus de 25 ans" }
+      - { option: autoRemission, label: "Automotive remission framework (eligible automakers, quota) — until Apr. 8, 2027" }
+      - { option: vehicleOver25, label: "Vehicle manufactured more than 25 years ago" }
 
   - id: CA-US-2025-1
-    name: "Surtaxe É.-U. 2025-1 (25 %) — biens non originaires ACEUM"
-    program: "Contre-mesures canadiennes"
-    legal: "Décret de surtaxe (2025-1) ; levée pour les biens ACEUM depuis le 1er sept. 2025"
+    name: "U.S. surtax 2025-1 (25%) — non-CUSMA-originating goods"
+    program: "Canadian countermeasures"
+    legal: "United States Surtax Order (2025-1); lifted for CUSMA goods since Sept. 1, 2025"
     rate: 25
     origins: [US]
     scope: { codeList: true }
-    status: vérifié
-    note: "Ne s'applique plus aux biens originaires ACEUM ; importer la liste du décret."
+    status: verified
+    note: "No longer applies to CUSMA-originating goods; import the order's list."
     exemptIf:
-      - { preferential: true, label: "Bien originaire ACEUM (traitement TÉU réclamé)" }
+      - { preferential: true, label: "CUSMA-originating good (UST treatment claimed)" }
       - { option: usSurtaxRemission, label: "Remise horizontale 2025 (jusqu'au 30 juin 2027)" }
 
   - id: CA-US-2026-15
-    name: "Surtaxe É.-U. 2026 — 15 %"
-    program: "Contre-mesures canadiennes"
-    legal: "Décret de surtaxe des États-Unis (2026), DORS/2026-186 ; Avis des douanes 26-23"
+    name: "U.S. surtax 2026 — 15%"
+    program: "Canadian countermeasures"
+    legal: "United States Surtax Order (2026), SOR/2026-186; Customs Notice 26-23"
     rate: 15
     origins: [US]
     from: "2026-09-08"
     scope: { codeList: true }
-    status: vérifié
-    note: "Aucune exemption ACEUM. Importer la liste « 15 % »."
+    status: verified
+    note: "No CUSMA exemption. Import the \"15%\" list."
     exemptIf:
       - { option: usSurtaxRemission, label: "Remise horizontale 2025 (jusqu'au 30 juin 2027)" }
 
   - id: CA-US-2026-25
-    name: "Surtaxe É.-U. 2026 — 25 %"
-    program: "Contre-mesures canadiennes"
+    name: "U.S. surtax 2026 — 25%"
+    program: "Canadian countermeasures"
     legal: "DORS/2026-186 ; Avis des douanes 26-23"
     rate: 25
     origins: [US]
     from: "2026-09-08"
     scope: { codeList: true }
-    status: vérifié
-    note: "Ex. : électroménagers, produits laitiers, poissons, bois/contreplaqué, articles ménagers acier/alu. Importer la liste « 25 % »."
+    status: verified
+    note: "E.g. appliances, dairy, fish, lumber/plywood, steel/aluminum household articles. Import the \"25%\" list."
     exemptIf:
       - { option: usSurtaxRemission, label: "Remise horizontale 2025 (jusqu'au 30 juin 2027)" }
 
   - id: CA-US-2026-50
-    name: "Surtaxe É.-U. 2026 — 50 %"
-    program: "Contre-mesures canadiennes"
+    name: "U.S. surtax 2026 — 50%"
+    program: "Canadian countermeasures"
     legal: "DORS/2026-186 ; Avis des douanes 26-23"
     rate: 50
     origins: [US]
     from: "2026-09-08"
     scope: { codeList: true }
-    status: vérifié
-    note: "Ex. : certains aciers/alu, meubles, vêtements, équipement sportif. Importer la liste « 50 % »."
+    status: verified
+    note: "E.g. certain steel/aluminum, furniture, clothing, sports equipment. Import the \"50%\" list."
     exemptIf:
       - { option: usSurtaxRemission, label: "Remise horizontale 2025 (jusqu'au 30 juin 2027)" }
 
-  # --------------------------- Mesures visant la Chine ---------------------------
+  # --------------------------- Measures against China ---------------------------
   - id: CA-CN-EV
-    name: "Surtaxe Chine — véhicules électriques (100 %)"
-    program: "Surtaxe Chine"
-    legal: "Décret de surtaxe (Chine) 2024 ; contingent VE chinois (1er mars 2026)"
+    name: "China surtax — electric vehicles (100%)"
+    program: "China surtax"
+    legal: "China Surtax Order (2024); Chinese EV quota (March 1, 2026)"
     rate: 100
     origins: [CN]
     scope:
       codeList: true
       prefixes: ["8703.40", "8703.60", "8703.70", "8703.80", "8702.20", "8702.30", "8702.40"]
-    status: à valider
-    note: "Contingent annuel de 49 000 VE chinois au taux NPF (6,1 %) sous permis d'importation."
+    status: to verify
+    note: "Annual quota of 49,000 Chinese EVs at the MFN rate (6.1%) under import permit."
     exemptIf:
-      - { option: chinaEvQuota, label: "Dans le contingent VE chinois (permis d'importation requis)" }
+      - { option: chinaEvQuota, label: "Within the Chinese EV quota (import permit required)" }
 
   - id: CA-CN-SA
-    name: "Surtaxe Chine — acier et aluminium (25 %)"
-    program: "Surtaxe Chine"
-    legal: "Décret de surtaxe (Chine) 2024, en vigueur le 22 oct. 2024"
+    name: "China surtax — steel and aluminum (25%)"
+    program: "China surtax"
+    legal: "China Surtax Order (2024), in force Oct. 22, 2024"
     rate: 25
     origins: [CN]
     scope:
@@ -171,14 +171,14 @@ measures:
       prefixes: ["7206", "7207", "7208", "7209", "7210", "7211", "7212", "7213", "7214", "7215", "7216", "7217", "7218", "7219", "7220", "7221", "7222", "7223", "7224", "7225", "7226", "7227", "7228", "7229", "7301", "7302", "7303", "7304", "7305", "7306", "7601", "7604", "7605", "7606", "7607", "7608", "7609"]
     group: ca-steel
     priority: 5
-    status: vérifié
-    note: "Acier chinois aussi visé par le contingent : 25 % dans le contingent, 50 % hors contingent (non cumulatif)."
+    status: verified
+    note: "Chinese steel also under the TRQ: 25% within quota, 50% over quota (not cumulative)."
 
-  # --------------------------- Mesures acier globales ---------------------------
+  # --------------------------- Global steel measures ---------------------------
   - id: CA-STEEL-TRQ
-    name: "Contingent tarifaire acier — surtaxe hors contingent (50 %)"
-    program: "Mesures de protection de l'acier"
-    legal: "DORS/2025-148, modifié par DORS/2026-119 (prolongé au 27 juin 2027)"
+    name: "Steel tariff rate quota — over-quota surtax (50%)"
+    program: "Steel protection measures"
+    legal: "SOR/2025-148, as amended by SOR/2026-119 (extended to June 27, 2027)"
     url: "https://www.international.gc.ca/trade-commerce/controls-controles/notices-avis/1163.aspx?lang=eng"
     rate: 50
     excludeOrigins: [US, MX, CA]
@@ -188,28 +188,28 @@ measures:
       prefixes: ["7206", "7207", "7208", "7209", "7210", "7211", "7212", "7213", "7214", "7215", "7216", "7217", "7218", "7219", "7220", "7221", "7222", "7223", "7224", "7225", "7226", "7227", "7228", "7229", "7301", "7302", "7303", "7304", "7305", "7306"]
     group: ca-steel
     priority: 20
-    status: vérifié
-    note: "Contingents trimestriels : 20 % des volumes 2024 (non-ALE) / 75 % (ALE hors ACEUM). Permis d'importation par expédition (LMIC art. 82)."
+    status: verified
+    note: "Quarterly quotas: 20% of 2024 volumes (non-FTA) / 75% (non-CUSMA FTA). Shipment-specific import permit (ICL item 82)."
 
   - id: CA-STEEL-DERIV
-    name: "Surtaxe mondiale — dérivés de l'acier (25 %)"
-    program: "Mesures de protection de l'acier"
-    legal: "Décret de surtaxe sur les marchandises dérivées de l'acier, DORS/2025-267 (26 déc. 2025) ; Avis 25-33"
+    name: "Global surtax — steel derivative goods (25%)"
+    program: "Steel protection measures"
+    legal: "Steel Derivative Goods Surtax Order, SOR/2025-267 (Dec. 26, 2025); Customs Notice 25-33"
     rate: 25
     scope:
       codeList: true
     group: ca-steel
     priority: 1
-    status: vérifié
-    note: "Biens d'origine É.-U. déjà visés par la surtaxe É.-U. : seule la surtaxe É.-U. s'applique."
+    status: verified
+    note: "U.S.-origin goods already subject to the U.S. surtax: only the U.S. surtax applies."
     exemptIf:
-      - { families: [CA-US-SA], label: "Bien américain déjà visé par la surtaxe É.-U. acier/alu" }
-      - { option: derivRelief, label: "Allègement — fabrication de véhicules automobiles, aérospatiale et pièces (jusqu'au 30 juin 2027)" }
+      - { families: [CA-US-SA], label: "U.S. good already subject to the U.S. steel/aluminum surtax" }
+      - { option: derivRelief, label: "Relief — manufacturing of motor vehicles, aerospace goods and parts (until June 30, 2027)" }
 
   - id: CA-CN-MELT
-    name: "Surtaxe — acier fondu et coulé en Chine (25 %)"
-    program: "Mesures de protection de l'acier"
-    legal: "Décret de surtaxe (marchandises d'acier et d'aluminium), DORS/2025-154"
+    name: "Surtax — steel melted and poured in China (25%)"
+    program: "Steel protection measures"
+    legal: "Steel Goods and Aluminum Goods Surtax Order, SOR/2025-154"
     rate: 25
     excludeOrigins: [US, CA]
     requiresOption: chinaMeltedSteel
@@ -218,31 +218,31 @@ measures:
       prefixes: ["7206", "7207", "7208", "7209", "7210", "7211", "7212", "7213", "7214", "7215", "7216", "7217", "7218", "7219", "7220", "7221", "7222", "7223", "7224", "7225", "7226", "7227", "7228", "7229", "7301", "7302", "7303", "7304", "7305", "7306"]
     group: ca-steel
     priority: 3
-    status: vérifié
+    status: verified
 
 regimes:
   - id: none
-    label: "Importation ordinaire"
+    label: "Ordinary import"
   - id: ca-goods-returned
     code: "9971.00.00"
-    label: "Marchandises canadiennes retournées (sans amélioration)"
+    label: "Canadian goods returned (not advanced in value)"
     effect: { baseFree: true, skipAdditional: true }
-    status: vérifié
-    note: "Biens produits au Canada, réimportés sans avoir été améliorés ni transformés."
+    status: verified
+    note: "Goods produced in Canada, re-imported without having been improved or processed."
   - id: repair-cusma
     code: "9992.00.00"
-    label: "Retour après réparation/modification aux É.-U. ou au Mexique"
+    label: "Returned after repair/alteration in the U.S. or Mexico"
     effect: { baseFree: true, skipAdditional: true, gstOnRepairValue: true }
-    status: vérifié
-    note: "Franchise de droits ; TPS sur la valeur de la réparation."
+    status: verified
+    note: "Duty-free; GST on the repair value."
   - id: temporary
     code: "9993.00.00"
-    label: "Importation temporaire (E29B) — réexportation prévue"
+    label: "Temporary importation (E29B) — re-export planned"
     effect: { deferred: true }
-    status: vérifié
-    note: "Exonération totale ou partielle selon le Règlement (Mémorandum D8-1-1) ; garantie possible."
+    status: verified
+    note: "Full or partial relief under the Regulations (Memorandum D8-1-1); security may be required."
   - id: drp
-    label: "Programme d'exonération des droits / drawback (réexportation)"
+    label: "Duties Relief Program / drawback (re-export)"
     effect: { infoOnly: true }
-    status: vérifié
-    note: "Droits et surtaxes exonérés ou remboursés si la marchandise (ou le produit transformé) est exportée (Mémorandums D7-4-1, D7-4-2)."
+    status: verified
+    note: "Duties and surtaxes relieved or refunded if the goods (or the processed product) are exported (Memoranda D7-4-1, D7-4-2)."

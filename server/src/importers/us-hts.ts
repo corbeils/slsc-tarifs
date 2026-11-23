@@ -46,9 +46,9 @@ export async function fetchUsitc(
   for (const cc of chapters) {
     const url = `${config.usitcBase}/exportList?from=${cc}01&to=${cc}99&format=JSON&styles=false`;
     const data = (await fetchJson(url)) as UsitcRecord[];
-    if (!Array.isArray(data)) throw new Error(`Réponse inattendue pour le chapitre ${cc}`);
+    if (!Array.isArray(data)) throw new Error(`Unexpected response for chapter ${cc}`);
     all.push(...data);
-    onProgress?.(`Chapitre ${cc} : ${data.length} lignes`);
+    onProgress?.(`Chapter ${cc}: ${data.length} lines`);
   }
   return all;
 }
@@ -223,7 +223,7 @@ export function countriesFromHeading(desc: string): { countries: string[]; excep
   return { countries: [...new Set(countries)], except: [...new Set(except)] };
 }
 
-export function importUsFile(db: DB, file: string, source = 'fichier USITC') {
+export function importUsFile(db: DB, file: string, source = 'USITC file') {
   const records = JSON.parse(fs.readFileSync(file, 'utf8')) as UsitcRecord[];
   return importUsRecords(db, records, source);
 }

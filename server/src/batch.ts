@@ -38,7 +38,7 @@ export async function runBatch(
     );
   }
   const hdrIdx = rows.findIndex((r) => r.some((c) => /hts|hs\b|tarif|code/i.test(String(c ?? ''))));
-  if (hdrIdx < 0) throw new Error('Aucune colonne de code (HTS / HS / Tarif) trouvée');
+  if (hdrIdx < 0) throw new Error('No code column found (HTS / HS / Tariff)');
   const hdr = rows[hdrIdx].map((c) => String(c ?? '').trim());
   const find = (re: RegExp) => hdr.findIndex((h) => re.test(h));
   const ci = find(/hts|hs\b|hs code|tarif|tariff|code/i);
@@ -48,25 +48,25 @@ export async function runBatch(
   const di = find(/devise|currency|curr/i);
   const pi = find(/usmca|cusma|aceum|pr[ée]f/i);
   const ui = find(/contenu.*(us|é\.-u)|us content/i);
-  if (vi < 0) throw new Error('Aucune colonne de valeur trouvée (Valeur / Value / Prix / Montant)');
+  if (vi < 0) throw new Error('No value column found (Value / Price / Amount)');
 
   const out = new ExcelJS.Workbook();
   const ws = out.addWorksheet('Simulation');
   const added = [
-    'Tarif — description',
-    'Taux de base',
-    'Droit de base',
-    'Droits additionnels',
-    'Détail des mesures',
+    'Tariff — description',
+    'Base rate',
+    'Base duty',
+    'Additional duties',
+    'Measures detail',
     'AD/CVD',
-    'Frais',
+    'Fees',
     'Taxes',
-    'Total droits+frais+taxes',
-    'Taux effectif droits (%)',
-    'Devise',
-    'Interdictions',
-    'Licences / permis',
-    'Alertes',
+    'Total duties+fees+taxes',
+    'Effective duty rate (%)',
+    'Currency',
+    'Prohibitions',
+    'Licences / permits',
+    'Warnings',
   ];
   ws.addRow([...hdr, ...added]);
   ws.getRow(1).font = { bold: true, color: { argb: 'FFFFFFFF' } };

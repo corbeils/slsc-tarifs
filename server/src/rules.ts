@@ -4,7 +4,10 @@ import YAML from 'yaml';
 import { z } from 'zod';
 import { config } from './config.js';
 
-const Status = z.enum(['vérifié', 'à valider']).default('à valider');
+// Accepte aussi les anciennes valeurs françaises (fichiers déjà personnalisés)
+const Status = z
+  .preprocess((v) => (v === 'vérifié' ? 'verified' : v === 'à valider' ? 'to verify' : v), z.enum(['verified', 'to verify']))
+  .default('to verify');
 
 const ExemptCond = z
   .object({
@@ -201,7 +204,10 @@ const Licence = z
   .object({
     agency: z.string(),
     label: z.string(),
-    level: z.enum(['requis', 'peut être requis', 'info']),
+    level: z.preprocess(
+      (v) => (v === 'requis' ? 'required' : v === 'peut être requis' ? 'may be required' : v),
+      z.enum(['required', 'may be required', 'info']),
+    ),
     prefixes: z.array(z.string()),
     origins: z.array(z.string()).optional(),
     excludeOrigins: z.array(z.string()).optional(),

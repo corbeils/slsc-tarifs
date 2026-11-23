@@ -72,7 +72,7 @@ export function saveCodeList(
 
 export async function fetchText(url: string): Promise<string> {
   const res = await fetch(url, { headers: { 'User-Agent': 'slsc-tarifs/1.0' } });
-  if (!res.ok) throw new Error(`HTTP ${res.status} pour ${url}`);
+  if (!res.ok) throw new Error(`HTTP ${res.status} for ${url}`);
   const t = await res.text();
   return /<html|<table|<body/i.test(t) ? htmlToText(t) : t;
 }
@@ -82,18 +82,18 @@ export async function fetchText(url: string): Promise<string> {
 // ---------------------------------------------------------------------------
 export async function importFx(db: DB) {
   const res = await fetch(config.fxUrl);
-  if (!res.ok) throw new Error(`HTTP ${res.status} (Banque du Canada)`);
+  if (!res.ok) throw new Error(`HTTP ${res.status} (Bank of Canada)`);
   const j = (await res.json()) as { observations: { d: string; FXUSDCAD?: { v: string } }[] };
   const obs = j.observations?.at(-1);
   const rate = Number(obs?.FXUSDCAD?.v);
-  if (!rate) throw new Error('Taux FXUSDCAD absent de la réponse');
-  const v = { rate, date: obs!.d, source: 'Banque du Canada (Valet FXUSDCAD)' };
+  if (!rate) throw new Error('FXUSDCAD rate missing from response');
+  const v = { rate, date: obs!.d, source: 'Bank of Canada (Valet FXUSDCAD)' };
   setMeta(db, 'fx:USDCAD', v);
   return v;
 }
 
 export function setFxManual(db: DB, rate: number) {
-  const v = { rate, date: new Date().toISOString().slice(0, 10), source: 'saisi dans Admin' };
+  const v = { rate, date: new Date().toISOString().slice(0, 10), source: 'entered in Admin' };
   setMeta(db, 'fx:USDCAD', v);
   return v;
 }
@@ -106,7 +106,7 @@ export function importPgaCsv(db: DB, text: string) {
   const hdr = rows[0].map((h) => h.toLowerCase());
   const ci = hdr.findIndex((h) => /hts|tariff/.test(h));
   const fi = hdr.findIndex((h) => /flag|indicator|indicateur/.test(h));
-  if (ci < 0 || fi < 0) throw new Error('Colonnes attendues : HTS et Flag');
+  if (ci < 0 || fi < 0) throw new Error('Expected columns: HTS and Flag');
   const tx = db.transaction(() => {
     db.prepare('DELETE FROM pga_flags').run();
     const ins = db.prepare('INSERT OR IGNORE INTO pga_flags (code, flag) VALUES (?, ?)');
@@ -130,7 +130,7 @@ export function importAdcvdCsv(db: DB, text: string) {
   const hdr = rows[0].map((h) => h.trim().toLowerCase());
   const col = (n: string) => hdr.indexOf(n);
   const need = ['j', 'case', 'country', 'prefixes'];
-  for (const n of need) if (col(n) < 0) throw new Error(`Colonne manquante : ${n}`);
+  for (const n of need) if (col(n) < 0) throw new Error(`Missing column: ${n}`);
   const tx = db.transaction(() => {
     db.prepare('DELETE FROM adcvd_import').run();
     const ins = db.prepare(

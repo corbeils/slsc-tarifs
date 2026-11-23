@@ -1,10 +1,10 @@
 import { useState } from 'react';
 import type { Direction } from '../api';
 
-const TEMPLATE = `Article,Description,HTS,Origine,Valeur,Quantité,ACEUM,Contenu US %
-1,Presse de forgeage,8462.11.00.35,CA,250000,1,oui,
-2,Boîte de vitesses,8483.40.50.10,CA,12000,4,oui,
-3,Pièce acier usinée,7326.90.86.88,CN,3500,120,non,
+const TEMPLATE = `Item,Description,HTS,Origin,Value,Qty,USMCA,US content %
+1,Forging press,8462.11.00.35,CA,250000,1,yes,
+2,Gear box,8483.40.50.10,CA,12000,4,yes,
+3,Machined steel part,7326.90.86.88,CN,3500,120,no,
 `;
 
 export default function Batch() {
@@ -33,9 +33,9 @@ export default function Batch() {
       a.href = URL.createObjectURL(blob);
       a.download = `simulation-${file.name.replace(/\.[^.]+$/, '')}.xlsx`;
       a.click();
-      setMsg(`${res.headers.get('X-Rows')} lignes calculées, ${res.headers.get('X-Errors')} erreur(s).`);
+      setMsg(`${res.headers.get('X-Rows')} lines calculated, ${res.headers.get('X-Errors')} error(s).`);
     } catch (e) {
-      setMsg('Erreur : ' + (e as Error).message);
+      setMsg('Error: ' + (e as Error).message);
     } finally {
       setBusy(false);
     }
@@ -44,32 +44,32 @@ export default function Batch() {
   const dlTemplate = () => {
     const a = document.createElement('a');
     a.href = URL.createObjectURL(new Blob(['﻿' + TEMPLATE], { type: 'text/csv' }));
-    a.download = 'gabarit-simulation.csv';
+    a.download = 'simulation-template.csv';
     a.click();
   };
 
   return (
     <div className="narrow">
       <div className="card">
-        <h2>Simulation en lot (liste de pièces)</h2>
+        <h2>Batch simulation (parts list)</h2>
         <p className="muted">
-          Téléversez un fichier Excel ou CSV : chaque ligne est calculée avec les mêmes règles que le simulateur, et vous récupérez le fichier
-          enrichi (taux, mesures, AD/CVD, licences, alertes).
+          Upload an Excel or CSV file: every line is calculated with the same rules as the simulator, and you get the file back with
+          rates, measures, AD/CVD, licences and warnings added.
         </p>
         <div className="grid3">
           <div>
             <label className="lbl">Direction</label>
             <select className="input" value={direction} onChange={(e) => setDirection(e.target.value as Direction)}>
-              <option value="CA-US">INBOUND USA — importation aux États-Unis</option>
-              <option value="US-CA">INBOUND CANADA — importation au Canada</option>
+              <option value="CA-US">INBOUND USA — import into the United States</option>
+              <option value="US-CA">INBOUND CANADA — import into Canada</option>
             </select>
           </div>
           <div>
-            <label className="lbl">Origine par défaut</label>
+            <label className="lbl">Default origin</label>
             <input className="input" value={origin} maxLength={2} onChange={(e) => setOrigin(e.target.value.toUpperCase())} />
           </div>
           <div>
-            <label className="lbl">Devise par défaut</label>
+            <label className="lbl">Default currency</label>
             <select className="input" value={currency} onChange={(e) => setCurrency(e.target.value as 'USD' | 'CAD')}>
               <option>USD</option>
               <option>CAD</option>
@@ -78,19 +78,19 @@ export default function Batch() {
           <div>
             <label className="lbl">Mode</label>
             <select className="input" value={mode} onChange={(e) => setMode(e.target.value)}>
-              <option value="truck">Routier</option>
-              <option value="rail">Ferroviaire</option>
-              <option value="ocean">Maritime</option>
-              <option value="air">Aérien</option>
+              <option value="truck">Truck</option>
+              <option value="rail">Rail</option>
+              <option value="ocean">Ocean</option>
+              <option value="air">Air</option>
             </select>
           </div>
           <div>
-            <label className="lbl">Province (import CA)</label>
+            <label className="lbl">Province (Inbound Canada)</label>
             <input className="input" value={province} maxLength={2} onChange={(e) => setProvince(e.target.value.toUpperCase())} />
           </div>
           <label className="check" style={{ alignSelf: 'end' }}>
             <input type="checkbox" checked={preferential} onChange={(e) => setPref(e.target.checked)} />
-            <span>Réclamer ACEUM par défaut</span>
+            <span>Claim USMCA / CUSMA by default</span>
           </label>
         </div>
         <div className="drop">
@@ -98,25 +98,25 @@ export default function Batch() {
         </div>
         <div className="row">
           <button className="btn" disabled={!file || busy} onClick={run}>
-            {busy ? 'Calcul…' : 'Calculer et télécharger'}
+            {busy ? 'Calculating…' : 'Calculate and download'}
           </button>
           <button className="btn ghost" onClick={dlTemplate}>
-            Télécharger le gabarit
+            Download template
           </button>
         </div>
         {msg && <div className="alert info">{msg}</div>}
       </div>
       <div className="card">
-        <h3>Colonnes reconnues</h3>
+        <h3>Recognized columns</h3>
         <table className="simple">
           <tbody>
-            <tr><td><b>HTS / HS / Tarif / Code</b></td><td>Code à classer (obligatoire)</td></tr>
-            <tr><td><b>Valeur / Value / Prix / Montant</b></td><td>Valeur en douane (obligatoire)</td></tr>
-            <tr><td>Origine / Pays / COO</td><td>Code ISO à 2 lettres (sinon origine par défaut)</td></tr>
-            <tr><td>Devise / Currency</td><td>USD ou CAD</td></tr>
-            <tr><td>Quantité / Qty</td><td>Utilisée pour les taux spécifiques (kg ou unités)</td></tr>
-            <tr><td>ACEUM / USMCA / CUSMA / Préf.</td><td>oui / non — réclamer la préférence</td></tr>
-            <tr><td>Contenu US %</td><td>Pour les programmes 232 calculés sur le contenu non américain</td></tr>
+            <tr><td><b>HTS / HS / Tariff / Code</b></td><td>Code to calculate (required)</td></tr>
+            <tr><td><b>Value / Price / Amount</b></td><td>Customs value (required)</td></tr>
+            <tr><td>Origin / Country / COO</td><td>2-letter ISO code (otherwise the default origin)</td></tr>
+            <tr><td>Currency</td><td>USD or CAD</td></tr>
+            <tr><td>Qty / Quantity</td><td>Used for specific rates (kg or units)</td></tr>
+            <tr><td>USMCA / CUSMA / Pref.</td><td>yes / no — claim the preference</td></tr>
+            <tr><td>US content %</td><td>For Section 232 programs calculated on non-U.S. content</td></tr>
           </tbody>
         </table>
       </div>

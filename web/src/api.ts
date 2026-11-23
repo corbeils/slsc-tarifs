@@ -12,7 +12,7 @@ export interface CalcLine {
   basis: number;
   amount: number;
   kind: 'base' | 'additional' | 'adcvd' | 'fee' | 'tax';
-  status?: 'vérifié' | 'à valider';
+  status?: 'verified' | 'to verify';
   note?: string;
   exempted?: boolean;
   notCumulated?: boolean;
@@ -73,16 +73,17 @@ export interface Country {
   en: string;
 }
 
-const tokenKey = 'slsc-tarifs-admin';
-export const adminToken = {
+const tokenKey = 'slsc-tariff-session';
+export const session = {
   get: () => localStorage.getItem(tokenKey) ?? '',
   set: (t: string) => localStorage.setItem(tokenKey, t),
+  clear: () => localStorage.removeItem(tokenKey),
 };
 
 async function req<T>(url: string, init: RequestInit = {}, admin = false): Promise<T> {
   const headers: Record<string, string> = { ...(init.headers as Record<string, string>) };
   if (init.body && !(init.body instanceof FormData)) headers['Content-Type'] = 'application/json';
-  if (admin) headers['x-admin-token'] = adminToken.get();
+  if (admin) headers['Authorization'] = `Bearer ${session.get()}`;
   const res = await fetch(url, { ...init, headers });
   if (!res.ok) {
     let msg = `HTTP ${res.status}`;
@@ -91,7 +92,9 @@ async function req<T>(url: string, init: RequestInit = {}, admin = false): Promi
     } catch {
       /* ignore */
     }
-    throw new Error(msg);
+    const err = new Error(msg) as Error & { status?: number };
+    err.status = res.status;
+    throw err;
   }
   return res.json() as Promise<T>;
 }
@@ -102,8 +105,18 @@ export const api = {
   search: (j: 'US' | 'CA', q: string) => req<SearchHit[]>(`/api/search?j=${j}&q=${encodeURIComponent(q)}`),
   calc: (body: unknown) => req<CalcResult>('/api/calc', { method: 'POST', body: JSON.stringify(body) }),
   measures: () => req<any>('/api/measures'),
+  login: (username: string, password: string) =>
+    req<{ token: string; username: string; mustChange: boolean }>('/api/auth/login', { method: 'POST', body: JSON.stringify({ username, password }) }),
+  logout: () => req<any>('/api/auth/logout', { method: 'POST' }, true),
   admin: {
-    check: () => req<{ ok: boolean }>('/api/admin/check', {}, true),
+    me: () => req<{ username: string; mustChange: boolean }>('/api/admin/me', {}, true),
+    changePassword: (current: string, next: string) =>
+      req<any>('/api/admin/password', { method: 'POST', body: JSON.stringify({ current, next }) }, true),
+    users: () => req<{ username: string; mustChange: number; createdAt: string }[]>('/api/admin/users', {}, true),
+    addUser: (username: string, password: string) => req<any>('/api/admin/users', { method: 'POST', body: JSON.stringify({ username, password }) }, true),
+    resetUser: (username: string, password: string) =>
+      req<any>(`/api/admin/users/${encodeURIComponent(username)}/reset`, { method: 'POST', body: JSON.stringify({ password }) }, true),
+    deleteUser: (username: string) => req<any>(`/api/admin/users/${encodeURIComponent(username)}`, { method: 'DELETE' }, true),
     importUs: () => req<{ job: string }>('/api/admin/import/us', { method: 'POST' }, true),
     job: (id: string) => req<any>(`/api/admin/jobs/${id}`, {}, true),
     upload: (path: string, file: File) => {
@@ -123,7 +136,7 @@ export const api = {
 };
 
 export const money = (n: number, cur: string) =>
-  new Intl.NumberFormat('fr-CA', { style: 'currency', currency: cur, maximumFractionDigits: 2 }).format(n || 0);
+  new Intl.NumberFormat('en-CA', { style: 'currency', currency: cur, currencyDisplay: 'code', maximumFractionDigits: 2 }).format(n || 0);
 export const pct = (n: number | null | undefined) =>
-  n === null || n === undefined ? '—' : `${new Intl.NumberFormat('fr-CA', { maximumFractionDigits: 3 }).format(n)} %`;
-export const fmtDate = (s?: string | null) => (s ? new Date(s).toLocaleString('fr-CA', { dateStyle: 'medium', timeStyle: 'short' }) : '—');
+  n === null || n === undefined ? '—' : `${new Intl.NumberFormat('en-CA', { maximumFractionDigits: 3 }).format(n)}%`;
+export const fmtDate = (s?: string | null) => (s ? new Date(s).toLocaleString('en-CA', { dateStyle: 'medium', timeStyle: 'short' }) : '—');

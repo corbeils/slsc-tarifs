@@ -17,20 +17,18 @@ Le dépôt est public. Ton `docker login ghcr.io` (fait pour `slscload`) donne d
 
 ## 2. Nginx Proxy Manager (`npmplus`)
 
-```bash
-docker network connect slsc-tarifs_default npmplus
-```
+`npmplus` tourne en mode réseau **host** : il voit directement les ports du VPS. Inutile (et impossible) de le brancher sur un réseau Docker.
 
 Dans NPM, crée un hôte, par exemple `tarifs.stevecorbeil.net` :
 
 | Champ | Valeur |
 |---|---|
 | Scheme | `http` |
-| Forward Hostname / IP | `slsc-tarifs` |
-| Forward Port | `8080` |
+| Forward Hostname / IP | `127.0.0.1` |
+| Forward Port | `8085` |
 | SSL | certificat Let's Encrypt + Force SSL |
 
-Si `npmplus` est recréé un jour, relance la commande `docker network connect`.
+Si NPM tourne un jour dans un réseau Docker classique (pas `host`) : `docker network connect slsc-tarifs_default <conteneur NPM>`, puis cible `slsc-tarifs:8080`.
 
 ## 3. Mises à jour
 
@@ -62,5 +60,5 @@ cd /opt/slsc-tarifs && tar czf ~/slsc-tarifs-$(date +%F).tgz data rules
 |---|---|
 | `no matching manifest` | le premier build n'est pas terminé : onglet *Actions* du dépôt |
 | `denied` au `pull` | refaire `docker login ghcr.io -u corbeils` avec un jeton `read:packages` |
-| 502 dans NPM | `docker network connect slsc-tarifs_default npmplus`, cible `slsc-tarifs:8080` |
+| 502 dans NPM | npmplus en mode host : cible `127.0.0.1:8085` (vérifier `curl -s http://127.0.0.1:8085/api/health`) |
 | Le conteneur redémarre | `docker compose logs --tail=50 slsc-tarifs` |

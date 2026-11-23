@@ -23,6 +23,14 @@ const ExemptCond = z
   .passthrough();
 export type ExemptCond = z.infer<typeof ExemptCond>;
 
+const Source = z.object({
+  url: z.string(),
+  from: z.string().optional(),
+  until: z.string().optional(),
+  /** "lastCell": the rate is the last cell of each table row (e.g. Finance Canada lists). */
+  rates: z.enum(['lastCell', 'percent']).optional(),
+});
+
 const Scope = z
   .object({
     all: z.boolean().optional(),
@@ -58,6 +66,7 @@ export const Measure = z
     preferentialBasis: z.enum(['value', 'nonUsContent', 'nonCaMxContent']).optional(),
     group: z.string().optional(),
     priority: z.number().default(0),
+    sources: z.array(Source).optional(),
   })
   .passthrough();
 export type Measure = z.infer<typeof Measure>;
@@ -121,7 +130,7 @@ export const Program = z
             /** Removal list (e.g. Annex II): goods listed are outside the program. */
             exclusion: z.boolean().optional(),
             /** Official documents the list is imported from automatically. */
-            sources: z.array(z.object({ url: z.string(), from: z.string().optional(), until: z.string().optional() })).optional(),
+            sources: z.array(Source).optional(),
             status: Status,
             note: z.string().optional(),
           })

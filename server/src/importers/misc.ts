@@ -69,7 +69,7 @@ export interface ExtractedCode {
  * and, with `headings`, 4-digit headings at the start of a line ("7206  Iron and nonalloy steel…").
  * Chapter 99 numbers are ignored. With `withRates`, the first percentage on the same line is kept.
  */
-export function extractCodes(text: string, withRates = false, opts: { headings?: boolean } = {}): ExtractedCode[] {
+export function extractCodes(text: string, withRates = false, opts: { headings?: boolean; lastCellRate?: boolean } = {}): ExtractedCode[] {
   const out = new Map<string, number | null>();
   const re = /(?<![\d.])(\d{4}\.\d{2}\.\d{2}\.\d{2}|\d{4}\.\d{2}\.\d{4}|\d{4}\.\d{2}\.\d{2}|\d{4}\.\d{2}|\d{10}|\d{8})(?![\d])/g;
   for (const rawLine of text.split(/\n/)) {
@@ -82,11 +82,20 @@ export function extractCodes(text: string, withRates = false, opts: { headings?:
     }
     if (!codes.length) continue;
     let rate: number | null = null;
-    if (withRates) {
+    if (opts.lastCellRate) {
+      const cells = line.split('\t').map((c) => c.trim()).filter(Boolean);
+      const m = cells.at(-1)?.match(/^(\d{1,3}(?:[.,]\d+)?)\s*%?$/);
+      if (m) rate = Number(m[1].replace(',', '.'));
+      else continue; // not a data row
+    } else if (withRates) {
       const r = line.match(/(\d{1,3}(?:[.,]\d+)?)\s*%/);
       if (r) rate = Number(r[1].replace(',', '.'));
     }
-    for (const c of codes) if (!c.startsWith('99') && !out.has(c)) out.set(c, rate);
+    for (const c of codes) {
+      if (c.startsWith('99')) continue;
+      const prev = out.get(c);
+      if (!out.has(c) || (rate !== null && (prev === null || prev === undefined || rate > prev))) out.set(c, rate);
+    }
   }
   return [...out.entries()].map(([code, rate]) => ({ code, rate }));
 }

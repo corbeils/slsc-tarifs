@@ -54,14 +54,13 @@ Côté Canada, les surtaxes sont définies par **décrets avec des annexes de nu
 
 | Mesure (id) | Source de la liste |
 |---|---|
-| `CA-US-SA` (acier/alu É.-U., 50 % / 25 %) | Annexe du DORS/2025-95, modifié par DORS/2026-187 |
+| `CA-US-SURTAX` (toutes les surtaxes É.-U. : acier/alu et liste du 8 sept. 2026, taux par code) | **Automatique** : liste consolidée des Finances (bouton *Import official lists now*, chaque lundi) |
 | `CA-US-AUTO` (véhicules É.-U.) | Décret de surtaxe (véhicules automobiles 2025) |
-| `CA-US-2025-1` (25 %, biens non ACEUM) | Décret de surtaxe (2025-1) |
-| `CA-US-2026-15`, `-25`, `-50` | DORS/2026-186 ; Avis des douanes 26-23 ; liste des Finances du 8 sept. 2026 |
 | `CA-CN-EV`, `CA-CN-SA` | Décret de surtaxe (Chine) 2024 |
 | `CA-STEEL-TRQ`, `CA-CN-MELT` | DORS/2025-148 (mod. DORS/2026-119), DORS/2025-154 |
 | `CA-STEEL-DERIV` | DORS/2025-267 ; Avis des douanes 25-33 |
 | `US-338-BAN` (alcool, produits laitiers) | Annexes des proclamations du 8 sept. 2026 |
+| Section 232 métaux (Annexes I-A, I-B, I-C, II, III) | **Automatique** : PDF des proclamations 11021 et 11032 |
 
 Tant qu'une liste n'est pas importée, la mesure s'applique par **préfixe indicatif**, et le résultat l'indique clairement (« préfixe indicatif (liste non importée) »). Dès qu'une liste existe, elle fait foi.
 

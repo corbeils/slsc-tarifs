@@ -4,7 +4,7 @@ import fs from 'node:fs';
 import { beforeAll, describe, expect, it } from 'vitest';
 import { computeDuty, parseCaPreferential, parseCh99Additional, parseRate, parseUsSpecial } from './rates.js';
 import { countriesFromHeading } from '../importers/us-hts.js';
-import { extractCodes, saveCodeList } from '../importers/misc.js';
+import { extractCodes, htmlToText, saveCodeList } from '../importers/misc.js';
 import { openDb, type DB } from '../db.js';
 import { loadRules, type Rules } from '../rules.js';
 import { calculate } from './index.js';
@@ -57,6 +57,20 @@ describe('chapitre 99', () => {
     expect(countriesFromHeading('Except as provided in headings 9903.05.85 to 9903.05.93, articles the product of Canada, as provided for in U.S. note 52').countries).toEqual(['CA']);
     const r = countriesFromHeading('Section 232 Steel: articles of steel, except products of the United Kingdom');
     expect(r.except).toEqual(['GB']);
+  });
+});
+
+describe('Finance Canada list (rate in last cell)', () => {
+  it('reads the rate per row, ignores numbers in descriptions', () => {
+    const html = '<table><tr><th>Tariff item</th><th>HS</th><th>Description</th><th>Tariff rate</th></tr>' +
+      '<tr><td>0402.10.10</td><td>Milk</td><td>fat content not exceeding 1.5%</td><td>50</td></tr>' +
+      '<tr><td>5705.00.00</td><td>Carpets</td><td>Other</td><td>25%</td></tr>' +
+      '<tr><td>8467.21.00</td><td>Tools</td><td>Drills</td><td>15</td></tr></table><p>Updated 2026</p>';
+    expect(extractCodes(htmlToText(html), false, { lastCellRate: true })).toEqual([
+      { code: '04021010', rate: 50 },
+      { code: '57050000', rate: 25 },
+      { code: '84672100', rate: 15 },
+    ]);
   });
 });
 
@@ -145,12 +159,11 @@ describe('scénarios (données de démonstration)', () => {
     expect(r.lines.find((l) => l.key === 'CA-CN-SA')?.notCumulated).toBe(true);
   });
   it('US→CA : liste importée — la liste officielle remplace les préfixes indicatifs', () => {
-    saveCodeList(db, 'CA-US-2026-25', [{ code: '84181000', rate: null }], { replace: true });
+    saveCodeList(db, 'CA-US-SURTAX', [{ code: '84181000', rate: 25 }, { code: '72101100', rate: 50 }], { replace: true });
     const r = calculate(db, rules, { direction: 'US-CA', code: '84181000', origin: 'US', value: 1000, currency: 'CAD', preferential: true });
-    expect(r.lines.find((l) => l.key === 'CA-US-2026-25')?.amount).toBe(250);
-    saveCodeList(db, 'CA-US-SA', [{ code: '72101100', rate: null }], { replace: true });
+    expect(r.lines.find((l) => l.key === 'CA-US-SURTAX')?.amount).toBe(250);
     const r2 = calculate(db, rules, { direction: 'US-CA', code: '72085100', origin: 'US', value: 1000, currency: 'CAD', preferential: true });
-    expect(r2.lines.find((l) => l.key === 'CA-US-SA')).toBeUndefined();
+    expect(r2.lines.find((l) => l.key === 'CA-US-SURTAX')).toBeUndefined();
   });
   it('conversion de devise USD → CAD', () => {
     const r = calculate(db, rules, { direction: 'US-CA', code: '39231090', origin: 'DE', value: 1000, currency: 'USD', fxUsdCad: 1.4 });

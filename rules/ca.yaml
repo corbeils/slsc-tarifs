@@ -57,21 +57,23 @@ ftaPartners: [EU, GB, CH, NO, IS, LI, CL, CO, CR, HN, IL, JO, KR, PA, PE, UA, AU
 
 measures:
   # --------------------------- Countermeasures against the U.S. ---------------------------
-  - id: CA-US-SA
-    name: "U.S. surtax — steel and aluminum"
+  - id: CA-US-SURTAX
+    name: "U.S. surtax — Canadian countermeasures (steel, aluminum and Sept. 8, 2026 list)"
     program: "Canadian countermeasures"
-    legal: "SOR/2025-95, as amended by SOR/2026-187 (50% from Sept. 8, 2026)"
-    url: "https://www.cbsa-asfc.gc.ca/publications/cn-ad/menu-eng.html"
+    legal: "United States Surtax Order (Steel and Aluminum 2025), SOR/2025-95 as amended by SOR/2026-187; United States Surtax Order (2026), SOR/2026-186; Customs Notices 25-11 and 26-23"
+    url: "https://www.canada.ca/en/department-finance/programs/international-trade-finance-policy/canadas-response-us-tariffs/complete-list-us-products-subject-to-counter-tariffs.html"
     rate: 50
     origins: [US]
-    from: "2025-03-13"
     scope:
       codeList: true
       prefixes: ["7206", "7207", "7208", "7209", "7210", "7211", "7212", "7213", "7214", "7215", "7216", "7217", "7218", "7219", "7220", "7221", "7222", "7223", "7224", "7225", "7226", "7227", "7228", "7229", "7301", "7302", "7303", "7304", "7305", "7306", "7601", "7604", "7605", "7606", "7607", "7608", "7609"]
-    group: ca-steel
+    sources:
+      - url: "https://www.canada.ca/en/department-finance/programs/international-trade-finance-policy/canadas-response-us-tariffs/complete-list-us-products-subject-to-counter-tariffs.html"
+        rates: lastCell
+    group: ca-us
     priority: 10
     status: verified
-    note: "50% for most goods; some remain at 25% — import the lists by rate. No CUSMA exemption."
+    note: "Rate per tariff item (15%, 25% or 50%) read from the Department of Finance consolidated list, imported automatically. No CUSMA exemption. Until the list is imported, steel/aluminum prefixes are used at 50%."
     exemptIf:
       - { option: usSurtaxRemission, label: "Horizontal remission — United States Surtax Remission Order (2025) (manufacturing, processing, food packaging, health, public safety) — until June 30, 2027" }
 
@@ -87,63 +89,12 @@ measures:
       prefixes: ["8703.21", "8703.22", "8703.23", "8703.24", "8703.31", "8703.32", "8703.33", "8703.40", "8703.50", "8703.60", "8703.70", "8703.80", "8703.90", "8704.21", "8704.31", "8704.41", "8704.51"]
       exclude: ["8704.60.00"]
     preferentialBasis: nonCaMxContent
+    group: ca-us
     status: verified
     note: "CUSMA vehicles: surtax on non-Canadian, non-Mexican content. Excluded: 8704.60.00 and vehicles over 25 years old."
     exemptIf:
       - { option: autoRemission, label: "Automotive remission framework (eligible automakers, quota) — until Apr. 8, 2027" }
       - { option: vehicleOver25, label: "Vehicle manufactured more than 25 years ago" }
-
-  - id: CA-US-2025-1
-    name: "U.S. surtax 2025-1 (25%) — non-CUSMA-originating goods"
-    program: "Canadian countermeasures"
-    legal: "United States Surtax Order (2025-1); lifted for CUSMA goods since Sept. 1, 2025"
-    rate: 25
-    origins: [US]
-    scope: { codeList: true }
-    status: verified
-    note: "No longer applies to CUSMA-originating goods; import the order's list."
-    exemptIf:
-      - { preferential: true, label: "CUSMA-originating good (UST treatment claimed)" }
-      - { option: usSurtaxRemission, label: "Remise horizontale 2025 (jusqu'au 30 juin 2027)" }
-
-  - id: CA-US-2026-15
-    name: "U.S. surtax 2026 — 15%"
-    program: "Canadian countermeasures"
-    legal: "United States Surtax Order (2026), SOR/2026-186; Customs Notice 26-23"
-    rate: 15
-    origins: [US]
-    from: "2026-09-08"
-    scope: { codeList: true }
-    status: verified
-    note: "No CUSMA exemption. Import the \"15%\" list."
-    exemptIf:
-      - { option: usSurtaxRemission, label: "Remise horizontale 2025 (jusqu'au 30 juin 2027)" }
-
-  - id: CA-US-2026-25
-    name: "U.S. surtax 2026 — 25%"
-    program: "Canadian countermeasures"
-    legal: "DORS/2026-186 ; Avis des douanes 26-23"
-    rate: 25
-    origins: [US]
-    from: "2026-09-08"
-    scope: { codeList: true }
-    status: verified
-    note: "E.g. appliances, dairy, fish, lumber/plywood, steel/aluminum household articles. Import the \"25%\" list."
-    exemptIf:
-      - { option: usSurtaxRemission, label: "Remise horizontale 2025 (jusqu'au 30 juin 2027)" }
-
-  - id: CA-US-2026-50
-    name: "U.S. surtax 2026 — 50%"
-    program: "Canadian countermeasures"
-    legal: "DORS/2026-186 ; Avis des douanes 26-23"
-    rate: 50
-    origins: [US]
-    from: "2026-09-08"
-    scope: { codeList: true }
-    status: verified
-    note: "E.g. certain steel/aluminum, furniture, clothing, sports equipment. Import the \"50%\" list."
-    exemptIf:
-      - { option: usSurtaxRemission, label: "Remise horizontale 2025 (jusqu'au 30 juin 2027)" }
 
   # --------------------------- Measures against China ---------------------------
   - id: CA-CN-EV
@@ -203,7 +154,7 @@ measures:
     status: verified
     note: "U.S.-origin goods already subject to the U.S. surtax: only the U.S. surtax applies."
     exemptIf:
-      - { families: [CA-US-SA], label: "U.S. good already subject to the U.S. steel/aluminum surtax" }
+      - { families: [CA-US-SURTAX], label: "U.S. good already subject to the U.S. surtax (only the U.S. surtax applies)" }
       - { option: derivRelief, label: "Relief — manufacturing of motor vehicles, aerospace goods and parts (until June 30, 2027)" }
 
   - id: CA-CN-MELT

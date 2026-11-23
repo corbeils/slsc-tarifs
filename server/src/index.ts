@@ -5,7 +5,7 @@ import { loadRules } from './rules.js';
 import { buildApp, startJob } from './app.js';
 import { ensureSeed } from './seed.js';
 import { importUsOnline } from './importers/us-hts.js';
-import { importCaUrl } from './importers/ca-tariff.js';
+import { syncCbsa } from './importers/cbsa-sync.js';
 import { importFx } from './importers/misc.js';
 
 const db = openDb();
@@ -32,6 +32,6 @@ function schedule(expr: string, name: string, fn: () => Promise<unknown>) {
 
 schedule(config.cronUs, 'import-us', () => importUsOnline(db));
 schedule(config.cronFx, 'import-fx', () => importFx(db));
-if (config.caTariffUrl) schedule(config.cronCa || '0 4 * * 1', 'import-ca', () => importCaUrl(db, config.caTariffUrl));
+schedule(config.cronCa, 'sync-cbsa', () => syncCbsa(db));
 
 await app.listen({ port: config.port, host: config.host });

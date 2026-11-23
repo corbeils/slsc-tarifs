@@ -45,7 +45,7 @@ Si tu oublies le mot de passe : `docker compose exec slsc-tarifs node -e "const 
 
 1. *Tarif américain → Importer en ligne*
 2. *Taux de change → Banque du Canada*
-3. *Tarif canadien* : téléverser le fichier Excel de l'ASFC
+3. *Tarif canadien* : automatique. L'ASFC n'a pas d'API ; l'app vérifie chaque jour (6 h 45) les pages du Tarif des douanes, télécharge le fichier Excel/CSV seulement s'il a changé et l'importe. Bouton *Sync with CBSA now* pour forcer. Tant que l'ASFC ne publie que des PDF (avant la modification de déc. 2026), le statut l'indique et l'app réessaie chaque jour
 4. *Listes de codes* : coller les annexes des décrets de surtaxe (voir README)
 
 ## 5. Sauvegardes

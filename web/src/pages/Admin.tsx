@@ -145,7 +145,21 @@ function AdminPanel({ me, onLogout, onPasswordChanged }: { me: Me; onLogout: () 
         </div>
         <div className="card">
           <h3>Canadian tariff (CBSA)</h3>
-          <p className="small muted">Customs Tariff Excel/CSV file (CARM format from Dec. 1, 2026). Columns are detected from their headers.</p>
+          <p className="small muted">
+            CBSA has no API: the app scans the CBSA Customs Tariff pages every day, downloads the Excel/CSV file only when it changed, and imports it
+            (CARM-generated files expected from the Dec. 2026 amendment).
+          </p>
+          <div className="row" style={{ marginTop: 0 }}>
+            <button className="btn" onClick={async () => { const r = await wrap('CBSA sync', () => api.admin.syncCbsa()); if (r?.job) poll('CBSA sync', r.job); }}>Sync with CBSA now</button>
+            <button className="btn ghost" onClick={async () => { const r = await wrap('CBSA sync (forced)', () => api.admin.syncCbsa(true)); if (r?.job) poll('CBSA sync', r.job); }}>Force re-import</button>
+          </div>
+          {meta?.cbsa && (
+            <div className={`alert ${meta.cbsa.ok ? 'info' : 'danger'} small`} style={{ marginTop: 10 }}>
+              <b>Last check {fmtDate(meta.cbsa.at)}:</b> {meta.cbsa.message}
+              {meta.cbsa.fileUrl && <div className="mono" style={{ wordBreak: 'break-all' }}>{meta.cbsa.fileUrl}</div>}
+            </div>
+          )}
+          <div className="sep">or upload the file manually</div>
           <input type="file" accept=".xlsx,.csv,.txt" onChange={(e) => e.target.files?.[0] && wrap('Canadian tariff import', () => api.admin.upload('/api/admin/import/ca-file', e.target.files![0]))} />
           <UrlImport onRun={async (u) => { const r = await wrap('Canadian tariff import (URL)', () => api.admin.caUrl(u)); if (r?.job) poll('Canadian tariff import', r.job); }} />
         </div>

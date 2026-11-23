@@ -15,6 +15,7 @@ import { importUsFile, importUsOnline } from './importers/us-hts.js';
 import { importCaFile, importCaUrl } from './importers/ca-tariff.js';
 import { extractCodes, fetchText, importAdcvdCsv, importFx, importPgaCsv, saveCodeList, setFxManual } from './importers/misc.js';
 import { runBatch } from './batch.js';
+import { syncCbsa } from './importers/cbsa-sync.js';
 import { clearListCache } from './engine/common.js';
 import { changePassword, createUser, deleteUser, listUsers, login, logout, resetPassword, sessionUser } from './auth.js';
 
@@ -77,6 +78,7 @@ export async function buildApp(db: DB) {
       us: { ...(getMeta(db, 'import:US') ?? {}), lines: count('US') },
       ca: { ...(getMeta(db, 'import:CA') ?? {}), lines: count('CA') },
       pga: getMeta(db, 'import:PGA'),
+      cbsa: getMeta(db, 'cbsa:sync'),
       fx: currentFx(db),
       rulesLoadedAt: getRules().loadedAt,
       codeLists: lists,
@@ -253,6 +255,11 @@ export async function buildApp(db: DB) {
     a.post('/api/admin/import/ca-url', async (req) => {
       const { url } = req.body as { url: string };
       const job = startJob('import-ca', () => importCaUrl(db, url));
+      return { job: job.id };
+    });
+    a.post('/api/admin/sync/cbsa', async (req) => {
+      const force = !!(req.body as { force?: boolean } | undefined)?.force;
+      const job = startJob('sync-cbsa', (log) => syncCbsa(db, { force, log }));
       return { job: job.id };
     });
     a.post('/api/admin/import/fx', async () => importFx(db));

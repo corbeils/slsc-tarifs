@@ -344,8 +344,8 @@ function Empty({ j }: { j: 'US' | 'CA' }) {
     <div className="card empty">
       <h2>Estimez les droits, surtaxes, frais et taxes</h2>
       <p>
-        Choisissez la direction, puis cherchez un {j === 'US' ? 'code HTSUS' : 'numéro tarifaire'} par numéro ou par mots-clés. Le calcul
-        se met à jour à chaque changement.
+        Choisissez la direction, puis tapez un {j === 'US' ? 'code HTSUS' : 'numéro tarifaire'} complet ou des mots-clés et{' '}
+        <b>choisissez la ligne dans la liste</b>. Le calcul se met à jour à chaque changement.
       </p>
       <ul>
         <li>Droit de base (NPF, colonne 2 ou préférence ACEUM / ALE)</li>

@@ -28,7 +28,13 @@ export default function CodeSearch({
         .then((h) => {
           setHits(h);
           setActive(0);
-          setOpen(true);
+          // Code complet tapé au clavier (8 ou 10 chiffres) : sélection automatique
+          const d = q.replace(/\D/g, '');
+          const exact = /^[\d.\s]+$/.test(q.trim()) && d.length >= 8 ? h.find((x) => x.code === d) : undefined;
+          if (exact) {
+            onSelect(exact);
+            setOpen(false);
+          } else setOpen(true);
         })
         .catch(() => setHits([]));
     }, 200);
@@ -60,6 +66,11 @@ export default function CodeSearch({
         }}
         onFocus={() => hits.length && setOpen(true)}
         onKeyDown={(e) => {
+          if (e.key === 'Enter' && !open && hits.length && !value) {
+            pick(hits[0]);
+            e.preventDefault();
+            return;
+          }
           if (!open || !hits.length) return;
           if (e.key === 'ArrowDown') {
             setActive((a) => Math.min(a + 1, hits.length - 1));

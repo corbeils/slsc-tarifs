@@ -17,6 +17,8 @@ export const config = {
   /** Planification des imports (format cron). Vide = désactivé. */
   cronUs: process.env.CRON_US ?? '30 3 * * 1',
   cronFx: process.env.CRON_FX ?? '15 17 * * 1-5',
+  /** Weekly re-import of official annex lists (Section 232 proclamation PDFs). */
+  cronLists: process.env.CRON_LISTS ?? '15 4 * * 1',
   /** Daily CBSA check: the file is downloaded/imported only when it changed. */
   cronCa: process.env.CRON_CA ?? '45 6 * * *',
   /** URL du fichier tarif CBSA (XLSX/CSV) pour import automatique, optionnel. */

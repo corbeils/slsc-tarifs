@@ -60,6 +60,13 @@ describe('chapitre 99', () => {
   });
 });
 
+describe('code extraction (annex PDFs)', () => {
+  it('headings, 10-digit without last dot, ignores Chapter 99', () => {
+    const c = extractCodes('7206 Iron and nonalloy steel\n8207.20.0070 Dies\n9903.82.02 heading\nPage 12', false, { headings: true }).map((x) => x.code);
+    expect(c).toEqual(['7206', '8207200070']);
+  });
+});
+
 describe('extraction de codes', () => {
   it('formats mixtes avec taux', () => {
     const c = extractCodes('7208.10.00 Hot-rolled 50%\n8418.10.00 Refrigerators 25 %\n0406909900 cheese', true);

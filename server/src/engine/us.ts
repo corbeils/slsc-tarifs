@@ -21,6 +21,7 @@ import type { CalcInput, CalcLine, CalcResult, ExemptionInfo, Flag, OptionInfo }
 
 interface Heading {
   code: string;
+  priority?: number;
   listId?: string;
   via?: string;
   capCombinedPct?: number;
@@ -156,8 +157,15 @@ export function calcUS(db: DB, rules: Rules, line: LineRow, input: CalcInput, fx
       const mine = refs.filter((r) => !consumed.has(r) && programMatchesRef(db, p, r));
       mine.forEach((r) => consumed.add(r));
       const heads = mine.map((r) => resolveHeading(db, p, r));
+      // Removal lists (e.g. Annex II): official list only
+      const removed = (p.lists ?? []).find((l) => l.exclusion && codeListMatch(db, l.id, line.code).matched && !codeListMatch(db, l.id, line.code).partial);
+      if (removed) {
+        flags.info.push({ level: 'success', title: `${p.name}: not applicable`, detail: `Listed in ${removed.label}.` });
+        continue;
+      }
       // Annex / list coverage (official list imported in Admin, else indicative prefixes)
       for (const l of p.lists ?? []) {
+        if (l.exclusion) continue;
         if (l.exclude && anyPrefix(line.code, l.exclude)) continue;
         const cl = codeListMatch(db, l.id, line.code);
         const hasList = countList(db, l.id) > 0;
@@ -177,6 +185,7 @@ export function calcUS(db: DB, rules: Rules, line: LineRow, input: CalcInput, fx
           origins: l.origins ?? p.defaultOrigins ?? null,
           excludeOrigins: null,
           capCombinedPct: l.capCombinedPct,
+          priority: l.priority ?? 0,
         });
       }
       if (!heads.length) continue;
@@ -200,7 +209,7 @@ export function calcUS(db: DB, rules: Rules, line: LineRow, input: CalcInput, fx
         continue;
       }
       const choice = input.ch99Choice?.[p.id];
-      const sorted = [...duty].sort((a, b) => (b.addPct ?? 0) - (a.addPct ?? 0));
+      const sorted = [...duty].sort((a, b) => (b.priority ?? 0) - (a.priority ?? 0) || (b.addPct ?? 0) - (a.addPct ?? 0));
       const chosen = sorted.find((h) => h.code === choice) ?? sorted[0];
       const alternatives = sorted
         .filter((h) => h !== chosen)

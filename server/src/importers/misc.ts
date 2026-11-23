@@ -3,10 +3,12 @@ import { digits, setMeta } from '../db.js';
 import { config } from '../config.js';
 import { clearListCache } from '../engine/common.js';
 import ExcelJS from 'exceljs';
+import { getDocumentProxy } from 'unpdf';
 import { parseCsv } from './ca-tariff.js';
 
 /** Converts an uploaded CSV / TSV / TXT / XLSX file into delimited text (one row per line). */
 export async function fileToText(buf: Buffer, filename: string): Promise<string> {
+  if (/\.pdf$/i.test(filename)) return pdfToText(buf);
   if (/\.xlsx$/i.test(filename)) {
     const wb = new ExcelJS.Workbook();
     await wb.xlsx.load(buf as unknown as ArrayBuffer);
@@ -62,26 +64,83 @@ export interface ExtractedCode {
 }
 
 /**
- * Extrait tous les numéros tarifaires d'un texte collé (ou d'une page HTML).
- * Formats reconnus : 7208.10.00 | 7208.10.00.10 | 7208.10 | 72081000 | 7208100010.
- * Si `withRates`, le premier pourcentage trouvé sur la même ligne est associé au code.
+ * Extracts every tariff number from pasted text, a web page or a PDF.
+ * Formats: 7208.10.00 | 7208.10.00.10 | 8207.20.0070 | 7208.10 | 72081000 | 7208100010
+ * and, with `headings`, 4-digit headings at the start of a line ("7206  Iron and nonalloy steel…").
+ * Chapter 99 numbers are ignored. With `withRates`, the first percentage on the same line is kept.
  */
-export function extractCodes(text: string, withRates = false): ExtractedCode[] {
+export function extractCodes(text: string, withRates = false, opts: { headings?: boolean } = {}): ExtractedCode[] {
   const out = new Map<string, number | null>();
+  const re = /(?<![\d.])(\d{4}\.\d{2}\.\d{2}\.\d{2}|\d{4}\.\d{2}\.\d{4}|\d{4}\.\d{2}\.\d{2}|\d{4}\.\d{2}|\d{10}|\d{8})(?![\d])/g;
   for (const rawLine of text.split(/\n/)) {
     const line = rawLine.replace(/‑/g, '-');
     const codes: string[] = [];
-    for (const m of line.matchAll(/\b(\d{4}\.\d{2}(?:\.\d{2}){0,2})\b/g)) codes.push(digits(m[1]));
-    for (const m of line.matchAll(/(?<![\d.])(\d{8}|\d{10})(?![\d.])/g)) codes.push(m[1]);
+    for (const m of line.matchAll(re)) codes.push(digits(m[1]));
+    if (opts.headings) {
+      const h = line.match(/^\s*(\d{4})(?=\s|$)(?!\s*[-–]\s*\d)/);
+      if (h && Number(h[1]) >= 101 && Number(h[1]) <= 9799) codes.push(h[1]);
+    }
     if (!codes.length) continue;
     let rate: number | null = null;
     if (withRates) {
       const r = line.match(/(\d{1,3}(?:[.,]\d+)?)\s*%/);
       if (r) rate = Number(r[1].replace(',', '.'));
     }
-    for (const c of codes) if (!out.has(c)) out.set(c, rate);
+    for (const c of codes) if (!c.startsWith('99') && !out.has(c)) out.set(c, rate);
   }
   return [...out.entries()].map(([code, rate]) => ({ code, rate }));
+}
+
+/** Keeps only codes that exist in the imported tariff (filters page numbers, years, etc.). */
+export function validateCodes(db: DB, j: 'US' | 'CA', codes: ExtractedCode[]): ExtractedCode[] {
+  const n = (db.prepare('SELECT COUNT(*) n FROM lines WHERE j = ?').get(j) as { n: number }).n;
+  if (n < 1000) return codes; // demo data only: cannot validate
+  const q = db.prepare('SELECT 1 FROM lines WHERE j = ? AND code LIKE ? LIMIT 1');
+  return codes.filter((c) => q.get(j, c.code + '%') || q.get(j, c.code.slice(0, 8) + '%'));
+}
+
+/** Text between two markers (case-insensitive, whitespace-tolerant). */
+export function section(text: string, from?: string, until?: string): string {
+  const rx = (m: string) => new RegExp(m.trim().split(/\s+/).map((w) => w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('\\s+'), 'i');
+  let t = text;
+  if (from) {
+    const m = t.match(rx(from));
+    if (!m || m.index === undefined) throw new Error(`Marker not found: ${from}`);
+    t = t.slice(m.index + m[0].length);
+  }
+  if (until) {
+    const m = t.match(rx(until));
+    if (m && m.index !== undefined) t = t.slice(0, m.index);
+  }
+  return t;
+}
+
+/** PDF → text, one line per visual line. */
+export async function pdfToText(buf: Buffer): Promise<string> {
+  const pdf = await getDocumentProxy(new Uint8Array(buf));
+  const lines: string[] = [];
+  for (let i = 1; i <= pdf.numPages; i++) {
+    const page = await pdf.getPage(i);
+    const content = await page.getTextContent();
+    let cur = '';
+    let lastY: number | null = null;
+    for (const it of content.items as { str: string; transform: number[]; hasEOL?: boolean }[]) {
+      const y = it.transform?.[5] ?? 0;
+      if (lastY !== null && Math.abs(y - lastY) > 2 && cur.trim()) {
+        lines.push(cur);
+        cur = '';
+      }
+      cur += (cur && !cur.endsWith(' ') ? ' ' : '') + it.str;
+      lastY = y;
+      if (it.hasEOL) {
+        lines.push(cur);
+        cur = '';
+        lastY = null;
+      }
+    }
+    if (cur.trim()) lines.push(cur);
+  }
+  return lines.join('\n');
 }
 
 export function saveCodeList(
@@ -105,8 +164,9 @@ export function saveCodeList(
 }
 
 export async function fetchText(url: string): Promise<string> {
-  const res = await fetch(url, { headers: { 'User-Agent': 'slsc-tarifs/1.0' } });
+  const res = await fetch(url, { headers: { 'User-Agent': 'Mozilla/5.0 (slsc-tariff-simulator)' } });
   if (!res.ok) throw new Error(`HTTP ${res.status} for ${url}`);
+  if (/pdf/i.test(res.headers.get('content-type') ?? '') || /\.pdf(\?|$)/i.test(url)) return pdfToText(Buffer.from(await res.arrayBuffer()));
   const t = await res.text();
   return /<html|<table|<body/i.test(t) ? htmlToText(t) : t;
 }

@@ -13,9 +13,10 @@ import { calculate, currentFx } from './engine/index.js';
 import type { CalcInput } from './engine/types.js';
 import { importUsFile, importUsOnline } from './importers/us-hts.js';
 import { importCaFile, importCaUrl } from './importers/ca-tariff.js';
-import { extractCodes, fetchText, fileToText, importAdcvdCsv, importFx, importPgaCsv, saveCodeList, setFxManual } from './importers/misc.js';
+import { extractCodes, fetchText, fileToText, section, validateCodes, importAdcvdCsv, importFx, importPgaCsv, saveCodeList, setFxManual } from './importers/misc.js';
 import { runBatch } from './batch.js';
 import { syncCbsa } from './importers/cbsa-sync.js';
+import { syncOfficialLists } from './importers/official-lists.js';
 import { clearListCache } from './engine/common.js';
 import { changePassword, createUser, deleteUser, listUsers, login, logout, resetPassword, sessionUser } from './auth.js';
 
@@ -79,6 +80,7 @@ export async function buildApp(db: DB) {
       ca: { ...(getMeta(db, 'import:CA') ?? {}), lines: count('CA') },
       pga: getMeta(db, 'import:PGA'),
       cbsa: getMeta(db, 'cbsa:sync'),
+      officialLists: getMeta(db, 'lists:sync'),
       fx: currentFx(db),
       rulesLoadedAt: getRules().loadedAt,
       codeLists: lists,
@@ -257,6 +259,10 @@ export async function buildApp(db: DB) {
       const job = startJob('import-ca', () => importCaUrl(db, url));
       return { job: job.id };
     });
+    a.post('/api/admin/sync/official-lists', async () => {
+      const job = startJob('sync-lists', (log) => syncOfficialLists(db, getRules(), log));
+      return { job: job.id };
+    });
     a.post('/api/admin/sync/cbsa', async (req) => {
       const force = !!(req.body as { force?: boolean } | undefined)?.force;
       const job = startJob('sync-cbsa', (log) => syncCbsa(db, { force, log }));
@@ -287,16 +293,13 @@ export async function buildApp(db: DB) {
       if (!b.measureId) return reply.code(400).send({ error: 'measureId required' });
       let text = b.url ? await fetchText(b.url) : b.text ?? '';
       // Keep only the section between two markers (e.g. "Annex I-B" … "Annex I-C")
-      if (b.from) {
-        const i = text.toLowerCase().indexOf(b.from.toLowerCase());
-        if (i < 0) return reply.code(400).send({ error: `Marker not found: ${b.from}` });
-        text = text.slice(i + b.from.length);
+      try {
+        text = section(text, b.from, b.until);
+      } catch (e) {
+        return reply.code(400).send({ error: (e as Error).message });
       }
-      if (b.until) {
-        const i = text.toLowerCase().indexOf(b.until.toLowerCase());
-        if (i >= 0) text = text.slice(0, i);
-      }
-      const codes = extractCodes(text, !!b.withRates);
+      const j = b.measureId.startsWith('CA-') ? 'CA' : 'US';
+      const codes = validateCodes(db, j, extractCodes(text, !!b.withRates, { headings: true }));
       if (!codes.length) return reply.code(400).send({ error: 'No tariff numbers detected' });
       return { ...saveCodeList(db, b.measureId, codes, { replace: b.replace, source: b.url ?? 'pasted', rate: b.rate ?? null }), sample: codes.slice(0, 10) };
     });

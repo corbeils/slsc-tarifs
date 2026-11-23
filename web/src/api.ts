@@ -125,6 +125,7 @@ export const api = {
       return req<any>(path, { method: 'POST', body: fd }, true);
     },
     caUrl: (url: string) => req<{ job: string }>('/api/admin/import/ca-url', { method: 'POST', body: JSON.stringify({ url }) }, true),
+    syncLists: () => req<{ job: string }>('/api/admin/sync/official-lists', { method: 'POST' }, true),
     syncCbsa: (force = false) => req<{ job: string }>('/api/admin/sync/cbsa', { method: 'POST', body: JSON.stringify({ force }) }, true),
     fxOnline: () => req<any>('/api/admin/import/fx', { method: 'POST' }, true),
     fxManual: (rate: number) => req<any>('/api/admin/fx', { method: 'POST', body: JSON.stringify({ rate }) }, true),

@@ -139,26 +139,52 @@ programs:
       - id: US-232-ANNEX-IA
         label: "Annex I-A — steel, aluminum and copper articles (50%)"
         rate: 50
+        priority: 1
         prefixes: ["7206", "7207", "7208", "7209", "7210", "7211", "7212", "7213", "7214", "7215", "7216", "7217", "7218", "7219", "7220", "7221", "7222", "7223", "7224", "7225", "7226", "7227", "7228", "7229", "7301", "7302", "7304", "7305", "7306", "7601", "7604", "7605", "7606", "7607", "7608", "7609", "7407", "7408", "7409", "7410", "7411", "7412", "7413"]
-        status: to verify
-        note: "Indicative prefixes (steel mill, primary aluminum and semi-finished copper); import the official Annex I-A list."
+        sources:
+          - url: "https://www.whitehouse.gov/wp-content/uploads/2026/04/ANNEXES-I-A-I-B-II-III-IV.pdf"
+            from: "Annex I-A: 50%"
+            until: "Annex I-B: 25%"
+        status: verified
+        note: "Proclamation 11021 (Apr. 2, 2026), Annex I-A — imported automatically from the White House PDF."
       - id: US-232-ANNEX-IB
-        label: "Annex I-B — steel and aluminum derivatives (25%)"
+        label: "Annex I-B — steel, aluminum and copper derivatives (25%)"
         rate: 25
+        priority: 1
         prefixes: ["7307", "7308", "7309", "7310", "7311", "7312", "7313", "7314", "7315", "7316", "7317", "7318", "7320", "7322", "7323", "7324", "7325", "7326", "7610", "7611", "7612", "7613", "7614", "7615", "7616"]
-        status: to verify
-        note: "Indicative prefixes (articles of chapters 73 and 76); import the official Annex I-B list — it also covers many goods outside chapters 73/76."
+        sources:
+          - url: "https://www.whitehouse.gov/wp-content/uploads/2026/04/ANNEXES-I-A-I-B-II-III-IV.pdf"
+            from: "Annex I-B: 25%"
+            until: "Annex II: Removed"
+          - url: "https://www.whitehouse.gov/wp-content/uploads/2026/06/Annex-I-B.pdf"
+        status: verified
+        note: "Union of the April 2026 Annex I-B and the June 1, 2026 Annex I-B (Proclamation 11032). Goods moved to Annex I-C or III take their rate (higher priority)."
       - id: US-232-ANNEX-IC
-        label: "Annex I-C — mobile industrial equipment and machinery (tiered, through Dec. 31, 2027)"
+        label: "Annex I-C — mobile industrial equipment and machinery (through Dec. 31, 2027)"
         rate: 25
-        status: to verify
-        note: "No prefixes: import the official Annex I-C list."
+        priority: 3
+        sources:
+          - url: "https://www.whitehouse.gov/wp-content/uploads/2026/06/Annex-I-C.pdf"
+        status: verified
+        note: "25% in general; 15% for framework economies; USMCA goods: 25% on non-U.S. content with a 15% floor (tick the USMCA 232 option); 10% for U.S. metal."
       - id: US-232-ANNEX-III
-        label: "Annex III — fixed industrial machinery, power, agricultural equipment, residential HVAC"
+        label: "Annex III — fixed industrial machinery, power, agricultural equipment, residential HVAC (15% combined)"
         rate: 25
         capCombinedPct: 15
-        status: to verify
-        note: "No prefixes: import the official Annex III list (combined 15% applied automatically)."
+        priority: 3
+        sources:
+          - url: "https://www.whitehouse.gov/wp-content/uploads/2026/06/Annex-III.pdf"
+        status: verified
+        note: "Complete list as revised June 1, 2026 (Proclamation 11032), through Dec. 31, 2027."
+      - id: US-232-ANNEX-II
+        label: "Annex II — removed from the scope of the steel and aluminum derivatives"
+        rate: 0
+        exclusion: true
+        sources:
+          - url: "https://www.whitehouse.gov/wp-content/uploads/2026/04/ANNEXES-I-A-I-B-II-III-IV.pdf"
+            from: "Annex II: Removed"
+            until: "Annex III: Temporary"
+        status: verified
 
   - id: US-232-WOOD
     name: "Section 232 — lumber, timber, upholstered furniture, cabinets"

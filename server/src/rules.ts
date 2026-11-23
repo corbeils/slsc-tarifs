@@ -116,6 +116,12 @@ export const Program = z
             exclude: z.array(z.string()).optional(),
             origins: z.array(z.string()).optional(),
             capCombinedPct: z.number().optional(),
+            /** Higher priority wins over a higher rate (e.g. Annex III / I-C over I-B). */
+            priority: z.number().default(0),
+            /** Removal list (e.g. Annex II): goods listed are outside the program. */
+            exclusion: z.boolean().optional(),
+            /** Official documents the list is imported from automatically. */
+            sources: z.array(z.object({ url: z.string(), from: z.string().optional(), until: z.string().optional() })).optional(),
             status: Status,
             note: z.string().optional(),
           })

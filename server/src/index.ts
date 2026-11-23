@@ -6,6 +6,8 @@ import { buildApp, startJob } from './app.js';
 import { ensureSeed } from './seed.js';
 import { importUsOnline } from './importers/us-hts.js';
 import { syncCbsa } from './importers/cbsa-sync.js';
+import { syncOfficialLists } from './importers/official-lists.js';
+import { getRules } from './rules.js';
 import { importFx } from './importers/misc.js';
 
 const db = openDb();
@@ -33,5 +35,6 @@ function schedule(expr: string, name: string, fn: () => Promise<unknown>) {
 schedule(config.cronUs, 'import-us', () => importUsOnline(db));
 schedule(config.cronFx, 'import-fx', () => importFx(db));
 schedule(config.cronCa, 'sync-cbsa', () => syncCbsa(db));
+schedule(config.cronLists, 'sync-lists', () => syncOfficialLists(db, getRules()));
 
 await app.listen({ port: config.port, host: config.host });

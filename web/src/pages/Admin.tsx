@@ -192,6 +192,26 @@ function AdminPanel({ me, onLogout, onPasswordChanged }: { me: Me; onLogout: () 
         </div>
       </div>
 
+      <div className="card">
+        <h3>Official annex lists — Section 232 (White House / Federal Register)</h3>
+        <p className="small muted">
+          Downloads the proclamation annex PDFs (Proclamation 11021 of Apr. 2, 2026: Annexes I-A, I-B, II; Proclamation 11032 of June 1, 2026:
+          Annexes I-B, I-C, III), extracts the HTS numbers of each annex and replaces the lists. Runs automatically every Monday (CRON_LISTS).
+          Sources are defined in <span className="mono">rules/us.yaml</span> (<span className="mono">sources:</span>) — add the next proclamation there.
+        </p>
+        <button className="btn" onClick={async () => { const r = await wrap('Official annex lists', api.admin.syncLists); if (r?.job) poll('Official annex lists', r.job); }}>Import official annexes now</button>
+        {meta?.officialLists && (
+          <table className="simple" style={{ marginTop: 12 }}>
+            <tbody>
+              <tr><td colSpan={2} className="muted small">Last run {fmtDate(meta.officialLists.at)}</td></tr>
+              {meta.officialLists.results.map((r: any) => (
+                <tr key={r.id}><td>{r.label}</td><td>{r.error ? <span className="badge warn">{r.error}</span> : <span className="badge ok">{r.codes} codes</span>}</td></tr>
+              ))}
+            </tbody>
+          </table>
+        )}
+      </div>
+
       <CodeLists measures={listMeasures} lists={meta?.codeLists ?? []} wrap={wrap} />
       <RulesEditor wrap={wrap} />
 

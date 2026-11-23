@@ -128,7 +128,13 @@ export const api = {
     syncCbsa: (force = false) => req<{ job: string }>('/api/admin/sync/cbsa', { method: 'POST', body: JSON.stringify({ force }) }, true),
     fxOnline: () => req<any>('/api/admin/import/fx', { method: 'POST' }, true),
     fxManual: (rate: number) => req<any>('/api/admin/fx', { method: 'POST', body: JSON.stringify({ rate }) }, true),
-    codes: (body: unknown) => req<any>('/api/admin/codes', { method: 'POST', body: JSON.stringify(body) }, true),
+    codes: (body: Record<string, unknown>, file?: File | null) => {
+      if (!file) return req<any>('/api/admin/codes', { method: 'POST', body: JSON.stringify(body) }, true);
+      const fd = new FormData();
+      for (const [k, v] of Object.entries(body)) if (v !== undefined && v !== null) fd.append(k, String(v));
+      fd.append('file', file);
+      return req<any>('/api/admin/codes', { method: 'POST', body: fd }, true);
+    },
     listCodes: (id: string) => req<any[]>(`/api/admin/codes/${id}`, {}, true),
     deleteCodes: (id: string) => req<any>(`/api/admin/codes/${id}`, { method: 'DELETE' }, true),
     rules: (key: string) => req<{ text: string; file: string }>(`/api/admin/rules/${key}`, {}, true),

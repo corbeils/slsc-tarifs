@@ -2,7 +2,41 @@ import type { DB } from '../db.js';
 import { digits, setMeta } from '../db.js';
 import { config } from '../config.js';
 import { clearListCache } from '../engine/common.js';
+import ExcelJS from 'exceljs';
 import { parseCsv } from './ca-tariff.js';
+
+/** Converts an uploaded CSV / TSV / TXT / XLSX file into delimited text (one row per line). */
+export async function fileToText(buf: Buffer, filename: string): Promise<string> {
+  if (/\.xlsx$/i.test(filename)) {
+    const wb = new ExcelJS.Workbook();
+    await wb.xlsx.load(buf as unknown as ArrayBuffer);
+    const lines: string[] = [];
+    for (const ws of wb.worksheets)
+      ws.eachRow({ includeEmpty: false }, (r) =>
+        lines.push(
+          (r.values as unknown[])
+            .slice(1)
+            .map((v) => {
+              if (v && typeof v === 'object') {
+                const o = v as { text?: string; result?: unknown; richText?: { text: string }[] };
+                return o.richText ? o.richText.map((x) => x.text).join('') : String(o.text ?? o.result ?? '');
+              }
+              return v === null || v === undefined ? '' : String(v);
+            })
+            .map((c) => (/[",\n]/.test(c) ? `"${c.replace(/"/g, '""')}"` : c))
+            .join(','),
+        ),
+      );
+    return lines.join('\n');
+  }
+  return buf.toString('utf8').replace(/^\uFEFF/, '');
+}
+
+function detectDelim(text: string): string {
+  const first = text.split(/\r?\n/)[0] ?? '';
+  const counts = { ',': first.split(',').length, ';': first.split(';').length, '\t': first.split('\t').length };
+  return (Object.entries(counts).sort((a, b) => b[1] - a[1])[0][0]) as string;
+}
 
 // ---------------------------------------------------------------------------
 // Listes de codes (annexes de décrets, proclamations, avis des douanes…)
@@ -102,11 +136,12 @@ export function setFxManual(db: DB, rate: number) {
 // Indicateurs PGA (CBP ACE) — CSV/XLSX « HTS ; Flag »
 // ---------------------------------------------------------------------------
 export function importPgaCsv(db: DB, text: string) {
-  const rows = parseCsv(text.replace(/^﻿/, ''), text.includes(';') && !text.includes(',') ? ';' : ',');
-  const hdr = rows[0].map((h) => h.toLowerCase());
-  const ci = hdr.findIndex((h) => /hts|tariff/.test(h));
-  const fi = hdr.findIndex((h) => /flag|indicator|indicateur/.test(h));
-  if (ci < 0 || fi < 0) throw new Error('Expected columns: HTS and Flag');
+  const clean = text.replace(/^\uFEFF/, '');
+  const rows = parseCsv(clean, detectDelim(clean));
+  const hdr = rows[0].map((h) => h.trim().toLowerCase());
+  const ci = hdr.findIndex((h) => /hts|tariff|code/.test(h));
+  const fi = hdr.findIndex((h) => /flag|indicator|indicateur|pga/.test(h));
+  if (ci < 0 || fi < 0) throw new Error(`Expected two columns "HTS" and "Flag" — found: ${rows[0].join(' | ')}`);
   const tx = db.transaction(() => {
     db.prepare('DELETE FROM pga_flags').run();
     const ins = db.prepare('INSERT OR IGNORE INTO pga_flags (code, flag) VALUES (?, ?)');
@@ -126,7 +161,8 @@ export function importPgaCsv(db: DB, text: string) {
 // colonnes : j, case, product, country, prefixes (séparés par ;), ad, cvd, note, url
 // ---------------------------------------------------------------------------
 export function importAdcvdCsv(db: DB, text: string) {
-  const rows = parseCsv(text.replace(/^﻿/, ''));
+  const clean = text.replace(/^\uFEFF/, '');
+  const rows = parseCsv(clean, detectDelim(clean));
   const hdr = rows[0].map((h) => h.trim().toLowerCase());
   const col = (n: string) => hdr.indexOf(n);
   const need = ['j', 'case', 'country', 'prefixes'];

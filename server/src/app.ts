@@ -13,7 +13,7 @@ import { calculate, currentFx } from './engine/index.js';
 import type { CalcInput } from './engine/types.js';
 import { importUsFile, importUsOnline } from './importers/us-hts.js';
 import { importCaFile, importCaUrl } from './importers/ca-tariff.js';
-import { extractCodes, fetchText, importAdcvdCsv, importFx, importPgaCsv, saveCodeList, setFxManual } from './importers/misc.js';
+import { extractCodes, fetchText, fileToText, importAdcvdCsv, importFx, importPgaCsv, saveCodeList, setFxManual } from './importers/misc.js';
 import { runBatch } from './batch.js';
 import { syncCbsa } from './importers/cbsa-sync.js';
 import { clearListCache } from './engine/common.js';
@@ -274,7 +274,16 @@ export async function buildApp(db: DB) {
       db.prepare('SELECT code, rate, source, added_at FROM code_lists WHERE measure_id = ? ORDER BY code').all((req.params as { id: string }).id),
     );
     a.post('/api/admin/codes', async (req, reply) => {
-      const b = req.body as { measureId: string; text?: string; url?: string; replace?: boolean; withRates?: boolean; rate?: number | null; from?: string; until?: string };
+      let body: Record<string, unknown> = (req.body as Record<string, unknown>) ?? {};
+      if (req.isMultipart()) {
+        body = {};
+        for await (const part of req.parts()) {
+          if (part.type === 'file') body.text = await fileToText(await part.toBuffer(), part.filename);
+          else body[part.fieldname] = part.value;
+        }
+        for (const k of ['replace', 'withRates']) body[k] = body[k] === 'true';
+      }
+      const b = body as { measureId: string; text?: string; url?: string; replace?: boolean; withRates?: boolean; rate?: number | null; from?: string; until?: string };
       if (!b.measureId) return reply.code(400).send({ error: 'measureId required' });
       let text = b.url ? await fetchText(b.url) : b.text ?? '';
       // Keep only the section between two markers (e.g. "Annex I-B" … "Annex I-C")
@@ -300,12 +309,20 @@ export async function buildApp(db: DB) {
     a.post('/api/admin/import/pga', async (req, reply) => {
       const f = await req.file();
       if (!f) return reply.code(400).send({ error: 'Missing file' });
-      return importPgaCsv(db, (await f.toBuffer()).toString('utf8'));
+      try {
+        return importPgaCsv(db, await fileToText(await f.toBuffer(), f.filename));
+      } catch (e) {
+        return reply.code(400).send({ error: (e as Error).message });
+      }
     });
     a.post('/api/admin/import/adcvd', async (req, reply) => {
       const f = await req.file();
       if (!f) return reply.code(400).send({ error: 'Missing file' });
-      return importAdcvdCsv(db, (await f.toBuffer()).toString('utf8'));
+      try {
+        return importAdcvdCsv(db, await fileToText(await f.toBuffer(), f.filename));
+      } catch (e) {
+        return reply.code(400).send({ error: (e as Error).message });
+      }
     });
 
     a.get('/api/admin/rules/:key', async (req, reply) => {

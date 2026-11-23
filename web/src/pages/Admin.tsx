@@ -72,7 +72,12 @@ function AdminPanel({ me, onLogout, onPasswordChanged }: { me: Me; onLogout: () 
   const [meta, setMeta] = useState<any>(null);
   const [measures, setMeasures] = useState<any>(null);
   const [log, setLog] = useState<string[]>([]);
+  const [toast, setToast] = useState<{ ok: boolean; text: string } | null>(null);
   const push = (m: string) => setLog((l) => [`${new Date().toLocaleTimeString('en-CA')} — ${m}`, ...l].slice(0, 50));
+  const notify = (ok: boolean, text: string) => {
+    setToast({ ok, text });
+    setTimeout(() => setToast((t) => (t?.text === text ? null : t)), 9000);
+  };
   const refresh = () => {
     api.meta().then(setMeta);
     api.measures().then(setMeasures);
@@ -84,10 +89,12 @@ function AdminPanel({ me, onLogout, onPasswordChanged }: { me: Me; onLogout: () 
     try {
       const r = await fn();
       push(`${label}: ${JSON.stringify(r).slice(0, 300)}`);
+      notify(true, `${label}: ${summarize(r)}`);
       refresh();
       return r;
     } catch (e) {
       push(`${label} — error: ${(e as Error).message}`);
+      notify(false, `${label} — ${(e as Error).message}`);
       if ((e as { status?: number }).status === 401) onLogout();
     }
   };
@@ -98,6 +105,7 @@ function AdminPanel({ me, onLogout, onPasswordChanged }: { me: Me; onLogout: () 
       if (j.log?.length) push(`${label}: ${j.log.at(-1)}`);
       if (j.status !== 'running') {
         push(`${label}: ${j.status === 'done' ? 'done ' + JSON.stringify(j.result) : 'error ' + j.error}`);
+        notify(j.status === 'done', `${label}: ${j.status === 'done' ? summarize(j.result) : j.error}`);
         refresh();
         return;
       }
@@ -112,6 +120,12 @@ function AdminPanel({ me, onLogout, onPasswordChanged }: { me: Me; onLogout: () 
 
   return (
     <div className="admin">
+      {toast && (
+        <div className={`toast ${toast.ok ? 'ok' : 'err'}`} onClick={() => setToast(null)}>
+          {toast.ok ? '✓ ' : '✗ '}
+          {toast.text}
+        </div>
+      )}
       <div className="card userbar">
         <div>
           Signed in as <b>{me.username}</b>
@@ -142,7 +156,7 @@ function AdminPanel({ me, onLogout, onPasswordChanged }: { me: Me; onLogout: () 
           <p className="small muted">Downloads the 98 chapters + Chapter 99 from hts.usitc.gov/reststop (≈ 2–5 min). Also scheduled automatically (CRON_US).</p>
           <button className="btn" onClick={async () => { const r = await wrap('USITC import', api.admin.importUs); if (r?.job) poll('USITC import', r.job); }}>Import online</button>
           <div className="sep">or a JSON file exported from hts.usitc.gov (Export → JSON, 0101 to 9999)</div>
-          <input type="file" accept=".json" onChange={(e) => e.target.files?.[0] && wrap('USITC file import', () => api.admin.upload('/api/admin/import/us-file', e.target.files![0]))} />
+          <FileUpload accept=".json" label="Upload JSON" onUpload={(f) => wrap('USITC file import', () => api.admin.upload('/api/admin/import/us-file', f))} />
         </div>
         <div className="card">
           <h3>Canadian tariff (CBSA)</h3>
@@ -161,7 +175,7 @@ function AdminPanel({ me, onLogout, onPasswordChanged }: { me: Me; onLogout: () 
             </div>
           )}
           <div className="sep">or upload the file manually</div>
-          <input type="file" accept=".xlsx,.csv,.txt" onChange={(e) => e.target.files?.[0] && wrap('Canadian tariff import', () => api.admin.upload('/api/admin/import/ca-file', e.target.files![0]))} />
+          <FileUpload accept=".xlsx,.csv,.txt" label="Upload tariff file" onUpload={(f) => wrap('Canadian tariff import', () => api.admin.upload('/api/admin/import/ca-file', f))} />
           <UrlImport onRun={async (u) => { const r = await wrap('Canadian tariff import (URL)', () => api.admin.caUrl(u)); if (r?.job) poll('Canadian tariff import', r.job); }} />
         </div>
         <div className="card">
@@ -171,10 +185,10 @@ function AdminPanel({ me, onLogout, onPasswordChanged }: { me: Me; onLogout: () 
         </div>
         <div className="card">
           <h3>CBP PGA flags · extra AD/CVD cases</h3>
-          <div className="small muted">CSV "HTS, Flag" (FD1, EP3, AM8…)</div>
-          <input type="file" accept=".csv" onChange={(e) => e.target.files?.[0] && wrap('PGA import', () => api.admin.upload('/api/admin/import/pga', e.target.files![0]))} />
-          <div className="small muted" style={{ marginTop: 12 }}>AD/CVD/SIMA CSV: j, case, product, country, prefixes, ad, cvd, note, url</div>
-          <input type="file" accept=".csv" onChange={(e) => e.target.files?.[0] && wrap('AD/CVD import', () => api.admin.upload('/api/admin/import/adcvd', e.target.files![0]))} />
+          <div className="small muted">CSV or Excel with two columns: <b>HTS</b> and <b>Flag</b> (FD1, EP3, AM8…). Comma, semicolon or tab separated.</div>
+          <FileUpload accept=".csv,.txt,.tsv,.xlsx" label="Upload PGA flags" onUpload={(f) => wrap('PGA import', () => api.admin.upload('/api/admin/import/pga', f))} />
+          <div className="small muted" style={{ marginTop: 14 }}>AD/CVD/SIMA CSV or Excel: j, case, product, country, prefixes, ad, cvd, note, url</div>
+          <FileUpload accept=".csv,.txt,.tsv,.xlsx" label="Upload AD/CVD cases" onUpload={(f) => wrap('AD/CVD import', () => api.admin.upload('/api/admin/import/adcvd', f))} />
         </div>
       </div>
 
@@ -195,6 +209,38 @@ function AdminPanel({ me, onLogout, onPasswordChanged }: { me: Me; onLogout: () 
 }
 
 type Wrap = (l: string, f: () => Promise<any>) => Promise<any>;
+
+function summarize(r: any): string {
+  if (!r || typeof r !== 'object') return 'done';
+  if (r.message) return r.message;
+  if (r.total !== undefined) return `${r.added} codes read, ${r.total} codes now in the list`;
+  if (r.count !== undefined) return `${r.count} records imported`;
+  if (r.lines !== undefined) return `${r.lines} lines imported`;
+  if (r.rate !== undefined) return `1 USD = ${r.rate} CAD`;
+  if (r.job) return 'started…';
+  return 'done';
+}
+
+function FileUpload({ accept, label, onUpload }: { accept: string; label: string; onUpload: (f: File) => Promise<any> }) {
+  const [file, setFile] = useState<File | null>(null);
+  const [busy, setBusy] = useState(false);
+  return (
+    <div className="join" style={{ marginTop: 6, alignItems: 'center' }}>
+      <input type="file" accept={accept} onChange={(e) => setFile(e.target.files?.[0] ?? null)} />
+      <button
+        className="btn"
+        disabled={!file || busy}
+        onClick={async () => {
+          setBusy(true);
+          await onUpload(file!);
+          setBusy(false);
+        }}
+      >
+        {busy ? 'Uploading…' : label}
+      </button>
+    </div>
+  );
+}
 
 function UrlImport({ onRun }: { onRun: (u: string) => void }) {
   const [u, setU] = useState('');
@@ -329,6 +375,7 @@ function CodeLists({ measures, lists, wrap }: { measures: any[]; lists: any[]; w
   const [url, setUrl] = useState('');
   const [replace, setReplace] = useState(true);
   const [withRates, setWithRates] = useState(false);
+  const [file, setFile] = useState<File | null>(null);
   const [from, setFrom] = useState('');
   const [until, setUntil] = useState('');
   const [preview, setPreview] = useState<any[]>([]);
@@ -349,7 +396,9 @@ function CodeLists({ measures, lists, wrap }: { measures: any[]; lists: any[]; w
               <option key={m.id} value={m.id}>[{m.j === 'US' ? 'INBOUND USA' : 'INBOUND CANADA'}] {m.name} — {count(m.id)} codes</option>
             ))}
           </select>
-          <label className="lbl">URL (optional)</label>
+          <label className="lbl">File (CSV, TXT or Excel)</label>
+          <input type="file" accept=".csv,.txt,.tsv,.xlsx" onChange={(e) => setFile(e.target.files?.[0] ?? null)} />
+          <label className="lbl">or URL</label>
           <input className="input" value={url} onChange={(e) => setUrl(e.target.value)} placeholder="https://www.canada.ca/…" />
           <div className="grid2">
             <div>
@@ -364,13 +413,13 @@ function CodeLists({ measures, lists, wrap }: { measures: any[]; lists: any[]; w
           <label className="check"><input type="checkbox" checked={replace} onChange={(e) => setReplace(e.target.checked)} /><span>Replace the existing list</span></label>
           <label className="check"><input type="checkbox" checked={withRates} onChange={(e) => setWithRates(e.target.checked)} /><span>Read the rate (%) on each line</span></label>
           <div className="row">
-            <button className="btn" disabled={!id || (!text && !url)} onClick={async () => { const r = await wrap('List ' + id, () => api.admin.codes({ measureId: id, text, url: url || undefined, replace, withRates, from: from || undefined, until: until || undefined })); if (r) setPreview(r.sample ?? []); }}>Import</button>
+            <button className="btn" disabled={!id || (!text && !url && !file)} title={!id ? 'Choose a measure first' : !text && !url && !file ? 'Choose a file, a URL or paste text' : ''} onClick={async () => { const r = await wrap('List ' + id, () => api.admin.codes({ measureId: id, text: file ? undefined : text, url: file ? undefined : url || undefined, replace, withRates, from: from || undefined, until: until || undefined }, file)); if (r) setPreview(r.sample ?? []); }}>Import</button>
             <button className="btn ghost" disabled={!id} onClick={async () => setPreview(await api.admin.listCodes(id))}>View</button>
             <button className="btn danger" disabled={!id} onClick={() => confirm('Empty this list?') && wrap('Empty ' + id, () => api.admin.deleteCodes(id))}>Empty</button>
           </div>
         </div>
         <div>
-          <label className="lbl">Pasted text</label>
+          <label className="lbl">or pasted text</label>
           <textarea className="input mono" rows={10} value={text} onChange={(e) => setText(e.target.value)} placeholder={'7208.10.00 …\n7208.25.00 …'} />
         </div>
       </div>

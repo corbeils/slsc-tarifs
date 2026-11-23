@@ -3,7 +3,6 @@ import Simulator from './pages/Simulator';
 import Batch from './pages/Batch';
 import Measures from './pages/Measures';
 import Admin from './pages/Admin';
-import { api, fmtDate } from './api';
 
 const PAGES = [
   { id: 'simulateur', label: 'Simulateur' },
@@ -26,10 +25,6 @@ function usePage(): [PageId, (p: PageId) => void] {
 
 export default function App() {
   const [page, go] = usePage();
-  const [meta, setMeta] = useState<any>(null);
-  useEffect(() => {
-    api.meta().then(setMeta).catch(() => {});
-  }, [page]);
   return (
     <div className="app">
       <header className="topbar">
@@ -58,15 +53,6 @@ export default function App() {
         {page === 'mesures' && <Measures />}
         {page === 'admin' && <Admin />}
       </main>
-      <footer className="foot">
-        <span>
-          HTSUS : {meta?.us?.source ?? '—'} ({meta?.us?.lines ?? 0} lignes, {fmtDate(meta?.us?.at)}) · Tarif CA : {meta?.ca?.source ?? '—'} (
-          {meta?.ca?.lines ?? 0} lignes, {fmtDate(meta?.ca?.at)}) · 1 USD = {meta?.fx?.usdCad?.toFixed(4) ?? '—'} CAD
-        </span>
-        <span className="muted">
-          Outil d'estimation. Ne remplace pas une décision anticipée de classement ni l'avis d'un courtier en douane agréé.
-        </span>
-      </footer>
     </div>
   );
 }

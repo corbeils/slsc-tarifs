@@ -1,0 +1,975 @@
+[
+ {
+  "htsno": "0406",
+  "statisticalSuffix": "",
+  "description": "Cheese and curd:",
+  "indent": "0",
+  "footnotes": [],
+  "units": null,
+  "general": "",
+  "special": "",
+  "other": "",
+  "quotaQuantity": null,
+  "additionalDuties": null
+ },
+ {
+  "htsno": "0406.10.08",
+  "statisticalSuffix": "",
+  "description": "[DÉMO] Fresh (unripened or uncured) cheese, including whey cheese, and curd: Other",
+  "indent": "1",
+  "footnotes": [
+   {
+    "columns": [
+     "general"
+    ],
+    "marker": "1",
+    "value": "See 9903.03.13.",
+    "type": "endnote"
+   }
+  ],
+  "units": [
+   "kg"
+  ],
+  "general": "10%",
+  "special": "Free (AU,BH,CL,CO,D,E,IL,JO,MA,OM,P,PA,PE,S,SG)",
+  "other": "35%",
+  "quotaQuantity": null,
+  "additionalDuties": null
+ },
+ {
+  "htsno": "2208",
+  "statisticalSuffix": "",
+  "description": "Undenatured ethyl alcohol of an alcoholic strength by volume of less than 80% vol.; spirits, liqueurs and other spirituous beverages:",
+  "indent": "0",
+  "footnotes": [],
+  "units": null,
+  "general": "",
+  "special": "",
+  "other": "",
+  "quotaQuantity": null,
+  "additionalDuties": null
+ },
+ {
+  "htsno": "2208.30",
+  "statisticalSuffix": "",
+  "description": "Whiskies:",
+  "indent": "1",
+  "footnotes": [],
+  "units": null,
+  "general": "",
+  "special": "",
+  "other": "",
+  "quotaQuantity": null,
+  "additionalDuties": null
+ },
+ {
+  "htsno": "2208.30.30",
+  "statisticalSuffix": "",
+  "description": "[DÉMO] Bourbon whiskey and Tennessee whiskey / other whiskies in containers not over 4 liters",
+  "indent": "2",
+  "footnotes": [
+   {
+    "columns": [
+     "general"
+    ],
+    "marker": "1",
+    "value": "See 9903.03.12.",
+    "type": "endnote"
+   }
+  ],
+  "units": [
+   "pf.liter"
+  ],
+  "general": "Free",
+  "special": "",
+  "other": "$2.27/pf. liter",
+  "quotaQuantity": null,
+  "additionalDuties": null
+ },
+ {
+  "htsno": "3923",
+  "statisticalSuffix": "",
+  "description": "Articles for the conveyance or packing of goods, of plastics:",
+  "indent": "0",
+  "footnotes": [],
+  "units": null,
+  "general": "",
+  "special": "",
+  "other": "",
+  "quotaQuantity": null,
+  "additionalDuties": null
+ },
+ {
+  "htsno": "3923.10",
+  "statisticalSuffix": "",
+  "description": "Boxes, cases, crates and similar articles:",
+  "indent": "1",
+  "footnotes": [],
+  "units": null,
+  "general": "",
+  "special": "",
+  "other": "",
+  "quotaQuantity": null,
+  "additionalDuties": null
+ },
+ {
+  "htsno": "3923.10.90",
+  "statisticalSuffix": "",
+  "description": "Other",
+  "indent": "2",
+  "footnotes": [],
+  "units": [
+   "kg"
+  ],
+  "general": "3%",
+  "special": "Free (A,AU,BH,CL,CO,D,E,IL,JO,KR,MA,OM,P,PA,PE,S,SG)",
+  "other": "80%",
+  "quotaQuantity": null,
+  "additionalDuties": null
+ },
+ {
+  "htsno": "4407",
+  "statisticalSuffix": "",
+  "description": "Wood sawn or chipped lengthwise, sliced or peeled, of a thickness exceeding 6 mm:",
+  "indent": "0",
+  "footnotes": [],
+  "units": null,
+  "general": "",
+  "special": "",
+  "other": "",
+  "quotaQuantity": null,
+  "additionalDuties": null
+ },
+ {
+  "htsno": "4407.11.00",
+  "statisticalSuffix": "",
+  "description": "Coniferous: Of pine (Pinus spp.)",
+  "indent": "1",
+  "footnotes": [
+   {
+    "columns": [
+     "general"
+    ],
+    "marker": "1",
+    "value": "See 9903.76.01.",
+    "type": "endnote"
+   }
+  ],
+  "units": null,
+  "general": "Free",
+  "special": "",
+  "other": "$1.70/m3",
+  "quotaQuantity": null,
+  "additionalDuties": null
+ },
+ {
+  "htsno": "4407.11.00.01",
+  "statisticalSuffix": "01",
+  "description": "Treated with paint, stain, creosote or other preservative",
+  "indent": "2",
+  "footnotes": [],
+  "units": [
+   "m3"
+  ],
+  "general": "",
+  "special": "",
+  "other": "",
+  "quotaQuantity": null,
+  "additionalDuties": null
+ },
+ {
+  "htsno": "4407.11.00.92",
+  "statisticalSuffix": "92",
+  "description": "Other",
+  "indent": "2",
+  "footnotes": [],
+  "units": [
+   "m3"
+  ],
+  "general": "",
+  "special": "",
+  "other": "",
+  "quotaQuantity": null,
+  "additionalDuties": null
+ },
+ {
+  "htsno": "7208",
+  "statisticalSuffix": "",
+  "description": "Flat-rolled products of iron or nonalloy steel, of a width of 600 mm or more, hot-rolled, not clad, plated or coated:",
+  "indent": "0",
+  "footnotes": [],
+  "units": null,
+  "general": "",
+  "special": "",
+  "other": "",
+  "quotaQuantity": null,
+  "additionalDuties": null
+ },
+ {
+  "htsno": "7208.51.00",
+  "statisticalSuffix": "",
+  "description": "Other, not in coils, not further worked than hot-rolled: Of a thickness exceeding 10 mm",
+  "indent": "1",
+  "footnotes": [
+   {
+    "columns": [
+     "general"
+    ],
+    "marker": "1",
+    "value": "See 9903.82.02.",
+    "type": "endnote"
+   }
+  ],
+  "units": null,
+  "general": "Free",
+  "special": "",
+  "other": "20%",
+  "quotaQuantity": null,
+  "additionalDuties": null
+ },
+ {
+  "htsno": "7208.51.00.30",
+  "statisticalSuffix": "30",
+  "description": "Of a thickness exceeding 10 mm but not exceeding 50 mm",
+  "indent": "2",
+  "footnotes": [],
+  "units": [
+   "kg"
+  ],
+  "general": "",
+  "special": "",
+  "other": "",
+  "quotaQuantity": null,
+  "additionalDuties": null
+ },
+ {
+  "htsno": "7308",
+  "statisticalSuffix": "",
+  "description": "Structures (excluding prefabricated buildings of heading 9406) and parts of structures, of iron or steel:",
+  "indent": "0",
+  "footnotes": [],
+  "units": null,
+  "general": "",
+  "special": "",
+  "other": "",
+  "quotaQuantity": null,
+  "additionalDuties": null
+ },
+ {
+  "htsno": "7308.90",
+  "statisticalSuffix": "",
+  "description": "Other:",
+  "indent": "1",
+  "footnotes": [],
+  "units": null,
+  "general": "",
+  "special": "",
+  "other": "",
+  "quotaQuantity": null,
+  "additionalDuties": null
+ },
+ {
+  "htsno": "7308.90.95",
+  "statisticalSuffix": "",
+  "description": "Other",
+  "indent": "2",
+  "footnotes": [
+   {
+    "columns": [
+     "general"
+    ],
+    "marker": "1",
+    "value": "See 9903.82.10.",
+    "type": "endnote"
+   }
+  ],
+  "units": null,
+  "general": "Free",
+  "special": "",
+  "other": "45%",
+  "quotaQuantity": null,
+  "additionalDuties": null
+ },
+ {
+  "htsno": "7308.90.95.00",
+  "statisticalSuffix": "00",
+  "description": "Other",
+  "indent": "3",
+  "footnotes": [],
+  "units": [
+   "kg"
+  ],
+  "general": "",
+  "special": "",
+  "other": "",
+  "quotaQuantity": null,
+  "additionalDuties": null
+ },
+ {
+  "htsno": "7326",
+  "statisticalSuffix": "",
+  "description": "Other articles of iron or steel:",
+  "indent": "0",
+  "footnotes": [],
+  "units": null,
+  "general": "",
+  "special": "",
+  "other": "",
+  "quotaQuantity": null,
+  "additionalDuties": null
+ },
+ {
+  "htsno": "7326.90",
+  "statisticalSuffix": "",
+  "description": "Other:",
+  "indent": "1",
+  "footnotes": [],
+  "units": null,
+  "general": "",
+  "special": "",
+  "other": "",
+  "quotaQuantity": null,
+  "additionalDuties": null
+ },
+ {
+  "htsno": "7326.90.86",
+  "statisticalSuffix": "",
+  "description": "Other",
+  "indent": "2",
+  "footnotes": [
+   {
+    "columns": [
+     "general"
+    ],
+    "marker": "1",
+    "value": "See 9903.82.10.",
+    "type": "endnote"
+   }
+  ],
+  "units": null,
+  "general": "2.9%",
+  "special": "Free (A,AU,BH,CL,CO,D,E,IL,JO,KR,MA,OM,P,PA,PE,S,SG)",
+  "other": "45%",
+  "quotaQuantity": null,
+  "additionalDuties": null
+ },
+ {
+  "htsno": "7326.90.86.88",
+  "statisticalSuffix": "88",
+  "description": "Other",
+  "indent": "3",
+  "footnotes": [],
+  "units": [
+   "kg"
+  ],
+  "general": "",
+  "special": "",
+  "other": "",
+  "quotaQuantity": null,
+  "additionalDuties": null
+ },
+ {
+  "htsno": "8462",
+  "statisticalSuffix": "",
+  "description": "Machine tools (including presses) for working metal by forging, hammering or die forging (excluding rolling mills); machine tools (including presses, slitting lines and cut-to-length lines) for working metal by bending, folding, straightening, flattening, shearing, punching, notching or nibbling (excluding draw-benches); presses for working metal or metal carbides, not specified above:",
+  "indent": "0",
+  "footnotes": [],
+  "units": null,
+  "general": "",
+  "special": "",
+  "other": "",
+  "quotaQuantity": null,
+  "additionalDuties": null
+ },
+ {
+  "htsno": "8462.11.00",
+  "statisticalSuffix": "",
+  "description": "Hot forming machines for forging, die forging (including presses) and hammers: Closed die forging machines",
+  "indent": "1",
+  "footnotes": [
+   {
+    "columns": [
+     "other"
+    ],
+    "marker": "1",
+    "value": "See 9903.90.08. ",
+    "type": "endnote"
+   }
+  ],
+  "units": null,
+  "general": "4.4%",
+  "special": "Free (A,AU,BH,CL,CO,D,E,IL,JO,JP,KR,MA,OM,P,PA,PE,S,SG)",
+  "other": "30%",
+  "quotaQuantity": null,
+  "additionalDuties": null
+ },
+ {
+  "htsno": "8462.11.00.10",
+  "statisticalSuffix": "10",
+  "description": "Used or rebuilt",
+  "indent": "2",
+  "footnotes": [],
+  "units": [
+   "No."
+  ],
+  "general": "",
+  "special": "",
+  "other": "",
+  "quotaQuantity": null,
+  "additionalDuties": null
+ },
+ {
+  "htsno": "8462.11.00.30",
+  "statisticalSuffix": "30",
+  "description": "Headers and upsetters",
+  "indent": "3",
+  "footnotes": [],
+  "units": [
+   "No."
+  ],
+  "general": "",
+  "special": "",
+  "other": "",
+  "quotaQuantity": null,
+  "additionalDuties": null
+ },
+ {
+  "htsno": "8462.11.00.35",
+  "statisticalSuffix": "35",
+  "description": "Mechanical transfer presses",
+  "indent": "3",
+  "footnotes": [],
+  "units": [
+   "No."
+  ],
+  "general": "",
+  "special": "",
+  "other": "",
+  "quotaQuantity": null,
+  "additionalDuties": null
+ },
+ {
+  "htsno": "8479",
+  "statisticalSuffix": "",
+  "description": "Machines and mechanical appliances having individual functions, not specified or included elsewhere in this chapter; parts thereof:",
+  "indent": "0",
+  "footnotes": [],
+  "units": null,
+  "general": "",
+  "special": "",
+  "other": "",
+  "quotaQuantity": null,
+  "additionalDuties": null
+ },
+ {
+  "htsno": "8479.89",
+  "statisticalSuffix": "",
+  "description": "Other machines and mechanical appliances: Other:",
+  "indent": "1",
+  "footnotes": [],
+  "units": null,
+  "general": "",
+  "special": "",
+  "other": "",
+  "quotaQuantity": null,
+  "additionalDuties": null
+ },
+ {
+  "htsno": "8479.89.94",
+  "statisticalSuffix": "",
+  "description": "Other",
+  "indent": "2",
+  "footnotes": [],
+  "units": null,
+  "general": "2.5%",
+  "special": "Free (A,AU,BH,CL,CO,D,E,IL,JO,KR,MA,OM,P,PA,PE,S,SG)",
+  "other": "35%",
+  "quotaQuantity": null,
+  "additionalDuties": null
+ },
+ {
+  "htsno": "8479.89.94.99",
+  "statisticalSuffix": "99",
+  "description": "Other",
+  "indent": "3",
+  "footnotes": [],
+  "units": [
+   "No."
+  ],
+  "general": "",
+  "special": "",
+  "other": "",
+  "quotaQuantity": null,
+  "additionalDuties": null
+ },
+ {
+  "htsno": "8483",
+  "statisticalSuffix": "",
+  "description": "Transmission shafts and cranks; bearing housings; gears and gearing; ball or roller screws; gear boxes and other speed changers:",
+  "indent": "0",
+  "footnotes": [],
+  "units": null,
+  "general": "",
+  "special": "",
+  "other": "",
+  "quotaQuantity": null,
+  "additionalDuties": null
+ },
+ {
+  "htsno": "8483.40",
+  "statisticalSuffix": "",
+  "description": "Gears and gearing; ball or roller screws; gear boxes and other speed changers, including torque converters:",
+  "indent": "1",
+  "footnotes": [],
+  "units": null,
+  "general": "",
+  "special": "",
+  "other": "",
+  "quotaQuantity": null,
+  "additionalDuties": null
+ },
+ {
+  "htsno": "8483.40.50",
+  "statisticalSuffix": "",
+  "description": "Gear boxes and other speed changers",
+  "indent": "2",
+  "footnotes": [],
+  "units": null,
+  "general": "2.5%",
+  "special": "Free (A,AU,BH,CL,CO,D,E,IL,JO,KR,MA,OM,P,PA,PE,S,SG)",
+  "other": "35%",
+  "quotaQuantity": null,
+  "additionalDuties": null
+ },
+ {
+  "htsno": "8483.40.50.10",
+  "statisticalSuffix": "10",
+  "description": "Fixed ratio speed changers",
+  "indent": "3",
+  "footnotes": [],
+  "units": [
+   "No."
+  ],
+  "general": "",
+  "special": "",
+  "other": "",
+  "quotaQuantity": null,
+  "additionalDuties": null
+ },
+ {
+  "htsno": "8537",
+  "statisticalSuffix": "",
+  "description": "Boards, panels, consoles, desks, cabinets and other bases, equipped with two or more apparatus of heading 8535 or 8536, for electric control or the distribution of electricity:",
+  "indent": "0",
+  "footnotes": [],
+  "units": null,
+  "general": "",
+  "special": "",
+  "other": "",
+  "quotaQuantity": null,
+  "additionalDuties": null
+ },
+ {
+  "htsno": "8537.10",
+  "statisticalSuffix": "",
+  "description": "For a voltage not exceeding 1,000 V:",
+  "indent": "1",
+  "footnotes": [],
+  "units": null,
+  "general": "",
+  "special": "",
+  "other": "",
+  "quotaQuantity": null,
+  "additionalDuties": null
+ },
+ {
+  "htsno": "8537.10.91",
+  "statisticalSuffix": "",
+  "description": "Other",
+  "indent": "2",
+  "footnotes": [],
+  "units": null,
+  "general": "2.7%",
+  "special": "Free (A,AU,BH,CL,CO,D,E,IL,JO,KR,MA,OM,P,PA,PE,S,SG)",
+  "other": "35%",
+  "quotaQuantity": null,
+  "additionalDuties": null
+ },
+ {
+  "htsno": "8537.10.91.70",
+  "statisticalSuffix": "70",
+  "description": "Other",
+  "indent": "3",
+  "footnotes": [],
+  "units": [
+   "No."
+  ],
+  "general": "",
+  "special": "",
+  "other": "",
+  "quotaQuantity": null,
+  "additionalDuties": null
+ },
+ {
+  "htsno": "8703",
+  "statisticalSuffix": "",
+  "description": "Motor cars and other motor vehicles principally designed for the transport of persons:",
+  "indent": "0",
+  "footnotes": [],
+  "units": null,
+  "general": "",
+  "special": "",
+  "other": "",
+  "quotaQuantity": null,
+  "additionalDuties": null
+ },
+ {
+  "htsno": "8703.80.00",
+  "statisticalSuffix": "",
+  "description": "Other vehicles, with only electric motor for propulsion",
+  "indent": "1",
+  "footnotes": [
+   {
+    "columns": [
+     "general"
+    ],
+    "marker": "1",
+    "value": "See 9903.94.01, 9903.03.14.",
+    "type": "endnote"
+   }
+  ],
+  "units": [
+   "No."
+  ],
+  "general": "2.5%",
+  "special": "Free (A+,AU,BH,CL,CO,D,E,IL,JO,KR,MA,OM,P,PA,PE,S,SG)",
+  "other": "10%",
+  "quotaQuantity": null,
+  "additionalDuties": null
+ },
+ {
+  "htsno": "8708",
+  "statisticalSuffix": "",
+  "description": "Parts and accessories of the motor vehicles of headings 8701 to 8705:",
+  "indent": "0",
+  "footnotes": [],
+  "units": null,
+  "general": "",
+  "special": "",
+  "other": "",
+  "quotaQuantity": null,
+  "additionalDuties": null
+ },
+ {
+  "htsno": "8708.99",
+  "statisticalSuffix": "",
+  "description": "Other: Other:",
+  "indent": "1",
+  "footnotes": [],
+  "units": null,
+  "general": "",
+  "special": "",
+  "other": "",
+  "quotaQuantity": null,
+  "additionalDuties": null
+ },
+ {
+  "htsno": "8708.99.81",
+  "statisticalSuffix": "",
+  "description": "Other",
+  "indent": "2",
+  "footnotes": [
+   {
+    "columns": [
+     "general"
+    ],
+    "marker": "1",
+    "value": "See 9903.94.05.",
+    "type": "endnote"
+   }
+  ],
+  "units": null,
+  "general": "2.5%",
+  "special": "Free (A,AU,BH,CL,CO,D,E,IL,JO,KR,MA,OM,P,PA,PE,S,SG)",
+  "other": "25%",
+  "quotaQuantity": null,
+  "additionalDuties": null
+ },
+ {
+  "htsno": "8708.99.81.80",
+  "statisticalSuffix": "80",
+  "description": "Other",
+  "indent": "3",
+  "footnotes": [],
+  "units": [
+   "kg"
+  ],
+  "general": "",
+  "special": "",
+  "other": "",
+  "quotaQuantity": null,
+  "additionalDuties": null
+ },
+ {
+  "htsno": "8711.50.00",
+  "statisticalSuffix": "",
+  "description": "Motorcycles with reciprocating internal combustion piston engine of a cylinder capacity exceeding 800 cc",
+  "indent": "0",
+  "footnotes": [],
+  "units": [
+   "No."
+  ],
+  "general": "2.4%",
+  "special": "Free (A,AU,BH,CL,CO,D,E,IL,JO,KR,MA,OM,P,PA,PE,S,SG)",
+  "other": "10%",
+  "quotaQuantity": null,
+  "additionalDuties": null
+ },
+ {
+  "htsno": "9801.00.10",
+  "statisticalSuffix": "",
+  "description": "Products of the United States when returned after having been exported, without having been advanced in value or improved in condition",
+  "indent": "0",
+  "footnotes": [],
+  "units": null,
+  "general": "Free",
+  "special": "",
+  "other": "Free",
+  "quotaQuantity": null,
+  "additionalDuties": null
+ },
+ {
+  "htsno": "9802.00.50",
+  "statisticalSuffix": "",
+  "description": "Articles returned to the United States after having been exported to be advanced in value or improved in condition by repair or alteration",
+  "indent": "0",
+  "footnotes": [],
+  "units": null,
+  "general": "A duty upon the value of such repairs or alterations",
+  "special": "Free (B,C,CA,MX)",
+  "other": "",
+  "quotaQuantity": null,
+  "additionalDuties": null
+ },
+ {
+  "htsno": "9903.03.12",
+  "statisticalSuffix": "",
+  "description": "[DÉMO] Except as provided in headings 9903.03.15 and 9903.03.16, articles the product of Canada, as provided for in U.S. note 51(b)(1) to this subchapter (alcohol list)",
+  "indent": "0",
+  "footnotes": [],
+  "units": null,
+  "general": "The duty provided in the applicable subheading + 50%",
+  "special": "",
+  "other": "",
+  "quotaQuantity": null,
+  "additionalDuties": null
+ },
+ {
+  "htsno": "9903.03.13",
+  "statisticalSuffix": "",
+  "description": "[DÉMO] Except as provided in headings 9903.03.15 and 9903.03.16, articles the product of Canada, as provided for in U.S. note 51(b)(2) to this subchapter (dairy list)",
+  "indent": "0",
+  "footnotes": [],
+  "units": null,
+  "general": "The duty provided in the applicable subheading + 50%",
+  "special": "",
+  "other": "",
+  "quotaQuantity": null,
+  "additionalDuties": null
+ },
+ {
+  "htsno": "9903.03.14",
+  "statisticalSuffix": "",
+  "description": "[DÉMO] Except as provided in heading 9903.03.16, articles the product of Canada, as provided for in U.S. note 51(b)(3) to this subchapter (motor vehicle list)",
+  "indent": "0",
+  "footnotes": [],
+  "units": null,
+  "general": "The duty provided in the applicable subheading + 50%",
+  "special": "",
+  "other": "",
+  "quotaQuantity": null,
+  "additionalDuties": null
+ },
+ {
+  "htsno": "9903.03.15",
+  "statisticalSuffix": "",
+  "description": "[DÉMO] Articles the product of Canada subject to duties under section 232, as provided for in U.S. note 51(c)",
+  "indent": "0",
+  "footnotes": [],
+  "units": null,
+  "general": "The duty provided in the applicable subheading",
+  "special": "",
+  "other": "",
+  "quotaQuantity": null,
+  "additionalDuties": null
+ },
+ {
+  "htsno": "9903.03.16",
+  "statisticalSuffix": "",
+  "description": "[DÉMO] Articles of civil aircraft (all aircraft other than military aircraft and unmanned aircraft); their engines, parts and components",
+  "indent": "0",
+  "footnotes": [],
+  "units": null,
+  "general": "The duty provided in the applicable subheading",
+  "special": "",
+  "other": "",
+  "quotaQuantity": null,
+  "additionalDuties": null
+ },
+ {
+  "htsno": "9903.05.29",
+  "statisticalSuffix": "",
+  "description": "[DÉMO] Except as provided in headings 9903.05.85 to 9903.05.93, articles the product of Canada, as provided for in U.S. note 52",
+  "indent": "0",
+  "footnotes": [],
+  "units": null,
+  "general": "The duty provided in the applicable subheading + 10%",
+  "special": "",
+  "other": "",
+  "quotaQuantity": null,
+  "additionalDuties": null
+ },
+ {
+  "htsno": "9903.05.31",
+  "statisticalSuffix": "",
+  "description": "[DÉMO] Except as provided in headings 9903.05.85 to 9903.05.92, articles the product of China, as provided for in U.S. note 52",
+  "indent": "0",
+  "footnotes": [],
+  "units": null,
+  "general": "The duty provided in the applicable subheading + 12.5%",
+  "special": "",
+  "other": "",
+  "quotaQuantity": null,
+  "additionalDuties": null
+ },
+ {
+  "htsno": "9903.05.55",
+  "statisticalSuffix": "",
+  "description": "[DÉMO] Except as provided in headings 9903.05.85 to 9903.05.94, articles the product of Mexico, as provided for in U.S. note 52",
+  "indent": "0",
+  "footnotes": [],
+  "units": null,
+  "general": "The duty provided in the applicable subheading + 10%",
+  "special": "",
+  "other": "",
+  "quotaQuantity": null,
+  "additionalDuties": null
+ },
+ {
+  "htsno": "9903.05.86",
+  "statisticalSuffix": "",
+  "description": "[DÉMO] Articles provided for in U.S. note 52(b) (product exemptions)",
+  "indent": "0",
+  "footnotes": [],
+  "units": null,
+  "general": "The duty provided in the applicable subheading",
+  "special": "",
+  "other": "",
+  "quotaQuantity": null,
+  "additionalDuties": null
+ },
+ {
+  "htsno": "9903.05.90",
+  "statisticalSuffix": "",
+  "description": "[DÉMO] Articles subject to section 232 measures, as provided for in U.S. note 52(e)",
+  "indent": "0",
+  "footnotes": [],
+  "units": null,
+  "general": "The duty provided in the applicable subheading",
+  "special": "",
+  "other": "",
+  "quotaQuantity": null,
+  "additionalDuties": null
+ },
+ {
+  "htsno": "9903.05.93",
+  "statisticalSuffix": "",
+  "description": "[DÉMO] Articles the product of Canada entered free of duty under the USMCA",
+  "indent": "0",
+  "footnotes": [],
+  "units": null,
+  "general": "The duty provided in the applicable subheading",
+  "special": "",
+  "other": "",
+  "quotaQuantity": null,
+  "additionalDuties": null
+ },
+ {
+  "htsno": "9903.76.01",
+  "statisticalSuffix": "",
+  "description": "[DÉMO] Section 232 Timber and Lumber: softwood timber and lumber",
+  "indent": "0",
+  "footnotes": [],
+  "units": null,
+  "general": "The duty provided in the applicable subheading + 10%",
+  "special": "",
+  "other": "",
+  "quotaQuantity": null,
+  "additionalDuties": null
+ },
+ {
+  "htsno": "9903.82.02",
+  "statisticalSuffix": "",
+  "description": "[DÉMO] Section 232 Steel: articles listed in Annex I-A",
+  "indent": "0",
+  "footnotes": [],
+  "units": null,
+  "general": "The duty provided in the applicable subheading + 50%",
+  "special": "",
+  "other": "",
+  "quotaQuantity": null,
+  "additionalDuties": null
+ },
+ {
+  "htsno": "9903.82.10",
+  "statisticalSuffix": "",
+  "description": "[DÉMO] Section 232 Steel and Aluminum: derivative articles listed in Annex I-B",
+  "indent": "0",
+  "footnotes": [],
+  "units": null,
+  "general": "The duty provided in the applicable subheading + 25%",
+  "special": "",
+  "other": "",
+  "quotaQuantity": null,
+  "additionalDuties": null
+ },
+ {
+  "htsno": "9903.90.08",
+  "statisticalSuffix": "",
+  "description": "[DÉMO] Articles the product of the Russian Federation or Belarus (column 2)",
+  "indent": "0",
+  "footnotes": [],
+  "units": null,
+  "general": "The rate of duty in column 2",
+  "special": "",
+  "other": "",
+  "quotaQuantity": null,
+  "additionalDuties": null
+ },
+ {
+  "htsno": "9903.94.01",
+  "statisticalSuffix": "",
+  "description": "[DÉMO] Section 232 Automobiles: passenger vehicles and light trucks",
+  "indent": "0",
+  "footnotes": [],
+  "units": null,
+  "general": "The duty provided in the applicable subheading + 25%",
+  "special": "",
+  "other": "",
+  "quotaQuantity": null,
+  "additionalDuties": null
+ },
+ {
+  "htsno": "9903.94.05",
+  "statisticalSuffix": "",
+  "description": "[DÉMO] Section 232 Automobile Parts: parts of passenger vehicles and light trucks",
+  "indent": "0",
+  "footnotes": [],
+  "units": null,
+  "general": "The duty provided in the applicable subheading + 25%",
+  "special": "",
+  "other": "",
+  "quotaQuantity": null,
+  "additionalDuties": null
+ }
+]

@@ -1,0 +1,108 @@
+# =====================================================================
+#  DROITS ANTIDUMPING / COMPENSATEURS
+#  US : ADD/CVD (Commerce / CBP) — CA : LMSI (SIMA, ASFC)
+#  Les préfixes HS ne servent qu'à SIGNALER une exposition possible :
+#  la portée réelle est définie par le texte de l'ordonnance (scope / définition du produit).
+#  Ajoutez vos propres dossiers ici ou importez un CSV via Admin.
+# =====================================================================
+
+us:
+  searchUrl: "https://aceservices.cbp.dhs.gov/adcvdweb"
+  proceedingsUrl: "https://www.trade.gov/data-visualization/adcvd-proceedings"
+  cases:
+    - case: "A-122-857 / C-122-858"
+      product: "Bois d'œuvre résineux (Certain Softwood Lumber Products)"
+      country: CA
+      prefixes: ["4407.11", "4407.12", "4407.13", "4407.14", "4407.19", "4409.10", "4418.99.10", "4421.91.70", "4421.99.97"]
+      allOthers: { ad: 10.64, cvd: 14.11 }
+      companies:
+        - { name: "Canfor Corporation", ad: 17.00, cvd: 14.11 }
+        - { name: "Resolute", ad: 13.13, cvd: 12.42 }
+        - { name: "West Fraser Mills Ltd.", ad: 4.71, cvd: 15.31 }
+      note: "Résultats finaux du 7e examen administratif (annoncés le 14 oct. 2026) — en vigueur à la publication au Federal Register. S'ajoute à la Section 232 bois (10 %)."
+      url: "https://www.international.gc.ca/controls-controles/softwood-bois_oeuvre/index.aspx"
+      status: vérifié
+    - case: "A-122-863"
+      product: "Tubes soudés de grand diamètre (Large Diameter Welded Pipe)"
+      country: CA
+      prefixes: ["7305.11", "7305.12", "7305.19", "7305.31", "7305.39", "7306.19", "7306.30", "7306.50"]
+      note: "Taux selon l'exportateur — consulter CBP ADCVD Search."
+      status: à valider
+    - case: "A-122-867 / C-122-868"
+      product: "Tours d'éoliennes à l'échelle des services publics (Utility Scale Wind Towers)"
+      country: CA
+      prefixes: ["7308.20", "8502.31"]
+      note: "Taux selon l'exportateur — consulter CBP ADCVD Search."
+      status: à valider
+  # Avertissement générique : origines et chapitres où les ordonnances AD/CVD sont nombreuses
+  riskOrigins: [CN, VN, IN, KR, TW, TR, TH, MY, ID, BR, MX, UA, RU, ZA, OM, AE, SA, EG]
+  riskPrefixes: ["28", "29", "39", "40", "44", "48", "68", "69", "70", "72", "73", "74", "76", "79", "81", "84.81", "85.04", "85.41", "87.08", "87.16", "94.01", "94.03"]
+
+ca:
+  searchUrl: "https://www.cbsa-asfc.gc.ca/sima-lmsi/mif-mev/menu-eng.html"
+  cases:
+    # --- Mesures visant les États-Unis (pertinentes pour US → CA) ---
+    - { case: GB, product: "Plaques de plâtre (gypsum board)", countries: [US], prefixes: ["6809.11"] }
+    - { case: POT, product: "Pommes de terre entières", countries: [US], prefixes: ["0701.90"] }
+    - { case: SUG, product: "Sucre raffiné", countries: [US, DK, DE, NL, GB, EU], prefixes: ["1701.91", "1701.99"] }
+    - { case: CPF, product: "Raccords de tuyauterie en cuivre", countries: [US, CN, KR], prefixes: ["7412.10", "7412.20"] }
+    - { case: OCTG5, product: "Fournitures tubulaires pour puits de pétrole 5", countries: [US, MX, PH, TR, KR], prefixes: ["7304.29", "7306.29"] }
+    # --- Autres origines ---
+    - { case: AE, product: "Extrusions d'aluminium", countries: [CN], prefixes: ["7604", "7608", "7610.90"] }
+    - { case: CSWP1, product: "Tubes soudés en acier au carbone", countries: [CN], prefixes: ["7306.30", "7306.50"] }
+    - { case: CSWP2, product: "Tubes soudés en acier au carbone 2", countries: [TW, IN, OM, KR, TH, AE], prefixes: ["7306.30", "7306.50"] }
+    - { case: CSWP3, product: "Tubes soudés en acier au carbone 3", countries: [PK, VN, TR, PH], prefixes: ["7306.30", "7306.50"] }
+    - { case: CISP, product: "Tuyaux d'évacuation en fonte", countries: [CN], prefixes: ["7303"] }
+    - { case: CRS, product: "Acier laminé à froid", countries: [VN, KR, CN], prefixes: ["7209", "7211.23", "7211.29", "7225.50"] }
+    - { case: RB1, product: "Barres d'armature pour béton", countries: [CN, KR, TR], prefixes: ["7213.10", "7214.20", "7228.30"] }
+    - { case: RB2, product: "Barres d'armature pour béton 2", countries: [ES, BY, TW, HK, JP, PT], prefixes: ["7213.10", "7214.20", "7228.30"] }
+    - { case: RB3, product: "Barres d'armature pour béton 3", countries: [DZ, VN, EG, ID, IT, MY, SG], prefixes: ["7213.10", "7214.20", "7228.30"] }
+    - { case: RB4, product: "Barres d'armature pour béton 4", countries: [OM, RU], prefixes: ["7213.10", "7214.20", "7228.30"] }
+    - { case: RB5, product: "Barres d'armature pour béton 5", countries: [BG, TH, AE], prefixes: ["7213.10", "7214.20", "7228.30"] }
+    - { case: CC, product: "Châssis de conteneurs", countries: [CN], prefixes: ["8716.39"] }
+    - { case: CPF2, product: "Raccords de tuyauterie en cuivre 2", countries: [VN], prefixes: ["7412.10", "7412.20"] }
+    - { case: CT, product: "Tubes en cuivre", countries: [BR, CN, GR, MX, KR], prefixes: ["7411.10"] }
+    - { case: COR, product: "Tôles d'acier résistant à la corrosion", countries: [CN, IN, KR, TW], prefixes: ["7210.30", "7210.41", "7210.49", "7210.61", "7210.69", "7210.70", "7212.20", "7212.30", "7212.40", "7225.92", "7226.99"] }
+    - { case: COR2, product: "Tôles d'acier résistant à la corrosion 2", countries: [TR, VN], prefixes: ["7210.30", "7210.41", "7210.49", "7210.61", "7210.69", "7210.70", "7212.20", "7212.30", "7212.40"] }
+    - { case: DWP, product: "Pâtes alimentaires de blé sèches", countries: [TR], prefixes: ["1902.19"] }
+    - { case: FAS, product: "Attaches (vis, boulons)", countries: [CN, TW], prefixes: ["7318.11", "7318.12", "7318.14", "7318.15"] }
+    - { case: HRSS, product: "Tôles et feuillards laminés à chaud", countries: [BR, CN, IN], prefixes: ["7208.25", "7208.26", "7208.27", "7208.36", "7208.37", "7208.38", "7208.39", "7208.53", "7208.54", "7211.14", "7211.19"] }
+    - { case: GM, product: "Corps broyants", countries: [IN], prefixes: ["7325.91", "7326.11"] }
+    - { case: FGM, product: "Corps broyants forgés", countries: [CN], prefixes: ["7326.11"] }
+    - { case: HP, product: "Tôles fortes", countries: [TW, DE], prefixes: ["7208.51", "7225.40"] }
+    - { case: HPC, product: "Protéine de pois à haute teneur", countries: [CN], prefixes: ["3504.00"] }
+    - { case: HSS, product: "Profilés creux de construction", countries: [KR, TR], prefixes: ["7306.61"] }
+    - { case: LLP, product: "Gros tubes de canalisation", countries: [JP, CN], prefixes: ["7305.11", "7305.12", "7305.19"] }
+    - { case: TR, product: "Gros transformateurs de puissance", countries: [KR], prefixes: ["8504.23"] }
+    - { case: SPT, product: "Petits transformateurs de puissance", countries: [TW, KR], prefixes: ["8504.22", "8504.23"] }
+    - { case: LP1, product: "Tubes de canalisation 1", countries: [CN], prefixes: ["7304.19", "7306.19"] }
+    - { case: LP2, product: "Tubes de canalisation 2", countries: [KR], prefixes: ["7304.19", "7306.19"] }
+    - { case: MAT, product: "Matelas", countries: [CN], prefixes: ["9404.21", "9404.29"] }
+    - { case: OCTG1, product: "Fournitures tubulaires pour puits de pétrole", countries: [CN], prefixes: ["7304.29", "7306.29"] }
+    - { case: OCTG2, product: "Fournitures tubulaires pour puits de pétrole 2", countries: [TW, IN, ID, KR, TH, TR, VN], prefixes: ["7304.29", "7306.29"] }
+    - { case: PP, product: "Tubes de pieux", countries: [CN], prefixes: ["7305.39", "7306.19", "7306.30"] }
+    - { case: PETR2, product: "Résine de polyéthylène téréphtalate 2", countries: [CN, PK], prefixes: ["3907.61", "3907.69"] }
+    - { case: PJ, product: "Raccords courts (pup joints)", countries: [CN], prefixes: ["7304.29"] }
+    - { case: SC, product: "Tubages sans soudure", countries: [CN], prefixes: ["7304.29"] }
+    - { case: SM, product: "Silicium métal", countries: [CN], prefixes: ["2804.69"] }
+    - { case: SSS, product: "Éviers en acier inoxydable", countries: [CN], prefixes: ["7324.10"] }
+    - { case: SG, product: "Caillebotis en acier", countries: [CN], prefixes: ["7308.90"] }
+    - { case: PLA3, product: "Tôles d'acier 3", countries: [CN], prefixes: ["7208.51", "7208.52", "7225.40"] }
+    - { case: PLA7, product: "Tôles d'acier 7", countries: [KR, BR, DK, ID, IT, JP], prefixes: ["7208.51", "7208.52", "7225.40"] }
+    - { case: SS, product: "Feuillards d'emballage en acier", countries: [CN, TR], prefixes: ["7212.40", "7226.92", "7226.99"] }
+    - { case: SW, product: "Fil d'acier", countries: [TW, IN, IT, MY, PT, ES, TH, TR, VN, CN], prefixes: ["7217"] }
+    - { case: SR, product: "Tiges de pompage", countries: [CN], prefixes: ["8413.91", "8431.43"] }
+    - { case: SR2, product: "Tiges de pompage 2 (engagements)", countries: [AR, BR, MX], prefixes: ["8413.91", "8431.43"] }
+    - { case: TPR, product: "Rouleaux de papier thermique", countries: [CN], prefixes: ["4811.90", "4823.90"] }
+    - { case: TC, product: "Refroidisseurs et réchauds thermoélectriques", countries: [CN], prefixes: ["8418.69", "8418.99"] }
+    - { case: TMFT, product: "Vaisselle en fibre moulée thermoformée", countries: [CN], prefixes: ["4823.70"] }
+    - { case: TB, product: "Carrosseries de camions", countries: [CN], prefixes: ["8707.90"] }
+    - { case: UWM, product: "Modules de murs unitisés", countries: [CN], prefixes: ["7610.10", "7610.90"] }
+    - { case: UDS, product: "Sièges domestiques rembourrés", countries: [CN, VN], prefixes: ["9401.40", "9401.61", "9401.71"] }
+    - { case: WG, product: "Gluten de blé", countries: [AU, AT, BE, FR, DE, LT], prefixes: ["1109.00"] }
+    - { case: WG2, product: "Gluten de blé 2", countries: [IT, PL, GB], prefixes: ["1109.00"] }
+    - { case: WT, product: "Tours d'éoliennes", countries: [CN], prefixes: ["7308.20"] }
+    - { case: WR, product: "Fil machine", countries: [CN, EG, VN], prefixes: ["7213", "7227"] }
+    - { case: UBC, product: "Câbles de construction non armés", countries: [CN], prefixes: ["8544.49"] }
+    - { case: DONP2, product: "Contreplaqué décoratif et non structural 2", countries: [CN], prefixes: ["4412"] }
+    - { case: RACK, product: "Rayonnages en acier", countries: [CN], prefixes: ["7308.90", "9403.20"] }

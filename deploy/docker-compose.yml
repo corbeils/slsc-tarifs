@@ -1,0 +1,15 @@
+# Déploiement sur la VPS : /opt/slsc-tarifs/docker-compose.yml
+# Image construite par GitHub Actions à chaque push sur main ; Watchtower la met à jour.
+services:
+  slsc-tarifs:
+    image: ghcr.io/corbeils/slsc-tarifs:latest
+    container_name: slsc-tarifs
+    restart: unless-stopped
+    env_file: .env
+    ports:
+      - "127.0.0.1:8085:8080"    # accès local pour les tests (curl) ; le public passe par npmplus
+    volumes:
+      - ./data:/data              # base SQLite : tarifs importés, listes de codes, taux de change
+      - ./rules:/app/rules        # règles YAML (copiées au 1er démarrage, jamais écrasées ensuite)
+    labels:
+      - com.centurylinklabs.watchtower.enable=true

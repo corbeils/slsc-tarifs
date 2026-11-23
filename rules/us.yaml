@@ -1,0 +1,262 @@
+# =====================================================================
+#  RÈGLES — IMPORTATION AUX ÉTATS-UNIS (CA → US ou autre origine → US)
+#  Mise à jour de référence : 23 novembre 2026
+#  status: "vérifié" = confirmé dans une source officielle ou d'un cabinet reconnu
+#          "à valider" = paramètre plausible, à confirmer (CSMS / Federal Register)
+#  Les taux des rubriques du ch. 99 sont lus AUTOMATIQUEMENT dans l'export USITC
+#  (colonne « General » : "The duty provided in the applicable subheading + X%").
+#  Ce fichier ne sert qu'à dire comment les combiner, à qui elles s'appliquent,
+#  et quelles exemptions existent.
+# =====================================================================
+
+currency: USD
+
+fees:
+  mpf:
+    label: "Merchandise Processing Fee (MPF)"
+    pct: 0.3464
+    min: 34.58          # AF 2027, en vigueur le 1er oct. 2026
+    max: 670.86
+    formalThreshold: 2500
+    informalFlat: 2.77
+    # MPF non perçue sur les marchandises originaires ACEUM/USMCA du Canada ou du Mexique
+    exemptPreferentialOrigins: [CA, MX]
+    legal: "19 CFR 24.23 ; avis CBP AF2027 (FR 2026-15530)"
+    status: vérifié
+  hmf:
+    label: "Harbor Maintenance Fee (HMF) — maritime seulement"
+    pct: 0.125
+    modes: [ocean]
+    legal: "19 CFR 24.24"
+    status: vérifié
+
+# Pays soumis à la colonne 2 (taux « Other ») plutôt qu'à la colonne 1
+column2Countries: [CU, KP, RU, BY]
+
+# Indicateurs de la colonne « Special » admissibles selon l'origine (accords en vigueur)
+preferentialPrograms:
+  CA: [S, S+]
+  MX: [S, S+]
+  AU: [AU]
+  BH: [BH]
+  CL: [CL]
+  CO: [CO]
+  IL: [IL]
+  JO: [JO]
+  JP: [JP]
+  KR: [KR]
+  MA: [MA]
+  OM: [OM]
+  PA: [PA]
+  PE: [PE]
+  SG: [SG]
+  CR: [P, P+]
+  DO: [P, P+]
+  SV: [P, P+]
+  GT: [P, P+]
+  HN: [P, P+]
+  NI: [P, P+]
+
+# ---------------------------------------------------------------------
+# PROGRAMMES RELIÉS AU CH. 99 (détection par renvois/notes de la ligne HTS)
+# Ordre = priorité d'évaluation.
+# ---------------------------------------------------------------------
+programs:
+  - id: US-232-AUTO
+    name: "Section 232 — véhicules et pièces automobiles"
+    family: s232
+    prefixes: ["9903.94"]
+    url: "https://www.cbp.gov/trade/programs-administration/entry-summary/232-tariffs-aluminum-and-steel-faqs"
+    status: vérifié
+    preferential:
+      # Véhicules ACEUM : 25 % sur le contenu non américain ; pièces ACEUM admissibles : exemptées
+      mode: nonUsContent
+      partsExemptOption: usmcaAutoPart
+    note: "Un seul programme 232 par article : l'auto a priorité sur les métaux."
+
+  - id: US-232-MHDV
+    name: "Section 232 — camions moyens/lourds, autobus et pièces"
+    family: s232
+    prefixes: ["9903.74"]
+    status: vérifié
+    preferential:
+      mode: nonUsContent
+      partsExemptOption: usmcaAutoPart
+    note: "Camions 25 %, autobus 10 % ; ACEUM : 25 % sur le contenu non américain (CSMS 68559236)."
+
+  - id: US-232-METALS
+    name: "Section 232 — acier, aluminium, cuivre et dérivés"
+    family: s232
+    prefixes: ["9903.78", "9903.80", "9903.81", "9903.82", "9903.83", "9903.85"]
+    url: "https://www.federalregister.gov/documents/2026/04/09/2026-06960"
+    status: vérifié
+    note: >-
+      Depuis le 6 avr. 2026 (Proclamation 11021) : droit sur la pleine valeur en douane.
+      50 % métaux primaires (Annexe I-A), 25 % la plupart des dérivés (I-B).
+      Depuis le 8 juin 2026 (jusqu'au 31 déc. 2027) : paliers temporaires (Annexes I-C et III).
+    lowMetalExemptPct: 15          # < 15 % du poids en métal visé : non assujetti
+    options:
+      usMelt85:
+        label: "≥ 85 % du métal fondu/coulé aux É.-U. — total plafonné à 10 %"
+        capCombinedPct: 10
+        status: vérifié
+      annexIII:
+        label: "Annexe III (machinerie industrielle fixe, équipement électrique, agricole, CVC résidentiel) — total 15 % jusqu'au 31 déc. 2027"
+        capCombinedPct: 15
+        status: vérifié
+      usmca232:
+        label: "Traitement ACEUM 232 : 25 % sur le contenu non américain, plancher 15 % de la valeur (Proclamation du 1er juin 2026)"
+        nonUsContentRate: 25
+        floorPct: 15
+        status: à valider
+        note: "Portée exacte (Annexe I-C vs tous dérivés) à confirmer selon CSMS/CBP — oct. 2026 : précisions sur le « contenu US »."
+
+  - id: US-232-WOOD
+    name: "Section 232 — bois d'œuvre, billes, meubles rembourrés, armoires"
+    family: s232
+    prefixes: ["9903.76"]
+    status: vérifié
+    note: "Bois d'œuvre résineux et billes 10 % (s'ajoute aux droits AD/CVD) ; meubles rembourrés/armoires/vanités 25 %."
+
+  - id: US-232-SEMI
+    name: "Section 232 — semi-conducteurs"
+    family: s232
+    prefixes: ["9903.79"]
+    status: vérifié
+
+  - id: US-232-OTHER
+    name: "Section 232 — autres programmes (pharma, polysilicium, drones, etc.)"
+    family: s232
+    descriptionRegex: "Section 232"
+    status: à valider
+
+  - id: US-338-CA
+    name: "Section 338 — produits du Canada (+50 %)"
+    family: s338
+    prefixes: ["9903.03"]
+    defaultOrigins: [CA]
+    url: "https://www.cbp.gov/trade/remedies"
+    status: vérifié
+    note: "Aucune exemption ACEUM. S'ajoute à la Section 232, sauf liste laitière (9903.03.15)."
+    headings:
+      "9903.03.12": { label: "Liste alcool (note 51(b)(1))", origins: [CA] }
+      "9903.03.13": { label: "Liste produits laitiers (note 51(b)(2))", origins: [CA], exemptIfFamilies: [s232], exemptionCh99: "9903.03.15" }
+      "9903.03.14": { label: "Liste « véhicules automobiles » (ch. 4 à 97)", origins: [CA] }
+      "9903.03.15": { label: "Exclusion — marchandises déjà visées par la Section 232 (liste laitière)", kind: exemption }
+      "9903.03.16": { label: "Exclusion — aéronefs civils, moteurs, pièces", kind: exemption, option: civilAircraft }
+
+  - id: US-301-CN
+    name: "Section 301 — Chine (listes 1 à 4A et hausses 2024)"
+    family: s301cn
+    prefixes: ["9903.88", "9903.91", "9903.92"]
+    defaultOrigins: [CN]
+    status: vérifié
+    note: "Les rubriques d'exclusion (taux 0) sont proposées comme exemptions à réclamer."
+
+  - id: US-201
+    name: "Section 201 — mesures de sauvegarde"
+    family: s201
+    prefixes: ["9903.45"]
+    status: à valider
+
+# ---------------------------------------------------------------------
+# MESURES APPLIQUÉES PAR PAYS D'ORIGINE (non rattachées aux lignes HTS)
+# ---------------------------------------------------------------------
+measures:
+  - id: US-301-FL
+    name: "Section 301 — travail forcé (60 économies)"
+    program: "Section 301"
+    legal: "USTR, 91 FR 47318 (23 juil. 2026) — note 52 du ch. 99"
+    url: "https://ustr.gov"
+    status: vérifié
+    from: "2026-07-24"
+    scope: { all: true }
+    # Rubriques par pays détectées automatiquement dans 9903.05.20 à 9903.05.84 si l'export USITC est importé.
+    autoFromCh99Range: ["9903.05.20", "9903.05.84"]
+    # Valeurs de repli si le ch. 99 n'est pas encore importé :
+    originRates:
+      CA: 10
+      MX: 10
+      CN: 12.5
+      AR: 10
+      BD: 10
+      KH: 10
+      EC: 10
+      SV: 10
+      GT: 10
+      HN: 10
+      IN: 10
+      ID: 10
+      JO: 10
+      MY: 10
+      PK: 10
+      LK: 10
+      TT: 10
+      GB: 10
+      EU: 10
+      TW: 10
+      JP: 12.5
+      KR: 12.5
+      CH: 12.5
+    originCh99:
+      CA: "9903.05.29"
+      MX: "9903.05.55"
+      CN: "9903.05.31"
+    # Plafond combiné NPF + 301 (« net of MFN »)
+    originCaps:
+      EU: 10
+      TW: 10
+      JP: 12.5
+      KR: 12.5
+      CH: 12.5
+    exemptIf:
+      - { preferentialDutyFree: true, origins: [CA], ch99: "9903.05.93", label: "Marchandise du Canada admise en franchise ACEUM" }
+      - { preferentialDutyFree: true, origins: [MX], ch99: "9903.05.94", label: "Marchandise du Mexique admise en franchise ACEUM" }
+      - { families: [s232], ch99: "9903.05.90", label: "Article visé par un programme 232 (acier/alu/cuivre, autos, camions, bois, semi-conducteurs)" }
+      - { refs: ["9903.05.86"], ch99: "9903.05.86", label: "Produit inscrit à la liste d'exemption (aliments, énergie, métaux, haute techno.)" }
+      - { option: civilAircraft, ch99: "9903.05.88", label: "Aéronef civil, moteurs, pièces" }
+      - { option: humanitarian, ch99: "9903.05.91", label: "Dons humanitaires (aliments, vêtements, médicaments)" }
+    note: "Liste complète des 60 économies : rubriques 9903.05.20 à 9903.05.84 (importées automatiquement)."
+
+  - id: US-338-BAN
+    name: "Section 338 — INTERDICTION d'importation (produits du Canada)"
+    program: "Section 338"
+    kind: ban
+    from: "2026-09-29"
+    origins: [CA]
+    scope:
+      prefixes: ["8711.50.00"]
+      codeList: true      # ajouter les listes alcool/produits laitiers via Admin → Listes de codes
+    status: vérifié
+    note: "Motocyclettes 8711.50.00 confirmées ; certaines boissons alcoolisées et produits laitiers : importer les annexes des proclamations du 8 sept. 2026."
+
+# ---------------------------------------------------------------------
+# RÉGIMES SPÉCIAUX (ch. 98) proposés dans le simulateur
+# ---------------------------------------------------------------------
+regimes:
+  - id: none
+    label: "Importation ordinaire"
+  - id: us-goods-returned
+    code: "9801.00.10"
+    label: "Marchandises américaines retournées (sans amélioration)"
+    effect: { baseFree: true, skipAdditional: true }
+    note: "Produits des É.-U. : les droits additionnels du ch. 99 (232/301/338) ne visent pas l'origine américaine. Documentation d'exportation requise (CBP 4811/déclaration)."
+    status: vérifié
+  - id: repair-warranty
+    code: "9802.00.40"
+    label: "Réparation sous garantie à l'étranger"
+    effect: { baseFree: true, onRepairValue: true }
+    note: "Droits additionnels du ch. 99 calculés sur la valeur de la réparation — à valider selon le programme (CSMS)."
+    status: à valider
+  - id: repair
+    code: "9802.00.50"
+    label: "Réparation / modification à l'étranger (droit sur la valeur ajoutée)"
+    effect: { onRepairValue: true, freeIfPreferential: [CA, MX] }
+    note: "Franchise pour réparations effectuées au Canada/Mexique (ACEUM). Droits additionnels du ch. 99 : sur la valeur de la réparation — à valider."
+    status: à valider
+  - id: tib
+    code: "9813.00.xx"
+    label: "Admission temporaire sous caution (TIB) — réexportation ≤ 1 an"
+    effect: { deferred: true, bondMultiple: 2 }
+    note: "Aucun droit perçu si réexporté dans les délais ; cautionnement ≈ 2 × droits estimés. Usages admissibles limités (19 CFR 10.31)."
+    status: vérifié

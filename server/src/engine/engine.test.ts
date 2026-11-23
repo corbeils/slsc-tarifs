@@ -1,0 +1,152 @@
+import path from 'node:path';
+import os from 'node:os';
+import fs from 'node:fs';
+import { beforeAll, describe, expect, it } from 'vitest';
+import { computeDuty, parseCaPreferential, parseCh99Additional, parseRate, parseUsSpecial } from './rates.js';
+import { countriesFromHeading } from '../importers/us-hts.js';
+import { extractCodes, saveCodeList } from '../importers/misc.js';
+import { openDb, type DB } from '../db.js';
+import { loadRules, type Rules } from '../rules.js';
+import { calculate } from './index.js';
+import { ensureSeed } from '../seed.js';
+
+describe('parseRate', () => {
+  it('Free / pourcentage / spécifique / composé', () => {
+    expect(parseRate('Free').free).toBe(true);
+    expect(parseRate('4.4%').adValorem).toBe(4.4);
+    const s = parseRate('2.2¢/kg');
+    expect(s.specific[0]).toMatchObject({ amount: 0.022, per: 'kg', kind: 'add' });
+    const c = parseRate('6.4¢/kg + 2.8%');
+    expect(c.adValorem).toBe(2.8);
+    expect(c.specific[0].amount).toBeCloseTo(0.064);
+    expect(parseRate('$2.27/pf. liter').specific[0].per).toBe('pf.liter');
+  });
+  it('« but not less than » (tarif canadien hors engagement)', () => {
+    const r = parseRate('245.5% but not less than $4.52/kg');
+    expect(r.adValorem).toBe(245.5);
+    expect(r.specific[0]).toMatchObject({ amount: 4.52, per: 'kg', kind: 'min' });
+    // 1000 kg à 1 000 $ : 245,5 % = 2 455 $ < minimum 4 520 $
+    expect(computeDuty(r, 1000, { kg: 1000 }).amount).toBe(4520);
+    expect(computeDuty(r, 10000, { kg: 1000 }).amount).toBe(24550);
+  });
+  it('signale les taux non interprétables', () => {
+    expect(parseRate('A duty upon the value of such repairs or alterations').complex).toBe(true);
+    expect(parseRate('0%').free).toBe(true);
+  });
+});
+
+describe('colonnes préférentielles', () => {
+  it('colonne Special HTSUS', () => {
+    const m = parseUsSpecial('Free (A+,AU,BH,CL,CO,D,E,IL,JO,KR,MA,OM,P,PA,PE,S,SG) 3.4% (JP)');
+    expect(m.S).toBe('Free');
+    expect(m.JP).toBe('3.4%');
+  });
+  it('tarifs préférentiels canadiens', () => {
+    const m = parseCaPreferential('UST, MXT, CIAT: Free GPT: 6% CPTPT: 1.1%');
+    expect(m).toMatchObject({ UST: 'Free', MXT: 'Free', CIAT: 'Free', GPT: '6%', CPTPT: '1.1%' });
+  });
+});
+
+describe('chapitre 99', () => {
+  it('taux additionnel et exemption', () => {
+    expect(parseCh99Additional('The duty provided in the applicable subheading + 25%')).toEqual({ addPct: 25, kind: 'duty' });
+    expect(parseCh99Additional('The duty provided in the applicable subheading')).toEqual({ addPct: 0, kind: 'exemption' });
+  });
+  it('détection des pays', () => {
+    expect(countriesFromHeading('Except as provided in headings 9903.05.85 to 9903.05.93, articles the product of Canada, as provided for in U.S. note 52').countries).toEqual(['CA']);
+    const r = countriesFromHeading('Section 232 Steel: articles of steel, except products of the United Kingdom');
+    expect(r.except).toEqual(['GB']);
+  });
+});
+
+describe('extraction de codes', () => {
+  it('formats mixtes avec taux', () => {
+    const c = extractCodes('7208.10.00 Hot-rolled 50%\n8418.10.00 Refrigerators 25 %\n0406909900 cheese', true);
+    expect(c).toEqual([
+      { code: '72081000', rate: 50 },
+      { code: '84181000', rate: 25 },
+      { code: '0406909900', rate: null },
+    ]);
+  });
+});
+
+describe('scénarios (données de démonstration)', () => {
+  let db: DB;
+  let rules: Rules;
+  beforeAll(async () => {
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'tarifs-'));
+    db = openDb(path.join(dir, 't.sqlite'));
+    rules = loadRules(path.resolve(__dirname, '../../../rules'));
+    process.env.SEED_DIR ??= path.resolve(__dirname, '../../../seed');
+    await ensureSeed(db, () => {});
+  });
+
+  it('CA→US : presse ACEUM — aucun droit, 301 et MPF exemptées', () => {
+    const r = calculate(db, rules, { direction: 'CA-US', code: '8462110035', origin: 'CA', value: 250000, currency: 'USD', preferential: true });
+    expect(r.totals.total).toBe(0);
+    expect(r.lines.find((l) => l.key === 'US-301-FL')?.ch99).toBe('9903.05.93');
+  });
+  it('CA→US : sans ACEUM — NPF 4,4 % + 301 10 % + MPF plafonnée', () => {
+    const r = calculate(db, rules, { direction: 'CA-US', code: '8462110035', origin: 'CA', value: 250000, currency: 'USD' });
+    expect(r.totals.duties).toBe(36000);
+    expect(r.totals.fees).toBe(670.86);
+  });
+  it('CA→US : dérivé acier Annexe III plafonné à 15 % au total', () => {
+    const r = calculate(db, rules, { direction: 'CA-US', code: '7308909500', origin: 'CA', value: 100000, currency: 'USD', preferential: true, options: { annexIII: true } });
+    expect(r.totals.duties).toBe(15000);
+  });
+  it('CA→US : teneur en métal < 15 % — 232 exemptée', () => {
+    const r = calculate(db, rules, { direction: 'CA-US', code: '7326908688', origin: 'CA', value: 10000, currency: 'USD', preferential: true, metalWeightPct: 10 });
+    expect(r.lines.find((l) => l.key === 'US-232-METALS')?.amount).toBe(0);
+  });
+  it('CA→US : bois — 232 10 % + AD/CVD tous les autres 24,75 %', () => {
+    const r = calculate(db, rules, { direction: 'CA-US', code: '4407110092', origin: 'CA', value: 10000, currency: 'USD', preferential: true, includeAdcvd: true });
+    expect(r.totals.duties).toBe(1000);
+    expect(r.totals.adcvd).toBe(2475);
+  });
+  it('CA→US : véhicule ACEUM — 232 sur le contenu non US, 338 en sus', () => {
+    const r = calculate(db, rules, { direction: 'CA-US', code: '87038000', origin: 'CA', value: 60000, currency: 'USD', preferential: true, usContentPct: 40 });
+    expect(r.lines.find((l) => l.key === 'US-232-AUTO')?.amount).toBe(9000);
+    expect(r.lines.find((l) => l.key === 'US-338-CA')?.amount).toBe(30000);
+  });
+  it('CA→US : produit laitier — 338 exempté si 232 (liste laitière seulement)', () => {
+    const r = calculate(db, rules, { direction: 'CA-US', code: '04061008', origin: 'CA', value: 1000, currency: 'USD', preferential: true });
+    expect(r.lines.find((l) => l.key === 'US-338-CA')?.amount).toBe(500);
+  });
+  it('CA→US : motocyclette — interdiction', () => {
+    const r = calculate(db, rules, { direction: 'CA-US', code: '87115000', origin: 'CA', value: 1000, currency: 'USD' });
+    expect(r.flags.bans.length).toBeGreaterThan(0);
+  });
+  it('UE→US : 301 plafonnée « net de NPF » à 10 %', () => {
+    const r = calculate(db, rules, { direction: 'CA-US', code: '8483405010', origin: 'DE', value: 20000, currency: 'USD' });
+    expect(r.totals.dutyPct).toBe(10);
+  });
+  it('US→CA : acier américain — surtaxe 50 % malgré CUSMA, TPS sur base majorée', () => {
+    const r = calculate(db, rules, { direction: 'US-CA', code: '72085100', origin: 'US', value: 100000, currency: 'CAD', preferential: true });
+    expect(r.totals.duties).toBe(50000);
+    expect(r.totals.taxes).toBe(7500);
+  });
+  it('US→CA : véhicule CUSMA — surtaxe sur le contenu non canadien/mexicain, TVH Ontario', () => {
+    const r = calculate(db, rules, { direction: 'US-CA', code: '87038000', origin: 'US', value: 60000, currency: 'CAD', preferential: true, caMxContentPct: 30, province: 'ON' });
+    expect(r.totals.duties).toBe(10500);
+    expect(r.lines.find((l) => l.key === 'hst')?.ratePct).toBe(13);
+  });
+  it('CN→CA : acier hors contingent — non cumulatif avec la surtaxe Chine', () => {
+    const r = calculate(db, rules, { direction: 'US-CA', code: '72085100', origin: 'CN', value: 100000, currency: 'CAD', options: { overQuota: true } });
+    expect(r.totals.duties).toBe(50000);
+    expect(r.lines.find((l) => l.key === 'CA-CN-SA')?.notCumulated).toBe(true);
+  });
+  it('US→CA : liste importée — la liste officielle remplace les préfixes indicatifs', () => {
+    saveCodeList(db, 'CA-US-2026-25', [{ code: '84181000', rate: null }], { replace: true });
+    const r = calculate(db, rules, { direction: 'US-CA', code: '84181000', origin: 'US', value: 1000, currency: 'CAD', preferential: true });
+    expect(r.lines.find((l) => l.key === 'CA-US-2026-25')?.amount).toBe(250);
+    saveCodeList(db, 'CA-US-SA', [{ code: '72101100', rate: null }], { replace: true });
+    const r2 = calculate(db, rules, { direction: 'US-CA', code: '72085100', origin: 'US', value: 1000, currency: 'CAD', preferential: true });
+    expect(r2.lines.find((l) => l.key === 'CA-US-SA')).toBeUndefined();
+  });
+  it('conversion de devise USD → CAD', () => {
+    const r = calculate(db, rules, { direction: 'US-CA', code: '39231090', origin: 'DE', value: 1000, currency: 'USD', fxUsdCad: 1.4 });
+    expect(r.value).toBe(1400);
+    expect(r.lines[0].amount).toBe(91);
+  });
+});

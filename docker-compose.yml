@@ -1,0 +1,12 @@
+services:
+  tarifs:
+    build: .
+    image: slsc-tarifs:latest
+    container_name: slsc-tarifs
+    restart: unless-stopped
+    env_file: .env
+    ports:
+      - "8085:8080"        # derrière Nginx Proxy Manager : pointer tarifs.stevecorbeil.net → <hôte>:8085
+    volumes:
+      - ./data:/data        # base SQLite (tarifs importés, listes de codes, taux de change)
+      - ./rules:/app/rules  # règles YAML modifiables (copiées au premier démarrage)

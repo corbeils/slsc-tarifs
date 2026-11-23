@@ -223,6 +223,15 @@ describe('Section 232 / 301 / 338 by annex lists (real USITC data has no Chapter
     expect(r.lines.find((x) => x.key === 'US-232-AUTO')?.amount).toBe(1250);
     expect(r.lines.find((x) => x.key === 'US-338-CA')?.amount).toBe(5000);
   });
+  it('aluminum smelt/cast unknown → 200%, cancels Annex III cap; steel unknown disables U.S.-metal option', () => {
+    const r = calc('8462110035', 'CA', { options: { aluminumUnknown: true } });
+    expect(r.lines.find((x) => x.key === 'US-232-METALS')?.amount).toBe(20000);
+    expect(r.flags.warnings.some((w) => w.title.startsWith('Aluminum'))).toBe(true);
+    const s1 = calc('7208510030', 'CA', { options: { usMelt85: true } }).lines.find((x) => x.key === 'US-232-METALS')?.amount;
+    const s2 = calc('7208510030', 'CA', { options: { usMelt85: true, steelUnknown: true } }).lines.find((x) => x.key === 'US-232-METALS')?.amount;
+    expect(s1).toBe(1000);
+    expect(s2).toBe(5000);
+  });
   it('301 China: list import with rate', () => {
     saveCodeList(db, 'US-301-CN-L3', [{ code: '7326908688', rate: null }], { replace: true });
     const r = calc('7326908688', 'CN');

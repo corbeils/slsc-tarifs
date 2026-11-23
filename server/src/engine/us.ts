@@ -257,9 +257,20 @@ export function calcUS(db: DB, rules: Rules, line: LineRow, input: CalcInput, fx
           notes.push(`USMCA: on non-U.S. content (${round2(100 - us)}% of value)`);
         }
       }
+      const disabled = new Set(Object.entries(p.options ?? {}).flatMap(([k, o]) => (opts[k] ? o.disables ?? [] : [])));
+      let override: { rate: number; label: string } | null = null;
       for (const [key, o] of Object.entries(p.options ?? {})) {
         options.push({ key, label: o.label, context: p.name, status: o.status, note: o.note });
         if (!opts[key]) continue;
+        if (disabled.has(key)) {
+          notes.push(`"${o.label}" not applicable (${Object.entries(p.options ?? {}).find(([k, x]) => opts[k] && x.disables?.includes(key))?.[1].label})`);
+          continue;
+        }
+        if (o.warning) flags.warnings.push({ level: 'warning', title: o.label, detail: o.warning });
+        if (o.rate !== undefined) {
+          override = { rate: o.rate, label: o.label };
+          continue;
+        }
         if (o.capCombinedPct !== undefined) {
           cap = o.capCombinedPct;
           notes.push(`Base duty + 232 capped at ${cap}% combined`);
@@ -275,6 +286,13 @@ export function calcUS(db: DB, rules: Rules, line: LineRow, input: CalcInput, fx
         }
       }
 
+      if (override) {
+        rate = override.rate;
+        basis = dutiable;
+        floor = 0;
+        cap = undefined;
+        notes.unshift(`${override.label}: ${override.rate}% on the full value`);
+      }
       let amount = (rate / 100) * basis;
       if (floor) amount = Math.max(amount, (floor / 100) * dutiable);
       let ratePct: number | null = rate;

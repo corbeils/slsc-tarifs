@@ -77,6 +77,11 @@ const ProgramOption = z
     capCombinedPct: z.number().optional(),
     nonUsContentRate: z.number().optional(),
     floorPct: z.number().optional(),
+    /** Replaces the program rate (and cancels caps/floors), e.g. 200% for unknown/Russian aluminum. */
+    rate: z.number().optional(),
+    /** Option keys that have no effect when this option is ticked. */
+    disables: z.array(z.string()).optional(),
+    warning: z.string().optional(),
     status: Status,
     note: z.string().optional(),
   })

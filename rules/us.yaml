@@ -129,6 +129,18 @@ programs:
         label: "Annex III (fixed industrial machinery, power, agricultural equipment, residential HVAC) — 15% total through Dec. 31, 2027"
         capCombinedPct: 15
         status: verified
+      aluminumUnknown:
+        label: "Aluminum: country of smelt/cast unknown, or aluminum smelted/cast in Russia — 200%"
+        rate: 200
+        status: verified
+        note: "CBP charges the Russian aluminum rate (9903.85.67 / 9903.85.68) when the country of smelt or cast is reported as unknown (CSMS 65340246, since June 28, 2025)."
+        warning: "Unknown country of smelt/cast: 200% Section 232 rate. Obtain the smelt and cast countries from the supplier (mill certificate / declaration) to pay the normal annex rate."
+      steelUnknown:
+        label: "Steel: country of melt & pour unknown"
+        disables: [usMelt85]
+        status: to verify
+        note: "No punitive rate identified for steel, but the U.S.-metal (≥ 85%) reduction and other melt-based treatments cannot be claimed."
+        warning: "Unknown country of melt & pour: the normal annex rate applies and the U.S.-metal reduction cannot be claimed. CBP still requires the melt & pour country on the entry."
       usmca232:
         label: "USMCA 232 treatment: 25% on non-U.S. content, 15% floor on total value (June 1, 2026 Proclamation)"
         nonUsContentRate: 25

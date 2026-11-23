@@ -229,3 +229,21 @@ describe('Section 232 / 301 / 338 by annex lists (real USITC data has no Chapter
     expect(r.lines.find((x) => x.key === 'US-301-CN')?.amount).toBe(2500);
   });
 });
+
+import { extractCodesWithStreamRates } from '../importers/misc.js';
+describe('Finance Canada list — markup-independent stream reader', () => {
+  const expected = [
+    { code: '04021010', rate: 50 },
+    { code: '04021020', rate: 50 },
+    { code: '57050000', rate: 25 },
+    { code: '84672100', rate: 15 },
+  ];
+  it('table rows', () => {
+    const html = '<table><tr><td>0402.10.10</td><td>Milk and cream.</td><td>fat not exceeding 1.5%: Within access commitment</td><td>50%</td></tr><tr><td>0402.10.20</td><td>Milk.</td><td>Over access commitment</td><td>50%</td></tr><tr><td>5705.00.00</td><td>Carpets, of heading 57.05</td><td>Other</td><td>25</td></tr><tr><td>8467.21.00</td><td>Tools</td><td>Drills, 2 speeds</td><td>15 %</td></tr></table><p>Date modified: 2026-10-09</p>';
+    expect(extractCodesWithStreamRates(htmlToText(html))).toEqual(expected);
+  });
+  it('flattened text / divs / bullets', () => {
+    const t = '• 0402.10.10 Milk and cream. - fat not exceeding 1.5%: Within access commitment 50% • 0402.10.20 Milk. Over access commitment 50% 5705.00.00 Carpets Other 25 8467.21.00 Tools Drills, 2 speeds 15 Date modified: 2026-10-09';
+    expect(extractCodesWithStreamRates(t)).toEqual(expected);
+  });
+});

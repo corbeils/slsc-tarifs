@@ -100,6 +100,44 @@ export function extractCodes(text: string, withRates = false, opts: { headings?:
   return [...out.entries()].map(([code, rate]) => ({ code, rate }));
 }
 
+/**
+ * Markup-independent reader for "tariff item … description … rate" tables (Finance Canada lists).
+ * Walks the text as a stream: every 8/10-digit tariff item receives the last rate token found
+ * before the next tariff item. Numbers inside descriptions ("1.5%") are skipped because only
+ * plausible surtax rates are accepted and the LAST rate before the next item wins.
+ */
+export function extractCodesWithStreamRates(text: string, allowed = [10, 15, 20, 25, 30, 35, 40, 50, 60, 75, 100]): ExtractedCode[] {
+  const flat = text.replace(/\s+/g, ' ');
+  const itemRe = /(?<![\d.])(\d{4}\.\d{2}\.\d{2}(?:\.\d{2})?)(?![\d.])/g;
+  const items = [...flat.matchAll(itemRe)];
+  const out = new Map<string, number>();
+  let pending: string[] = [];
+  for (let i = 0; i < items.length; i++) {
+    const code = digits(items[i][1]);
+    if (!code.startsWith('99')) pending.push(code);
+    const start = items[i].index! + items[i][0].length;
+    const end = i + 1 < items.length ? items[i + 1].index! : Math.min(flat.length, start + 2000);
+    const seg = flat.slice(start, end);
+    const rates = [...seg.matchAll(/(?<![\d.,])(\d{1,3})\s*(?:%|per\s*cent|p\.\s*100)?(?![\d.,%]*\d)/gi)]
+      .map((m) => Number(m[1]))
+      .filter((n) => allowed.includes(n));
+    // the rate is the last plausible number of the segment, and it must sit at the end of the segment
+    const lastMatch = [...seg.matchAll(/(\d{1,3})\s*(?:%|per\s*cent)?\s*$/gi)].at(-1);
+    // last row of the table: the segment runs into the page footer, so take the first plausible rate
+    const r =
+      i + 1 === items.length
+        ? rates[0] ?? null
+        : lastMatch && allowed.includes(Number(lastMatch[1]))
+          ? Number(lastMatch[1])
+          : null;
+    if (r !== null) {
+      for (const c of pending) out.set(c, Math.max(out.get(c) ?? 0, r));
+      pending = [];
+    }
+  }
+  return [...out.entries()].map(([code, rate]) => ({ code, rate }));
+}
+
 /** Keeps only codes that exist in the imported tariff (filters page numbers, years, etc.). */
 export function validateCodes(db: DB, j: 'US' | 'CA', codes: ExtractedCode[]): ExtractedCode[] {
   const n = (db.prepare('SELECT COUNT(*) n FROM lines WHERE j = ?').get(j) as { n: number }).n;

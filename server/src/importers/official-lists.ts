@@ -1,7 +1,7 @@
 import type { DB } from '../db.js';
 import { setMeta } from '../db.js';
 import type { Rules } from '../rules.js';
-import { extractCodes, fetchText, saveCodeList, section, validateCodes, type ExtractedCode } from './misc.js';
+import { extractCodes, extractCodesWithStreamRates, fetchText, saveCodeList, section, validateCodes, type ExtractedCode } from './misc.js';
 
 /**
  * Imports every program list that declares official `sources` (proclamation annex PDFs, etc.):
@@ -27,13 +27,20 @@ export async function syncOfficialLists(db: DB, rules: Rules, log: (m: string) =
             cache.set(s.url, await fetchText(s.url));
           }
           const text = section(cache.get(s.url)!, s.from, s.until);
-          const found = extractCodes(text, false, { headings: !s.rates, lastCellRate: s.rates === 'lastCell' });
+          const found =
+            s.rates === 'stream'
+              ? extractCodesWithStreamRates(text)
+              : extractCodes(text, false, { headings: !s.rates, lastCellRate: s.rates === 'lastCell' });
+          log(`  ${found.length} tariff numbers read from ${s.url.split('/').pop()}`);
           for (const c of validateCodes(db, l.j, found)) {
             const prev = all.get(c.code);
             if (!prev || (c.rate ?? 0) > (prev.rate ?? 0)) all.set(c.code, c);
           }
         }
-        if (all.size === 0) throw new Error('no tariff numbers found in the source');
+        if (all.size === 0) {
+          const t = cache.get(l.sources[0].url) ?? '';
+          throw new Error(`no tariff numbers found in the source (received ${t.length} characters: "${t.replace(/\s+/g, ' ').trim().slice(0, 140)}…")`);
+        }
         saveCodeList(db, l.id, [...all.values()], { replace: true, source: l.sources.map((s) => s.url).join(' + ') });
         const byRate = new Map<string, number>();
         for (const c of all.values()) if (c.rate !== null) byRate.set(`${c.rate}%`, (byRate.get(`${c.rate}%`) ?? 0) + 1);

@@ -40,7 +40,7 @@ export default function App() {
             <path d="M21 8l4 4-4 4M11 16l-4 4 4 4" stroke="#fff" strokeWidth="2.4" fill="none" strokeLinecap="round" strokeLinejoin="round" />
           </svg>
           <div>
-            <div className="brand-title">SLSC Tarifs</div>
+            <div className="brand-title">SLSC TARIFF SIMULATOR</div>
             <div className="brand-sub">Simulateur de droits Canada ⇄ États-Unis</div>
           </div>
         </div>

@@ -15,8 +15,8 @@ export default function Measures() {
   return (
     <div className="wide">
       <div className="seg small">
-        <button className={tab === 'us' ? 'on' : ''} onClick={() => setTab('us')}>Importation US</button>
-        <button className={tab === 'ca' ? 'on' : ''} onClick={() => setTab('ca')}>Importation CA</button>
+        <button className={tab === 'us' ? 'on' : ''} onClick={() => setTab('us')}>INBOUND USA</button>
+        <button className={tab === 'ca' ? 'on' : ''} onClick={() => setTab('ca')}>INBOUND CANADA</button>
         <button className={tab === 'adcvd' ? 'on' : ''} onClick={() => setTab('adcvd')}>AD/CVD · LMSI</button>
         <button className={tab === 'lic' ? 'on' : ''} onClick={() => setTab('lic')}>Licences et permis</button>
       </div>

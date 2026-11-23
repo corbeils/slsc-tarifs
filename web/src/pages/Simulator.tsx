@@ -158,10 +158,10 @@ export default function Simulator() {
       <section className="card form">
         <div className="seg">
           <button className={f.direction === 'CA-US' ? 'on' : ''} onClick={() => switchDir('CA-US')}>
-            <span className="dir"><i>CA</i> → <i>US</i></span> Importation aux États-Unis
+            <span className="dir"><i>INBOUND USA</i></span> Importation aux États-Unis
           </button>
           <button className={f.direction === 'US-CA' ? 'on' : ''} onClick={() => switchDir('US-CA')}>
-            <span className="dir"><i>US</i> → <i>CA</i></span> Importation au Canada
+            <span className="dir"><i>INBOUND CANADA</i></span> Importation au Canada
           </button>
         </div>
 
@@ -363,7 +363,7 @@ function Result({ r, loading, f, setChoice }: { r: CalcResult; loading: boolean;
   const copy = () => {
     const txt = [
       `${r.line!.display} — ${r.line!.description}`,
-      `Origine ${f.origin} · Valeur ${money(r.value, cur)} · ${r.direction === 'CA-US' ? 'Importation US' : 'Importation CA'}`,
+      `Origine ${f.origin} · Valeur ${money(r.value, cur)} · ${r.direction === 'CA-US' ? 'INBOUND USA' : 'INBOUND CANADA'}`,
       ...r.lines.map((l) => `${l.label}${l.ch99 ? ' (' + l.ch99 + ')' : ''} : ${l.ratePct !== null && l.ratePct !== undefined ? pct(l.ratePct) : l.rateText ?? ''} → ${money(l.amount, cur)}`),
       `TOTAL : ${money(r.totals.total, cur)} (droits ${pct(r.totals.dutyPct)})`,
       ...r.flags.bans.map((x) => `INTERDICTION : ${x.title}`),

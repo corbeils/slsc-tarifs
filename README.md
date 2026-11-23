@@ -1,4 +1,4 @@
-# SLSC Tarifs — simulateur de droits Canada ⇄ États-Unis
+# SLSC TARIFF SIMULATOR — simulateur de droits Canada ⇄ États-Unis
 
 Simulateur auto-hébergé (dans l'esprit de tariffs.flexport.com) qui calcule, pour un code HTS / numéro tarifaire, une origine et une valeur :
 

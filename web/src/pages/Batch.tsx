@@ -60,8 +60,8 @@ export default function Batch() {
           <div>
             <label className="lbl">Direction</label>
             <select className="input" value={direction} onChange={(e) => setDirection(e.target.value as Direction)}>
-              <option value="CA-US">Importation aux États-Unis</option>
-              <option value="US-CA">Importation au Canada</option>
+              <option value="CA-US">INBOUND USA — importation aux États-Unis</option>
+              <option value="US-CA">INBOUND CANADA — importation au Canada</option>
             </select>
           </div>
           <div>

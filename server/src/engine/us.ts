@@ -18,6 +18,7 @@ import {
   scopeMatch,
 } from './common.js';
 import { lang, t } from '../i18n/index.js';
+import { agreementFor, listAgreements, pickAgreement } from './agreements.js';
 import type { CalcInput, CalcLine, CalcResult, ExemptionInfo, Flag, OptionInfo } from './types.js';
 
 interface Heading {
@@ -95,13 +96,18 @@ export function calcUS(db: DB, rules: Rules, line: LineRow, input: CalcInput, fx
   const column2 = R.column2Countries.includes(origin);
   const special = parseUsSpecial(line.special);
   const progCodes = R.preferentialPrograms[origin] ?? [];
-  const prefCode = progCodes.find((c) => special[c] !== undefined);
+  const agreements = column2 ? [] : listAgreements(R.agreements, special, origin);
+  const picked = pickAgreement(agreements, input.agreement);
+  const prefCode = picked?.code ?? progCodes.find((c) => special[c] !== undefined);
   const isNA = origin === 'CA' || origin === 'MX';
   // Canada/Mexique : l'origine ACEUM se réclame même sans indicateur S/S+ (taux général déjà « Free »,
   // exemption 301 et MPF) — cf. 9903.05.93.
   const prefEligible = (!!prefCode || isNA) && !column2;
   const claimed = !!input.preferential && prefEligible;
-  const prefLabel = isNA ? t('USMCA') : t('Free trade agreement');
+  // USMCA-specific effects (Section 232 treatment, 301 exemption) only when USMCA itself is claimed
+  const usmcaClaimed = claimed && isNA && (!prefCode || /^S\+?$/.test(prefCode));
+  const prefAgreement = prefCode ? agreementFor(R.agreements, prefCode) : undefined;
+  const prefLabel = isNA && (!prefCode || /^S\+?$/.test(prefCode)) ? t('USMCA') : prefAgreement?.short ?? prefAgreement?.name ?? t('Free trade agreement');
 
   let baseText = column2 ? line.other ?? '' : claimed && prefCode ? special[prefCode] : line.general ?? '';
   let baseNote = column2
@@ -249,9 +255,9 @@ export function calcUS(db: DB, rules: Rules, line: LineRow, input: CalcInput, fx
       if (p.preferential && naOrigin) {
         if (p.preferential.partsExemptOption) {
           options.push({ key: p.preferential.partsExemptOption, label: t('USMCA-qualifying auto part (exempt)'), context: p.name });
-          if (opts[p.preferential.partsExemptOption] && claimed) exempt = { label: t('USMCA-qualifying part') };
+          if (opts[p.preferential.partsExemptOption] && usmcaClaimed) exempt = { label: t('USMCA-qualifying part') };
         }
-        if (p.preferential.mode === 'nonUsContent' && claimed && !exempt) {
+        if (p.preferential.mode === 'nonUsContent' && usmcaClaimed && !exempt) {
           needs.usContent = true;
           const us = input.usContentPct ?? 0;
           basis = dutiable * (1 - us / 100);
@@ -277,7 +283,7 @@ export function calcUS(db: DB, rules: Rules, line: LineRow, input: CalcInput, fx
           notes.push(t('Base duty + 232 capped at {cap}% combined', { cap }));
         }
         if (o.nonUsContentRate !== undefined) {
-          if (claimed && naOrigin) {
+          if (usmcaClaimed && naOrigin) {
             needs.usContent = true;
             rate = o.nonUsContentRate;
             basis = dutiable * (1 - (input.usContentPct ?? 0) / 100);
@@ -396,8 +402,8 @@ export function calcUS(db: DB, rules: Rules, line: LineRow, input: CalcInput, fx
           continue;
         }
         let ok = false;
-        if (c.preferentialDutyFree) ok = claimed && base.amount === 0;
-        else if (c.preferential) ok = claimed;
+        if (c.preferentialDutyFree) ok = usmcaClaimed && base.amount === 0;
+        else if (c.preferential) ok = usmcaClaimed;
         else if (c.families) ok = c.families.some((f) => appliedFamilies.has(f) || appliedPrograms.has(f));
         else if (c.refs) ok = refs.some((r) => c.refs!.includes(r));
         if (ok) {
@@ -471,10 +477,10 @@ export function calcUS(db: DB, rules: Rules, line: LineRow, input: CalcInput, fx
 
   // ---------------- Frais ----------------
   const mpf = R.fees.mpf;
-  const mpfExempt = claimed && mpf.exemptPreferentialOrigins.includes(origin);
+  const mpfExempt = claimed && (usmcaClaimed ? mpf.exemptPreferentialOrigins.includes(origin) : !!prefAgreement?.mpfExempt);
   let mpfAmt = 0;
   let mpfNote = '';
-  if (mpfExempt) mpfNote = t('Exempt: USMCA-originating goods');
+  if (mpfExempt) mpfNote = usmcaClaimed ? t('Exempt: USMCA-originating goods') : t('Exempt: originating goods ({agreement})', { agreement: prefLabel });
   else if (value < mpf.formalThreshold) {
     mpfAmt = mpf.informalFlat;
     mpfNote = t('Informal entry (< ${threshold}) — automated flat fee', { threshold: mpf.formalThreshold });
@@ -544,6 +550,8 @@ export function calcUS(db: DB, rules: Rules, line: LineRow, input: CalcInput, fx
     lines,
     totals,
     preferential: { eligible: prefEligible, program: prefCode, rateText: prefCode ? special[prefCode] : undefined, claimed, label: prefLabel },
+    agreements,
+    lineUrl: `https://hts.usitc.gov/search?query=${encodeURIComponent(line.display)}`,
     exemptions: dedupe(exemptions),
     options: dedupeOptions(options),
     needs,

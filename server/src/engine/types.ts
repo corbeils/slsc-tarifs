@@ -12,6 +12,8 @@ export interface CalcInput {
   date?: string;
   mode?: 'truck' | 'rail' | 'ocean' | 'air';
   preferential?: boolean;
+  /** Agreement / SPI / tariff treatment code chosen by the user (default: the origin's agreement). */
+  agreement?: string;
   usContentPct?: number;
   caMxContentPct?: number;
   metalWeightPct?: number;
@@ -100,6 +102,10 @@ export interface CalcResult {
   lines: CalcLine[];
   totals: { duties: number; adcvd: number; fees: number; taxes: number; total: number; dutyPct: number; landed: number };
   preferential: { eligible: boolean; program?: string; rateText?: string; claimed: boolean; label: string };
+  /** Every preferential program that has a rate on this tariff line. */
+  agreements: AgreementInfo[];
+  /** Official page of this tariff line (when one exists). */
+  lineUrl?: string;
   exemptions: ExemptionInfo[];
   options: OptionInfo[];
   needs: { usContent?: boolean; caMxContent?: boolean; metalWeight?: boolean; quantityUnits?: string[]; repairValue?: boolean };
@@ -107,4 +113,17 @@ export interface CalcResult {
   regimes: { id: string; label: string; code?: string }[];
   deferred?: { bond: number; note: string };
   data: { importedAt: string | null; source: string; rulesLoadedAt: string; seed: boolean };
+}
+
+export interface AgreementInfo {
+  code: string;
+  name: string;
+  short?: string;
+  rateText: string;
+  /** yes = origin is a party; check = beneficiary list to verify; no = not for this origin */
+  applicable: 'yes' | 'check' | 'no';
+  state: 'active' | 'expired' | 'to verify';
+  url?: string;
+  note?: string;
+  countries?: string[];
 }

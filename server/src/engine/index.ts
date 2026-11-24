@@ -74,6 +74,7 @@ function calculateIn(db: DB, baseRules: Rules, input: CalcInput): CalcResult {
       lines: [],
       totals: { duties: 0, adcvd: 0, fees: 0, taxes: 0, total: 0, dutyPct: 0, landed: 0 },
       preferential: { eligible: false, claimed: false, label: '' },
+      agreements: [],
       exemptions: [],
       options: [],
       needs: {},

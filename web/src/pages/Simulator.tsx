@@ -1,8 +1,8 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState, type Dispatch, type SetStateAction } from 'react';
 import CodeSearch from '../components/CodeSearch';
 import CountrySelect from '../components/CountrySelect';
 import { useI18n } from '../i18n';
-import { api, fmtDate, money, pct, type CalcLine, type CalcResult, type Country, type Direction, type Flag, type SearchHit } from '../api';
+import { api, fmtDate, money, pct, type AgreementInfo, type CalcLine, type CalcResult, type Country, type Direction, type Flag, type SearchHit } from '../api';
 
 const UNIT_LABELS: Record<string, string> = {
   kg: 'Net weight (kg)',
@@ -25,6 +25,7 @@ interface Form {
   date: string;
   mode: 'truck' | 'rail' | 'ocean' | 'air';
   preferential: boolean;
+  agreement: string;
   usContentPct: string;
   caMxContentPct: string;
   metalWeightPct: string;
@@ -49,7 +50,8 @@ const initial = (): Form => {
     currency: 'USD',
     date: today(),
     mode: 'truck',
-    preferential: true,
+    preferential: false,
+    agreement: '',
     usContentPct: '',
     caMxContentPct: '',
     metalWeightPct: '',
@@ -63,7 +65,8 @@ const initial = (): Form => {
     quantities: {},
   };
   try {
-    return saved ? { ...base, ...JSON.parse(saved), date: today() } : base;
+    // a preference is never claimed by default
+    return saved ? { ...base, ...JSON.parse(saved), date: today(), preferential: false, agreement: '' } : base;
   } catch {
     return base;
   }
@@ -83,6 +86,8 @@ export default function Simulator() {
     api.countries().then(setCountries).catch(() => {});
   }, []);
   useEffect(() => localStorage.setItem('slsc-tarifs-form', JSON.stringify(f)), [f]);
+  // New line or new origin: nothing claimed until the user ticks an agreement
+  useEffect(() => setF((x) => ({ ...x, preferential: false, agreement: '' })), [f.origin, f.hit?.code, f.direction]);
 
   const switchDir = (d: Direction) =>
     setF((x) => ({
@@ -111,6 +116,7 @@ export default function Simulator() {
       date: f.date,
       mode: f.mode,
       preferential: f.preferential,
+      agreement: f.agreement || undefined,
       usContentPct: n(f.usContentPct),
       caMxContentPct: n(f.caMxContentPct),
       metalWeightPct: n(f.metalWeightPct),
@@ -211,15 +217,7 @@ export default function Simulator() {
           </div>
         ))}
 
-        <label className={`check pref ${res && !res.preferential.eligible ? 'disabled' : ''}`}>
-          <input type="checkbox" checked={f.preferential} onChange={(e) => set('preferential', e.target.checked)} />
-          <span>
-            {t('Claim preferential treatment')}{' '}
-            <b>{(res?.preferential.label && t(res.preferential.label)) || t(j === 'US' ? 'USMCA' : 'CUSMA')}</b>
-            {res?.preferential.program && <em> ({res.preferential.program}: {res.preferential.rateText})</em>}
-            {res && !res.preferential.eligible && <em> — {t('not available for this origin / line')}</em>}
-          </span>
-        </label>
+        {res?.ok && <FtaClaim r={res} f={f} setF={setF} />}
 
         {(showUsContent || res?.needs.caMxContent || res?.needs.metalWeight) && (
           <div className="grid2">
@@ -329,6 +327,89 @@ export default function Simulator() {
         {res && !res.ok && <div className="alert danger">{res.error}</div>}
         {res?.ok && <Result r={res} loading={loading} f={f} setChoice={(p, c) => set('ch99Choice', { ...f.ch99Choice, [p]: c })} />}
       </section>
+    </div>
+  );
+}
+
+const isClaimed = (f: Form, r: CalcResult, code: string) => f.preferential && (f.agreement ? f.agreement === code : r.preferential.program === code);
+
+/** Agreements the user can claim for this origin on this line (none ticked by default). */
+function FtaClaim({ r, f, setF }: { r: CalcResult; f: Form; setF: Dispatch<SetStateAction<Form>> }) {
+  const { t } = useI18n();
+  const claimable = r.agreements.filter((a) => a.applicable !== 'no' && a.state !== 'expired');
+  const pick = (code: string, on: boolean) => setF((x) => ({ ...x, preferential: on, agreement: on ? code : '' }));
+  // Canada/Mexico into the U.S. with no "S" indicator: USMCA origin can still be claimed (301 / MPF)
+  const genericUsmca = !claimable.length && r.preferential.eligible;
+  return (
+    <div className="fta">
+      <div className="opts-title">{t('Free trade agreements')}</div>
+      {claimable.map((a) => (
+        <label key={a.code} className={`check pref ${isClaimed(f, r, a.code) ? 'on' : ''}`}>
+          <input type="checkbox" checked={isClaimed(f, r, a.code)} onChange={(e) => pick(a.code, e.target.checked)} />
+          <span>
+            {t('Claim')} <b>{a.short ?? a.code}</b> <em>({a.code}: {a.rateText})</em>
+            {a.applicable === 'check' && <span className="badge warn">{t('check eligibility')}</span>}
+            <small className="fta-name">{a.name}</small>
+          </span>
+        </label>
+      ))}
+      {genericUsmca && (
+        <label className={`check pref ${f.preferential ? 'on' : ''}`}>
+          <input type="checkbox" checked={f.preferential} onChange={(e) => pick('', e.target.checked)} />
+          <span>
+            {t('Claim')} <b>{t(r.preferential.label)}</b> <em>— {t('originating goods (the general rate already applies)')}</em>
+          </span>
+        </label>
+      )}
+      {!claimable.length && !genericUsmca && <div className="muted small">{t('No free trade agreement can be claimed for this origin on this line.')}</div>}
+    </div>
+  );
+}
+
+function AgreementsCard({ r, origin }: { r: CalcResult; origin: string }) {
+  const { t, lang } = useI18n();
+  const href = (u?: string) => (u && lang === 'fr' ? u.replace(/-eng\.(html|pdf)/, '-fra.$1') : u);
+  const status = (a: AgreementInfo) =>
+    a.state === 'expired' ? <span className="badge muted">{t('expired')}</span>
+    : a.applicable === 'yes' ? <span className="badge ok">{t('available for {origin}', { origin })}</span>
+    : a.applicable === 'check' ? <span className="badge warn">{t('check eligibility')}</span>
+    : <span className="badge muted">{t('other countries')}</span>;
+  return (
+    <div className="card flags">
+      <h3>{t('Free trade agreements for this tariff line')}</h3>
+      {r.agreements.length === 0 ? (
+        <div className="muted small">{t('No preferential rate on this line: the general rate applies to every origin.')}</div>
+      ) : (
+        <table className="simple fta-table">
+          <thead>
+            <tr>
+              <th>{t('Code')}</th>
+              <th>{t('Agreement / program')}</th>
+              <th className="r">{t('Rate')}</th>
+              <th>{t('Status')}</th>
+            </tr>
+          </thead>
+          <tbody>
+            {r.agreements.map((a) => (
+              <tr key={a.code} className={a.applicable === 'no' || a.state === 'expired' ? 'dim' : ''}>
+                <td className="mono">{a.code}</td>
+                <td>
+                  {a.url ? <a href={href(a.url)} target="_blank" rel="noreferrer">{a.name}</a> : a.name}
+                  {a.short && a.short !== a.code && <span className="muted"> · {a.short}</span>}
+                  {a.note && <div className="muted small">{a.note}</div>}
+                </td>
+                <td className="r mono">{a.rateText}</td>
+                <td>{status(a)}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      )}
+      {r.lineUrl && (
+        <a className="small" href={r.lineUrl} target="_blank" rel="noreferrer">
+          {t('View this line on the official tariff')} ({r.line?.display}) ↗
+        </a>
+      )}
     </div>
   );
 }
@@ -496,6 +577,7 @@ function Result({ r, loading, f, setChoice }: { r: CalcResult; loading: boolean;
         </table>
       </div>
 
+      <AgreementsCard r={r} origin={f.origin} />
       <FlagBlock title={t('Anti-dumping / countervailing')} flags={r.flags.adcvd} />
       <FlagBlock title={t('Licences, permits and other government agency requirements')} flags={r.flags.licences} grouped />
       <FlagBlock title={t('To verify')} flags={r.flags.warnings} />

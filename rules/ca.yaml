@@ -52,6 +52,34 @@ preferential:
   VN: [CPTPT]
   EU: [CEUT]
 
+# Tariff treatments of the Customs Tariff (s. 27) — shown for every tariff item that has a rate for them.
+# countries = who can claim; no countries = beneficiary list to check (List of countries and applicable tariff treatments).
+agreements:
+  UST:   { name: "United States Tariff (CUSMA)", short: "CUSMA", countries: [US], url: "https://www.cbsa-asfc.gc.ca/publications/dm-md/d11/d11-5-17-eng.html" }
+  MXT:   { name: "Mexico Tariff (CUSMA)", short: "CUSMA", countries: [MX], url: "https://www.cbsa-asfc.gc.ca/publications/dm-md/d11/d11-5-17-eng.html" }
+  MUST:  { name: "Mexico-United States Tariff (CUSMA)", short: "CUSMA", countries: [MX, US], url: "https://www.cbsa-asfc.gc.ca/publications/dm-md/d11/d11-5-17-eng.html" }
+  CEUT:  { name: "Canada-European Union Tariff (CETA)", short: "CETA", countries: [EU], url: "https://www.cbsa-asfc.gc.ca/publications/dm-md/d11-eng.html" }
+  UKT:   { name: "United Kingdom Tariff (Canada-UK Trade Continuity Agreement)", short: "CUKTCA", countries: [GB], url: "https://www.cbsa-asfc.gc.ca/publications/dm-md/d11-eng.html" }
+  CPTPT: { name: "Comprehensive and Progressive Trans-Pacific Partnership Tariff", short: "CPTPP", countries: [AU, BN, CL, JP, MY, MX, NZ, PE, SG, VN, GB], url: "https://www.cbsa-asfc.gc.ca/publications/dm-md/d11-eng.html" }
+  CIAT:  { name: "Canada-Israel Agreement Tariff", short: "CIFTA", countries: [IL], url: "https://www.cbsa-asfc.gc.ca/publications/dm-md/d11-eng.html" }
+  CT:    { name: "Chile Tariff", short: "CCFTA", countries: [CL], url: "https://www.cbsa-asfc.gc.ca/publications/dm-md/d11-eng.html" }
+  CRT:   { name: "Costa Rica Tariff", short: "CCRFTA", countries: [CR], url: "https://www.cbsa-asfc.gc.ca/publications/dm-md/d11-eng.html" }
+  COLT:  { name: "Colombia Tariff", short: "CCOFTA", countries: [CO], url: "https://www.cbsa-asfc.gc.ca/publications/dm-md/d11-eng.html" }
+  PT:    { name: "Peru Tariff", short: "CPFTA", countries: [PE], url: "https://www.cbsa-asfc.gc.ca/publications/dm-md/d11-eng.html" }
+  PAT:   { name: "Panama Tariff", short: "CPAFTA", countries: [PA], url: "https://www.cbsa-asfc.gc.ca/publications/dm-md/d11-eng.html" }
+  HNT:   { name: "Honduras Tariff", short: "CHFTA", countries: [HN], url: "https://www.cbsa-asfc.gc.ca/publications/dm-md/d11-eng.html" }
+  JT:    { name: "Jordan Tariff", short: "CJFTA", countries: [JO], url: "https://www.cbsa-asfc.gc.ca/publications/dm-md/d11-eng.html" }
+  KRT:   { name: "Korea Tariff", short: "CKFTA", countries: [KR], url: "https://www.cbsa-asfc.gc.ca/publications/dm-md/d11-eng.html" }
+  UAT:   { name: "Ukraine Tariff", short: "CUFTA", countries: [UA], url: "https://www.cbsa-asfc.gc.ca/publications/dm-md/d11-eng.html" }
+  IT:    { name: "Iceland Tariff (Canada-EFTA)", short: "CEFTA", countries: [IS], url: "https://www.cbsa-asfc.gc.ca/publications/dm-md/d11-eng.html" }
+  NT:    { name: "Norway Tariff (Canada-EFTA)", short: "CEFTA", countries: [NO], url: "https://www.cbsa-asfc.gc.ca/publications/dm-md/d11-eng.html" }
+  SLT:   { name: "Switzerland-Liechtenstein Tariff (Canada-EFTA)", short: "CEFTA", countries: [CH, LI], url: "https://www.cbsa-asfc.gc.ca/publications/dm-md/d11-eng.html" }
+  AUT:   { name: "Australia Tariff", short: "AUT", countries: [AU], url: "https://www.cbsa-asfc.gc.ca/publications/dm-md/d11-eng.html" }
+  NZT:   { name: "New Zealand Tariff", short: "NZT", countries: [NZ], url: "https://www.cbsa-asfc.gc.ca/publications/dm-md/d11-eng.html" }
+  CCCT:  { name: "Commonwealth Caribbean Countries Tariff", short: "CCCT", candidates: [AI, AG, BS, BB, BZ, BM, VG, KY, DM, GD, GY, JM, MS, KN, LC, VC, TT, TC], note: "Commonwealth Caribbean beneficiary countries.", url: "https://www.cbsa-asfc.gc.ca/trade-commerce/tariff-tarif/2026/html/countries-pays-eng.html" }
+  GPT:   { name: "General Preferential Tariff", short: "GPT", excludeOrigins: [US, MX, EU, GB, JP, KR, AU, NZ, CH, LI, NO, IS, IL, SG, CN, HK, TW, CL, CO, PE, PA, CR, HN, JO, UA, RU, BY, KP, CU], note: "Developing beneficiary countries — see the CBSA list of countries and applicable tariff treatments.", url: "https://www.cbsa-asfc.gc.ca/trade-commerce/tariff-tarif/2026/html/countries-pays-eng.html" }
+  LDCT:  { name: "Least Developed Country Tariff", short: "LDCT", excludeOrigins: [US, MX, EU, GB, JP, KR, AU, NZ, CH, LI, NO, IS, IL, SG, CN, HK, TW, CL, CO, PE, PA, CR, HN, JO, UA, RU, BY, KP, CU], note: "Least developed beneficiary countries — see the CBSA list of countries and applicable tariff treatments.", url: "https://www.cbsa-asfc.gc.ca/trade-commerce/tariff-tarif/2026/html/countries-pays-eng.html" }
+
 # Non-CUSMA FTA partners (steel TRQ at 75% of 2024 volumes; non-FTA: 20%)
 ftaPartners: [EU, GB, CH, NO, IS, LI, CL, CO, CR, HN, IL, JO, KR, PA, PE, UA, AU, BN, JP, MY, NZ, SG, VN]
 

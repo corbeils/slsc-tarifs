@@ -51,7 +51,6 @@ export const FR: Record<string, string> = {
   'required for the specific rate': 'requis pour le taux spécifique',
   'Claim preferential treatment': 'Réclamer le traitement préférentiel',
   CUSMA: 'ACEUM',
-  USMCA: 'ACEUM',
   'Free trade agreement': 'Accord de libre-échange',
   'not available for this origin / line': 'non disponible pour cette origine / ligne',
   'U.S. content (% of value)': 'Contenu américain (% de la valeur)',
@@ -125,6 +124,22 @@ export const FR: Record<string, string> = {
   'Converted value:': 'Valeur convertie :',
   'Tariff:': 'Tarif :',
   'Rules:': 'Règles :',
+
+  // Free trade agreements
+  'Free trade agreements': 'Accords de libre-échange',
+  Claim: 'Réclamer',
+  'check eligibility': 'admissibilité à vérifier',
+  'originating goods (the general rate already applies)': 'marchandises originaires (le taux général s’applique déjà)',
+  'No free trade agreement can be claimed for this origin on this line.': 'Aucun accord de libre-échange ne peut être réclamé pour cette origine sur cette ligne.',
+  'Free trade agreements for this tariff line': 'Accords de libre-échange pour cette ligne tarifaire',
+  'No preferential rate on this line: the general rate applies to every origin.': 'Aucun taux préférentiel sur cette ligne : le taux général s’applique à toutes les origines.',
+  Code: 'Code',
+  'Agreement / program': 'Accord / programme',
+  expired: 'expiré',
+  'available for {origin}': 'disponible pour {origin}',
+  'other countries': 'autres pays',
+  'View this line on the official tariff': 'Voir cette ligne dans le tarif officiel',
+  USMCA: 'ACEUM',
 
   // Batch
   'Batch simulation (parts list)': 'Simulation par lot (liste de pièces)',

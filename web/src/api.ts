@@ -53,6 +53,8 @@ export interface CalcResult {
   lines: CalcLine[];
   totals: { duties: number; adcvd: number; fees: number; taxes: number; total: number; dutyPct: number; landed: number };
   preferential: { eligible: boolean; program?: string; rateText?: string; claimed: boolean; label: string };
+  agreements: AgreementInfo[];
+  lineUrl?: string;
   exemptions: { id: string; label: string; ch99?: string; applied: boolean; kind: 'auto' | 'option' | 'claim'; option?: string; program?: string }[];
   options: { key: string; label: string; context: string; status?: string; note?: string }[];
   needs: { usContent?: boolean; caMxContent?: boolean; metalWeight?: boolean; quantityUnits?: string[]; repairValue?: boolean };
@@ -60,6 +62,17 @@ export interface CalcResult {
   regimes: { id: string; label: string; code?: string }[];
   deferred?: { bond: number; note: string };
   data: { importedAt: string | null; source: string; rulesLoadedAt: string; seed: boolean };
+}
+export interface AgreementInfo {
+  code: string;
+  name: string;
+  short?: string;
+  rateText: string;
+  applicable: 'yes' | 'check' | 'no';
+  state: 'active' | 'expired' | 'to verify';
+  url?: string;
+  note?: string;
+  countries?: string[];
 }
 export interface SearchHit {
   code: string;

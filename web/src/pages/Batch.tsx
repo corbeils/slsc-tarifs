@@ -7,7 +7,7 @@ export default function Batch() {
   const [direction, setDirection] = useState<Direction>('CA-US');
   const [origin, setOrigin] = useState('CA');
   const [currency, setCurrency] = useState<'USD' | 'CAD'>('USD');
-  const [preferential, setPref] = useState(true);
+  const [preferential, setPref] = useState(false);
   const [province, setProvince] = useState('QC');
   const [mode, setMode] = useState('truck');
   const [file, setFile] = useState<File | null>(null);

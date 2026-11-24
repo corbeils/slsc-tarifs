@@ -58,6 +58,40 @@ preferentialPrograms:
   NI: [P, P+]
 
 # ---------------------------------------------------------------------
+# FREE TRADE AGREEMENTS AND PREFERENCE PROGRAMS — "Special" column indicators (SPI)
+# Shown for every HTS line that has a rate for them. countries = who can claim;
+# no countries = beneficiary list to check; anyOrigin = open to all origins (end-use conditions).
+# ---------------------------------------------------------------------
+agreements:
+  S:  { name: "United States-Mexico-Canada Agreement", short: "USMCA", countries: [CA, MX], mpfExempt: true, url: "https://www.cbp.gov/trade/priority-issues/trade-agreements/free-trade-agreements/USMCA" }
+  AU: { name: "U.S.-Australia Free Trade Agreement", short: "AUFTA", countries: [AU], mpfExempt: true, url: "https://www.cbp.gov/trade/free-trade-agreements/australia" }
+  BH: { name: "U.S.-Bahrain Free Trade Agreement", short: "BHFTA", countries: [BH], mpfExempt: true, url: "https://www.cbp.gov/trade/free-trade-agreements/bahrain" }
+  CL: { name: "U.S.-Chile Free Trade Agreement", short: "CLFTA", countries: [CL], mpfExempt: true, url: "https://www.cbp.gov/trade/free-trade-agreements/chile" }
+  CO: { name: "U.S.-Colombia Trade Promotion Agreement", short: "COTPA", countries: [CO], mpfExempt: true, url: "https://www.cbp.gov/trade/free-trade-agreements/colombia" }
+  IL: { name: "U.S.-Israel Free Trade Agreement", short: "ILFTA", countries: [IL], url: "https://www.cbp.gov/trade/free-trade-agreements/israel" }
+  JO: { name: "U.S.-Jordan Free Trade Agreement", short: "JOFTA", countries: [JO], url: "https://www.cbp.gov/trade/free-trade-agreements/jordan" }
+  JP: { name: "U.S.-Japan Trade Agreement", short: "USJTA", countries: [JP], url: "https://www.cbp.gov/trade/free-trade-agreements" }
+  KR: { name: "U.S.-Korea Free Trade Agreement", short: "KORUS", countries: [KR], mpfExempt: true, url: "https://www.cbp.gov/trade/free-trade-agreements/korea" }
+  MA: { name: "U.S.-Morocco Free Trade Agreement", short: "MAFTA", countries: [MA], url: "https://www.cbp.gov/trade/free-trade-agreements/morocco" }
+  OM: { name: "U.S.-Oman Free Trade Agreement", short: "OMFTA", countries: [OM], mpfExempt: true, url: "https://www.cbp.gov/trade/free-trade-agreements/oman" }
+  P:  { name: "Dominican Republic-Central America Free Trade Agreement", short: "CAFTA-DR", countries: [CR, DO, SV, GT, HN, NI], mpfExempt: true, url: "https://www.cbp.gov/trade/free-trade-agreements/cafta-dr" }
+  PA: { name: "U.S.-Panama Trade Promotion Agreement", short: "PATPA", countries: [PA], mpfExempt: true, url: "https://www.cbp.gov/trade/free-trade-agreements/panama" }
+  PE: { name: "U.S.-Peru Trade Promotion Agreement", short: "PETPA", countries: [PE], mpfExempt: true, url: "https://www.cbp.gov/trade/free-trade-agreements/peru" }
+  SG: { name: "U.S.-Singapore Free Trade Agreement", short: "SGFTA", countries: [SG], mpfExempt: true, url: "https://www.cbp.gov/trade/free-trade-agreements/singapore" }
+  D:  { name: "African Growth and Opportunity Act", short: "AGOA", candidates: [AO, BJ, BW, BF, BI, CV, CM, CF, TD, KM, CG, CD, CI, DJ, GQ, ER, SZ, ET, GA, GM, GH, GN, GW, KE, LS, LR, MG, MW, ML, MR, MU, MZ, NA, NE, NG, RW, ST, SN, SC, SL, SO, ZA, SS, SD, TZ, TG, UG, ZM, ZW], note: "Sub-Saharan beneficiary countries designated each year (General Note 16). Reauthorized in Feb. 2026.", url: "https://www.cbp.gov/trade/priority-issues/trade-agreements" }
+  E:  { name: "Caribbean Basin Economic Recovery Act", short: "CBERA / CBI", candidates: [AG, AW, BS, BB, BZ, VG, CW, DM, GD, GY, HT, JM, MS, KN, LC, VC, TT], note: "Caribbean Basin beneficiary countries (General Note 7).", url: "https://www.cbp.gov/trade/priority-issues/trade-agreements" }
+  R:  { name: "Caribbean Basin Trade Partnership Act", short: "CBTPA", candidates: [AG, AW, BS, BB, BZ, VG, CW, DM, GD, GY, HT, JM, MS, KN, LC, VC, TT], note: "Caribbean Basin beneficiary countries (General Note 17).", url: "https://www.cbp.gov/trade/priority-issues/trade-agreements" }
+  A:  { name: "Generalized System of Preferences", short: "GSP", excludeOrigins: [US, MX, EU, GB, JP, KR, AU, NZ, CH, LI, NO, IS, IL, SG, CN, HK, TW, CL, CO, PE, PA, CR, HN, JO, UA, RU, BY, KP, CU], state: expired, note: "Expired Dec. 31, 2020 and not renewed: the general rate applies.", url: "https://www.cbp.gov/trade/priority-issues/trade-agreements" }
+  NP: { name: "Nepal Trade Preference Program", short: "Nepal", countries: [NP], state: to verify, note: "Check whether the program is still authorized on the date of entry.", url: "https://www.cbp.gov/trade/priority-issues/trade-agreements" }
+  J:  { name: "Andean Trade Preference Act", short: "ATPA", candidates: [CO, EC, PE, BO], state: expired, note: "Expired in 2013.", url: "https://www.cbp.gov/trade/priority-issues/trade-agreements" }
+  C:  { name: "Agreement on Trade in Civil Aircraft", short: "Civil aircraft", anyOrigin: true, excludeOrigins: [CU, KP, RU, BY], note: "Civil aircraft, engines and parts for use in civil aircraft (certification required, General Note 6).", url: "https://www.cbp.gov/trade/priority-issues/trade-agreements" }
+  K:  { name: "Agreement on Trade in Pharmaceutical Products", short: "Pharmaceuticals", anyOrigin: true, note: "Products listed in the Pharmaceutical Appendix to the HTSUS (General Note 13).", url: "https://www.cbp.gov/trade/priority-issues/trade-agreements" }
+  L:  { name: "Uruguay Round concessions on intermediate chemicals for dyes", short: "Dye intermediates", anyOrigin: true, note: "Products listed in the Annex to General Note 14.", url: "https://www.cbp.gov/trade/priority-issues/trade-agreements" }
+  B:  { name: "Automotive Products Trade Act", short: "APTA", countries: [CA], state: to verify, note: "Original motor-vehicle equipment from Canada (General Note 5) — rarely used since NAFTA/USMCA.", url: "https://www.cbp.gov/trade/priority-issues/trade-agreements" }
+  CA: { name: "North American Free Trade Agreement — Canada", short: "NAFTA", state: expired, note: "Replaced by USMCA on July 1, 2020.", url: "https://www.cbp.gov/trade/priority-issues/trade-agreements/free-trade-agreements/USMCA" }
+  MX: { name: "North American Free Trade Agreement — Mexico", short: "NAFTA", state: expired, note: "Replaced by USMCA on July 1, 2020.", url: "https://www.cbp.gov/trade/priority-issues/trade-agreements/free-trade-agreements/USMCA" }
+
+# ---------------------------------------------------------------------
 # CHAPTER 99 PROGRAMS (detected from the HTS line's references/footnotes)
 # Order = evaluation priority.
 # ---------------------------------------------------------------------

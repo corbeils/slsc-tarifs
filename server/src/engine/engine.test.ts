@@ -256,3 +256,48 @@ describe('Finance Canada list — markup-independent stream reader', () => {
     expect(extractCodesWithStreamRates(t)).toEqual(expected);
   });
 });
+
+describe('accords de libre-échange', () => {
+  let db: DB;
+  let rules: Rules;
+  beforeAll(async () => {
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'tarifs-'));
+    db = openDb(path.join(dir, 't.sqlite'));
+    rules = loadRules(path.resolve(__dirname, '../../../rules'));
+    process.env.SEED_DIR ??= path.resolve(__dirname, '../../../seed');
+    await ensureSeed(db, () => {});
+  });
+
+  it('US : liste tous les programmes de la colonne Special, rien de réclamé par défaut', () => {
+    const r = calculate(db, rules, { direction: 'CA-US', code: '7326908688', origin: 'KR', value: 10000, currency: 'USD' });
+    const kr = r.agreements.find((a) => a.code === 'KR')!;
+    expect(kr).toMatchObject({ applicable: 'yes', short: 'KORUS', state: 'active' });
+    expect(r.agreements[0].code).toBe('KR');
+    expect(r.agreements.find((a) => a.code === 'A')?.state).toBe('expired');
+    expect(r.agreements.find((a) => a.code === 'AU')?.applicable).toBe('no');
+    expect(r.preferential.claimed).toBe(false);
+    expect(r.lines.find((l) => l.key === 'base')!.rateText).toBe('2.9%');
+    expect(r.lineUrl).toContain('hts.usitc.gov');
+  });
+
+  it('US : réclamer KORUS applique le taux préférentiel et exempte du MPF', () => {
+    const r = calculate(db, rules, { direction: 'CA-US', code: '7326908688', origin: 'KR', value: 10000, currency: 'USD', preferential: true, agreement: 'KR' });
+    expect(r.preferential).toMatchObject({ claimed: true, program: 'KR', label: 'KORUS' });
+    expect(r.lines.find((l) => l.key === 'base')!.amount).toBe(0);
+    expect(r.lines.find((l) => l.key === 'mpf')!.exempted).toBe(true);
+  });
+
+  it('US : un accord d’un autre pays ne peut pas être réclamé', () => {
+    const r = calculate(db, rules, { direction: 'CA-US', code: '7326908688', origin: 'CN', value: 10000, currency: 'USD', preferential: true, agreement: 'KR' });
+    expect(r.preferential.claimed).toBe(false);
+    expect(r.lines.find((l) => l.key === 'base')!.amount).toBeGreaterThan(0);
+  });
+
+  it('CA : traitements tarifaires de la ligne avec admissibilité selon l’origine', () => {
+    const row = db.prepare("SELECT code FROM lines WHERE j = 'CA' AND pref_json LIKE '%CEUT%' AND is_leaf = 1 LIMIT 1").get() as { code: string } | undefined;
+    if (!row) return;
+    const r = calculate(db, rules, { direction: 'US-CA', code: row.code, origin: 'DE', value: 1000, currency: 'CAD' });
+    expect(r.agreements.find((a) => a.code === 'CEUT')?.applicable).toBe('yes');
+    expect(r.agreements.find((a) => a.code === 'UST')?.applicable).toBe('no');
+  });
+});

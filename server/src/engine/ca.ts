@@ -5,6 +5,7 @@ import type { Measure, Rules } from '../rules.js';
 import { computeDuty, parseRate } from './rates.js';
 import { adcvdFlags, inDate, licenceFlags, originAllowed, round2, scopeMatch } from './common.js';
 import { dedupe, dedupeOptions, summarize } from './us.js';
+import { agreementFor, listAgreements, pickAgreement } from './agreements.js';
 import type { CalcInput, CalcLine, CalcResult, ExemptionInfo, Flag, OptionInfo } from './types.js';
 
 const GENERAL_TARIFF_COUNTRIES = ['KP'];
@@ -31,10 +32,15 @@ export function calcCA(db: DB, rules: Rules, line: LineRow, input: CalcInput, fx
   const pref: Record<string, string> = line.pref_json ? JSON.parse(line.pref_json) : {};
   const key = EU27.includes(origin) ? 'EU' : origin;
   const treatments = R.preferential[key] ?? [];
-  const prefCode = treatments.find((t) => pref[t] !== undefined && pref[t] !== '');
+  const prefRates = Object.fromEntries(Object.entries(pref).filter(([, v]) => v !== undefined && v !== ''));
+  const agreements = GENERAL_TARIFF_COUNTRIES.includes(origin) ? [] : listAgreements(R.agreements, prefRates, origin);
+  const picked = pickAgreement(agreements, input.agreement);
+  const prefCode = picked?.code ?? treatments.find((t) => pref[t] !== undefined && pref[t] !== '');
   const prefEligible = !!prefCode;
   const claimed = !!input.preferential && prefEligible;
-  const prefLabel = origin === 'US' || origin === 'MX' ? t('CUSMA') : t('Free trade agreement');
+  const prefAgreement = prefCode ? agreementFor(R.agreements, prefCode) : undefined;
+  const isCusma = !!prefCode && ['UST', 'MXT', 'MUST'].includes(prefCode);
+  const prefLabel = isCusma ? t('CUSMA') : prefAgreement?.short ?? prefAgreement?.name ?? t('Free trade agreement');
 
   let baseText: string;
   let baseNote: string;
@@ -111,7 +117,7 @@ export function calcCA(db: DB, rules: Rules, line: LineRow, input: CalcInput, fx
     }
     let basis = value;
     const notes: string[] = [];
-    if (m.preferentialBasis === 'nonCaMxContent' && claimed) {
+    if (m.preferentialBasis === 'nonCaMxContent' && claimed && isCusma) {
       needs.caMxContent = true;
       const pct = input.caMxContentPct ?? 0;
       basis = value * (1 - pct / 100);
@@ -231,6 +237,7 @@ export function calcCA(db: DB, rules: Rules, line: LineRow, input: CalcInput, fx
     lines,
     totals,
     preferential: { eligible: prefEligible, program: prefCode, rateText: prefCode ? pref[prefCode] : undefined, claimed, label: prefLabel },
+    agreements,
     exemptions: dedupe(exemptions),
     options: dedupeOptions(options),
     needs,

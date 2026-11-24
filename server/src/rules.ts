@@ -171,6 +171,27 @@ const Regime = z
   .passthrough();
 export type Regime = z.infer<typeof Regime>;
 
+/** Free trade agreement / preference program, keyed by the SPI or tariff treatment code. */
+export const Agreement = z
+  .object({
+    name: z.string(),
+    short: z.string().optional(),
+    /** Origins that can claim it; omitted = eligibility to check (beneficiary lists). */
+    countries: z.array(z.string()).optional(),
+    /** Program open to every origin (subject to end-use conditions). */
+    anyOrigin: z.boolean().optional(),
+    /** Possible beneficiaries when the list changes (eligibility still to check). */
+    candidates: z.array(z.string()).optional(),
+    /** Origins that can never claim it. */
+    excludeOrigins: z.array(z.string()).optional(),
+    state: z.enum(['active', 'expired', 'to verify']).default('active'),
+    mpfExempt: z.boolean().optional(),
+    url: z.string().optional(),
+    note: z.string().optional(),
+  })
+  .passthrough();
+export type Agreement = z.infer<typeof Agreement>;
+
 export const UsRules = z
   .object({
     currency: z.literal('USD'),
@@ -190,6 +211,7 @@ export const UsRules = z
     }),
     column2Countries: z.array(z.string()),
     preferentialPrograms: z.record(z.array(z.string())),
+    agreements: z.record(Agreement).default({}),
     programs: z.array(Program),
     measures: z.array(Measure),
     regimes: z.array(Regime),
@@ -206,6 +228,7 @@ export const CaRules = z
       note: z.string().optional(),
     }),
     preferential: z.record(z.array(z.string())),
+    agreements: z.record(Agreement).default({}),
     ftaPartners: z.array(z.string()),
     measures: z.array(Measure),
     regimes: z.array(Regime),

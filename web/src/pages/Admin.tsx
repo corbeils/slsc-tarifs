@@ -182,11 +182,12 @@ function AdminPanel({ me, onLogout, onPasswordChanged }: { me: Me; onLogout: () 
           <FileUpload accept=".xlsx,.csv,.txt" label="Upload tariff file" onUpload={(f) => wrap('Canadian tariff import', () => api.admin.upload('/api/admin/import/ca-file', f))} />
           <UrlImport onRun={async (u) => { const r = await wrap('Canadian tariff import (URL)', () => api.admin.caUrl(u)); if (r?.job) poll('Canadian tariff import', r.job); }} />
         </div>
-        <div className="card">
-          <h3>Currency converter</h3>
-          <button className="btn" onClick={() => wrap('Bank of Canada rate', api.admin.fxOnline)}>Bank of Canada (Valet)</button>
-          <FxManual onSet={(r) => wrap('Manual rate', () => api.admin.fxManual(r))} />
-        </div>
+        <TaricCard
+          urls={meta?.taricUrls ?? []}
+          onUpload={async (files) => { const r = await wrap('TARIC import', () => api.admin.taricUpload(files)); if (r?.job) poll('TARIC import', r.job); }}
+          onSaveUrls={(urls) => wrap('TARIC URLs', () => api.admin.taricUrls(urls))}
+          onSync={async () => { const r = await wrap('TARIC download', api.admin.taricSync); if (r?.job) poll('TARIC download', r.job); }}
+        />
         <div className="card">
           <h3>CBP PGA flags · extra AD/CVD cases</h3>
           <div className="small muted">CSV or Excel with two columns: <b>HTS</b> and <b>Flag</b> (FD1, EP3, AM8…). Comma, semicolon or tab separated.</div>
@@ -195,13 +196,6 @@ function AdminPanel({ me, onLogout, onPasswordChanged }: { me: Me; onLogout: () 
           <FileUpload accept=".csv,.txt,.tsv,.xlsx" label="Upload AD/CVD cases" onUpload={(f) => wrap('AD/CVD import', () => api.admin.upload('/api/admin/import/adcvd', f))} />
         </div>
       </div>
-
-      <TaricCard
-        urls={meta?.taricUrls ?? []}
-        onUpload={async (files) => { const r = await wrap('TARIC import', () => api.admin.taricUpload(files)); if (r?.job) poll('TARIC import', r.job); }}
-        onSaveUrls={(urls) => wrap('TARIC URLs', () => api.admin.taricUrls(urls))}
-        onSync={async () => { const r = await wrap('TARIC download', api.admin.taricSync); if (r?.job) poll('TARIC download', r.job); }}
-      />
 
       <div className="card">
         <h3>Official lists — U.S. Section 232 annexes and Canadian surtaxes on U.S. goods</h3>
@@ -342,16 +336,6 @@ function SiteVersion({ current, onSave }: { current?: { version: string; beta: b
         {!ok && v.trim() && <span className="small" style={{ color: 'var(--danger, #c0392b)' }}>Invalid format</span>}
         {current?.at && <span className="small muted">Last change {fmtDate(current.at)}</span>}
       </div>
-    </div>
-  );
-}
-
-function FxManual({ onSet }: { onSet: (r: number) => void }) {
-  const [r, setR] = useState('');
-  return (
-    <div className="join" style={{ marginTop: 10 }}>
-      <input className="input" placeholder="1 USD = ? CAD" value={r} onChange={(e) => setR(e.target.value)} />
-      <button className="btn ghost" disabled={!Number(r)} onClick={() => onSet(Number(r))}>Save</button>
     </div>
   );
 }

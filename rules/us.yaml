@@ -242,21 +242,37 @@ programs:
         rate: 50
         ch99: "9903.03.12"
         origins: [CA]
+        sources:
+          - url: "https://content.govdelivery.com/attachments/USDHSCBP/2026/10/29/file_attachments/3836209/Section%20338%20Canada%20Modified%20HTS%20LIST%2010.25.2026.pdf"
+            from: "^9903.03.12"
+            until: "^9903.03.13"
+            headings: false
         status: verified
-        note: "Import the list from the Section 338 proclamation annex (as modified Sept. 15, 2026)."
+        note: "CBP consolidated Section 338 list (CSMS, list as of Oct. 30, 2026) — imported automatically."
       - id: US-338-DAIRY
         label: "Dairy list (note 51(b)(2))"
         rate: 50
         ch99: "9903.03.13"
         origins: [CA]
+        sources:
+          - url: "https://content.govdelivery.com/attachments/USDHSCBP/2026/10/29/file_attachments/3836209/Section%20338%20Canada%20Modified%20HTS%20LIST%2010.25.2026.pdf"
+            from: "^9903.03.13"
+            until: "^9903.03.14"
+            headings: false
         status: verified
+        note: "CBP consolidated Section 338 list (CSMS, list as of Oct. 30, 2026) — imported automatically."
       - id: US-338-MOTOR
         label: "\"Motor vehicle\" list (chapters 4 to 97)"
         rate: 50
         ch99: "9903.03.14"
         origins: [CA]
+        sources:
+          - url: "https://content.govdelivery.com/attachments/USDHSCBP/2026/10/29/file_attachments/3836209/Section%20338%20Canada%20Modified%20HTS%20LIST%2010.25.2026.pdf"
+            from: "^9903.03.14"
+            until: "^9903.03.15"
+            headings: false
         status: verified
-        note: "554 subheadings at launch; 22 removed effective Oct. 30, 2026 — import the current list."
+        note: "CBP consolidated Section 338 list (CSMS, list as of Oct. 30, 2026: 22 removed, 100 added) — imported automatically. When CBP publishes a new list, replace the URL in Admin → Rules."
     headings:
       "9903.03.12": { label: "Alcohol list (note 51(b)(1))", origins: [CA] }
       "9903.03.13": { label: "Dairy list (note 51(b)(2))", origins: [CA], exemptIfFamilies: [s232], exemptionCh99: "9903.03.15" }
@@ -376,9 +392,13 @@ measures:
     origins: [CA]
     scope:
       prefixes: ["8711.50.00"]
-      codeList: true      # add the alcohol/dairy lists via Admin → Code lists
+      codeList: true
+    sources:
+      - { url: "https://public-inspection.federalregister.gov/2026-18835.pdf", from: "^Annex I", until: "^Annex II", headings: false }
+      - { url: "https://public-inspection.federalregister.gov/2026-18836.pdf", from: "^Annex I", until: "^Annex II", headings: false }
+      - { url: "https://public-inspection.federalregister.gov/2026-18837.pdf", from: "^Annex I", until: "^Annex II", headings: false }
     status: verified
-    note: "Motorcycles 8711.50.00 confirmed; certain alcoholic beverages and dairy products: import the annexes of the Sept. 8, 2026 proclamations."
+    note: "Proclamations 11061 (alcoholic beverages), 11062 (dairy, molasses, non-alcoholic beer) and 11063 (motorcycles 8711.50.00), effective Sept. 29, 2026 — Annex I of each imported automatically."
 
 # ---------------------------------------------------------------------
 # SPECIAL REGIMES (Chapter 98) offered in the simulator

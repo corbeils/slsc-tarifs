@@ -11,7 +11,7 @@ import { extractCodes, extractCodesWithStreamRates, fetchText, saveCodeList, sec
 export async function syncOfficialLists(db: DB, rules: Rules, log: (m: string) => void = () => {}) {
   const results: { id: string; label: string; codes?: number; detail?: string; error?: string }[] = [];
   const cache = new Map<string, string>();
-  type Target = { id: string; label: string; j: 'US' | 'CA'; sources: { url: string; from?: string; until?: string; rates?: string }[] };
+  type Target = { id: string; label: string; j: 'US' | 'CA'; sources: { url: string; from?: string; until?: string; rates?: string; headings?: boolean }[] };
   const targets: Target[] = [
     ...rules.us.programs.flatMap((p) => (p.lists ?? []).map((l) => ({ id: l.id, label: l.label, j: 'US' as const, sources: l.sources ?? [] }))),
     ...rules.us.measures.map((m) => ({ id: m.id, label: m.name, j: 'US' as const, sources: m.sources ?? [] })),
@@ -30,7 +30,7 @@ export async function syncOfficialLists(db: DB, rules: Rules, log: (m: string) =
           const found =
             s.rates === 'stream'
               ? extractCodesWithStreamRates(text)
-              : extractCodes(text, false, { headings: !s.rates, lastCellRate: s.rates === 'lastCell' });
+              : extractCodes(text, false, { headings: s.headings ?? !s.rates, lastCellRate: s.rates === 'lastCell' });
           log(`  ${found.length} tariff numbers read from ${s.url.split('/').pop()}`);
           for (const c of validateCodes(db, l.j, found)) {
             const prev = all.get(c.code);

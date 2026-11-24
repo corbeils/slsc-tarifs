@@ -239,10 +239,6 @@ export const FR: Record<string, string> = {
   '"Motor vehicle" list (chapters 4 to 97)': 'Liste « véhicules automobiles » (chapitres 4 à 97)',
   'Exclusion — goods already subject to Section 232 (dairy list)': 'Exclusion — marchandises déjà visées par l’article 232 (liste des produits laitiers)',
   'Exclusion — civil aircraft, engines, parts': 'Exclusion — aéronefs civils, moteurs, pièces',
-  'Import the list from the Section 338 proclamation annex (as modified Sept. 15, 2026).':
-    'Importer la liste de l’annexe de la proclamation de l’article 338 (modifiée le 15 sept. 2026).',
-  '554 subheadings at launch; 22 removed effective Oct. 30, 2026 — import the current list.':
-    '554 sous-positions au départ ; 22 retirées à compter du 30 oct. 2026 — importer la liste à jour.',
   'Section 301 — China (Lists 1 to 4A and 2024 increases)': 'Article 301 — Chine (listes 1 à 4A et hausses de 2024)',
   'Exclusion headings (0% rate) are offered as exemptions to claim.': 'Les rubriques d’exclusion (taux 0 %) sont proposées comme exemptions à réclamer.',
   'List 1 (25%)': 'Liste 1 (25 %)',
@@ -252,6 +248,12 @@ export const FR: Record<string, string> = {
   '2024 four-year review increases (EVs, semiconductors, batteries, steel/aluminum, etc.)':
     'Hausses de l’examen quadriennal de 2024 (VÉ, semi-conducteurs, batteries, acier/aluminium, etc.)',
   'Import with "Read the rate" ticked: rates vary by product (25% to 100%).': 'Importer avec « Read the rate » coché : les taux varient selon le produit (25 % à 100 %).',
+  'CBP consolidated Section 338 list (CSMS, list as of Oct. 30, 2026) — imported automatically.':
+    'Liste consolidée de l’article 338 du CBP (CSMS, liste au 30 oct. 2026) — importée automatiquement.',
+  'CBP consolidated Section 338 list (CSMS, list as of Oct. 30, 2026: 22 removed, 100 added) — imported automatically. When CBP publishes a new list, replace the URL in Admin → Rules.':
+    'Liste consolidée de l’article 338 du CBP (CSMS, liste au 30 oct. 2026 : 22 retirées, 100 ajoutées) — importée automatiquement. Quand le CBP publie une nouvelle liste, remplacer l’URL dans Admin → Rules.',
+  'Proclamations 11061 (alcoholic beverages), 11062 (dairy, molasses, non-alcoholic beer) and 11063 (motorcycles 8711.50.00), effective Sept. 29, 2026 — Annex I of each imported automatically.':
+    'Proclamations 11061 (boissons alcoolisées), 11062 (produits laitiers, mélasse, bière sans alcool) et 11063 (motocyclettes 8711.50.00), en vigueur le 29 sept. 2026 — annexe I de chacune importée automatiquement.',
   'Section 201 — safeguard measures': 'Article 201 — mesures de sauvegarde',
   'Section 301 — forced labor (60 economies)': 'Article 301 — travail forcé (60 économies)',
   'Full list of the 60 economies: headings 9903.05.20 to 9903.05.84 (imported automatically).':
@@ -264,8 +266,6 @@ export const FR: Record<string, string> = {
   'Civil aircraft, engines, parts': 'Aéronefs civils, moteurs, pièces',
   'Humanitarian donations (food, clothing, medicine)': 'Dons humanitaires (aliments, vêtements, médicaments)',
   'Section 338 — IMPORT PROHIBITION (products of Canada)': 'Article 338 — INTERDICTION D’IMPORTATION (produits du Canada)',
-  'Motorcycles 8711.50.00 confirmed; certain alcoholic beverages and dairy products: import the annexes of the Sept. 8, 2026 proclamations.':
-    'Motocyclettes 8711.50.00 confirmées ; certaines boissons alcoolisées et certains produits laitiers : importer les annexes des proclamations du 8 sept. 2026.',
   'Ordinary import': 'Importation ordinaire',
   'American goods returned (not advanced in value)': 'Marchandises américaines retournées (sans augmentation de valeur)',
   'Products of the U.S.: Chapter 99 additional duties (232/301/338) do not apply to U.S. origin. Export documentation required (declaration / CBP 4811).':

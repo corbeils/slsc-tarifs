@@ -148,7 +148,12 @@ export function validateCodes(db: DB, j: 'US' | 'CA', codes: ExtractedCode[]): E
 
 /** Text between two markers (case-insensitive, whitespace-tolerant). */
 export function section(text: string, from?: string, until?: string): string {
-  const rx = (m: string) => new RegExp(m.trim().split(/\s+/).map((w) => w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('\\s+'), 'i');
+  // A marker starting with "^" must open a line (e.g. "^9903.03.12" skips mentions inside sentences).
+  const rx = (m: string) => {
+    const anchored = m.trim().startsWith('^');
+    const body = m.trim().replace(/^\^\s*/, '').split(/\s+/).map((w) => w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('\\s+');
+    return anchored ? new RegExp(`^[ \\t]*${body}(?![\\w.])`, 'im') : new RegExp(body, 'i');
+  };
   let t = text;
   if (from) {
     const m = t.match(rx(from));

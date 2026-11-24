@@ -29,6 +29,8 @@ const Source = z.object({
   until: z.string().optional(),
   /** "lastCell": the rate is the last cell of each table row (e.g. Finance Canada lists). */
   rates: z.enum(['lastCell', 'percent', 'stream']).optional(),
+  /** Read bare 4-digit headings on their own line (default: true when no rate mode is set). */
+  headings: z.boolean().optional(),
 });
 
 const Scope = z

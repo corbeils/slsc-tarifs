@@ -27,7 +27,7 @@ export default function Batch() {
       const blob = await res.blob();
       const a = document.createElement('a');
       a.href = URL.createObjectURL(blob);
-      a.download = `simulation-${file.name.replace(/\.[^.]+$/, '')}.xlsx`;
+      a.download = `BATCH TARRIF SIMULATOR - ${file.name.replace(/\.[^.]+$/, '')}.xlsx`;
       a.click();
       setMsg(t('{rows} lines calculated, {errors} error(s).', { rows: res.headers.get('X-Rows'), errors: res.headers.get('X-Errors') }));
     } catch (e) {

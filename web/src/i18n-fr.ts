@@ -15,14 +15,14 @@ export const FR: Record<string, string> = {
   'System mode': 'Mode système',
   'Follow the browser / OS setting': 'Suivre le réglage du navigateur / système',
   'Important Notice:': 'Avis important :',
-  'This document is provided for informational purposes only.': 'Ce document est fourni à titre informatif seulement.',
+  'This site is provided for informational purposes only, offered without any warranty':
+    'Ce site est fourni à titre informatif seulement, offert sans aucune garantie',
   'Due to frequent changes in U.S. tariff rates, some information may become outdated or inaccurate.':
     'En raison des changements fréquents des taux tarifaires américains, certaines informations peuvent devenir périmées ou inexactes.',
-  'FOR INFORMATIONAL PURPOSES ONLY, OFFER WITHOUT WARRANTY': 'À TITRE INFORMATIF SEULEMENT, OFFERT SANS GARANTIE',
   'USITC LAST UPDATE': 'DERNIÈRE MISE À JOUR USITC',
   'ASFC LAST UPDATE': 'DERNIÈRE MISE À JOUR ASFC',
-  'CURRENCY CONVERTER UPDATE': 'MISE À JOUR DU CONVERTISSEUR DE DEVISES',
-  '— (default rate)': '— (taux par défaut)',
+  'SITE VERSION': 'VERSION DU SITE',
+  'BETA VERSION {v}': 'VERSION BETA {v}',
   ' (demo)': ' (démo)',
 
   // Simulator — form

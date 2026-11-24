@@ -7,6 +7,8 @@ import ThemeToggle from './components/ThemeToggle';
 import { api, fmtDate } from './api';
 import { LangToggle, useI18n } from './i18n';
 
+const SITE_VERSION = '1.3';
+
 const PAGES = [
   { id: 'simulateur', label: 'Simulator' },
   { id: 'lot', label: 'Excel batch' },
@@ -68,11 +70,9 @@ export default function App() {
       </main>
       <footer className="notice">
         <div className="notice-text">
-          <b>⚠️ {t('Important Notice:')}</b> {t('This document is provided for informational purposes only.')}
+          <b>⚠️ {t('Important Notice:')}</b> {t('This site is provided for informational purposes only, offered without any warranty')}
           <br />
           {t('Due to frequent changes in U.S. tariff rates, some information may become outdated or inaccurate.')}
-          <br />
-          <b>{t('FOR INFORMATIONAL PURPOSES ONLY, OFFER WITHOUT WARRANTY')}</b>
         </div>
         <div className="notice-dates">
           <span>
@@ -82,7 +82,7 @@ export default function App() {
             <b>{t('ASFC LAST UPDATE')}</b> : {upd(meta?.ca)}
           </span>
           <span>
-            <b>{t('CURRENCY CONVERTER UPDATE')}</b> : {meta?.fx?.date ? `${meta.fx.date} (1 USD = ${meta.fx.usdCad.toFixed(4)} CAD)` : t('— (default rate)')}
+            <b>{t('SITE VERSION')}</b> : {t('BETA VERSION {v}', { v: SITE_VERSION })}
           </span>
         </div>
       </footer>

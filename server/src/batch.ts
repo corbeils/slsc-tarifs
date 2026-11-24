@@ -5,6 +5,80 @@ import { calculate } from './engine/index.js';
 import type { CalcInput, Direction } from './engine/types.js';
 import { parseCsv } from './importers/ca-tariff.js';
 
+/** Excel template for the batch simulation (data sheet + instructions + country codes). */
+export async function buildTemplate(countries: { code: string; en: string }[]): Promise<Buffer> {
+  const wb = new ExcelJS.Workbook();
+  wb.creator = 'SLSC TARIFF SIMULATOR';
+  const ws = wb.addWorksheet('Parts', { views: [{ state: 'frozen', ySplit: 1 }] });
+  ws.columns = [
+    { header: 'Item', key: 'item', width: 8 },
+    { header: 'Description', key: 'desc', width: 34 },
+    { header: 'HTS', key: 'hts', width: 16 },
+    { header: 'Origin', key: 'origin', width: 9 },
+    { header: 'Value', key: 'value', width: 14 },
+    { header: 'Currency', key: 'cur', width: 10 },
+    { header: 'Qty', key: 'qty', width: 9 },
+    { header: 'USMCA', key: 'pref', width: 9 },
+    { header: 'US content %', key: 'us', width: 13 },
+  ];
+  const rows = [
+    [1, 'Closed die forging press', '8462.11.00.35', 'CA', 250000, 'USD', 1, 'yes', ''],
+    [2, 'Gear box', '8483.40.50.10', 'CA', 12000, 'USD', 4, 'yes', ''],
+    [3, 'Machined steel part', '7326.90.86.88', 'CN', 3500, 'USD', 120, 'no', ''],
+    [4, 'Electric control panel', '8537.10.91.70', 'MX', 18000, 'USD', 2, 'yes', 40],
+  ];
+  rows.forEach((r) => ws.addRow(r));
+  const head = ws.getRow(1);
+  head.font = { bold: true, color: { argb: 'FFFFFFFF' } };
+  head.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF12263F' } };
+  head.alignment = { vertical: 'middle' };
+  head.height = 20;
+  ['C', 'D', 'E', 'H'].forEach((c) => (ws.getCell(`${c}1`).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFF08A3C' } }));
+  ws.getColumn('value').numFmt = '#,##0.00';
+  ws.getColumn('hts').numFmt = '@';
+  for (let r = 2; r <= 500; r++) {
+    ws.getCell(`C${r}`).numFmt = '@';
+    ws.getCell(`D${r}`).dataValidation = { type: 'list', allowBlank: true, formulae: ['Countries!$A$2:$A$' + (countries.length + 1)], showErrorMessage: true, errorTitle: 'Origin', error: 'Use a 2-letter ISO code (see the Countries sheet).' };
+    ws.getCell(`F${r}`).dataValidation = { type: 'list', allowBlank: true, formulae: ['"USD,CAD"'] };
+    ws.getCell(`H${r}`).dataValidation = { type: 'list', allowBlank: true, formulae: ['"yes,no"'] };
+    ws.getCell(`I${r}`).dataValidation = { type: 'decimal', operator: 'between', allowBlank: true, formulae: [0, 100], showErrorMessage: true, error: 'Percentage between 0 and 100' };
+  }
+  ws.autoFilter = 'A1:I1';
+
+  const help = wb.addWorksheet('Instructions');
+  help.columns = [{ width: 20 }, { width: 90 }];
+  const lines: [string, string][] = [
+    ['SLSC TARIFF SIMULATOR', 'Batch simulation template'],
+    ['', ''],
+    ['How to use', 'Fill the "Parts" sheet (one line per part), then upload the file in Excel batch. You get the same file back with duties, measures, AD/CVD, licences and warnings.'],
+    ['', 'Orange columns are required: HTS, Origin (or the default origin chosen on the page), Value, USMCA (or the default).'],
+    ['', ''],
+    ['Item / Description', 'Free text, copied to the result.'],
+    ['HTS', 'INBOUND USA: HTSUS code (10 digits recommended, e.g. 8462.11.00.35). INBOUND CANADA: Canadian tariff item (e.g. 8462.11.00).'],
+    ['Origin', 'Country of origin, 2-letter ISO code (CA, US, MX, CN, DE…). See the Countries sheet.'],
+    ['Value', 'Customs value of the line.'],
+    ['Currency', 'USD or CAD. Empty = default currency chosen on the page.'],
+    ['Qty', 'Quantity (kg or units) — used only for specific rates (¢/kg, $/unit).'],
+    ['USMCA', 'yes / no — claim USMCA (INBOUND USA) or CUSMA (INBOUND CANADA) preferential treatment.'],
+    ['US content %', 'U.S. content as % of value — for Section 232 programs calculated on non-U.S. content (USMCA vehicles, Annex I-C).'],
+    ['', ''],
+    ['Notice', 'For informational purposes only, offer without warranty. Tariff rates change frequently.'],
+  ];
+  lines.forEach((l) => help.addRow(l));
+  help.getRow(1).font = { bold: true, size: 14, color: { argb: 'FF12263F' } };
+  help.getColumn(1).font = { bold: true };
+  help.getColumn(2).alignment = { wrapText: true, vertical: 'top' };
+
+  const cs = wb.addWorksheet('Countries');
+  cs.columns = [
+    { header: 'Code', width: 8 },
+    { header: 'Country', width: 50 },
+  ];
+  countries.forEach((c) => cs.addRow([c.code, c.en]));
+  cs.getRow(1).font = { bold: true };
+  return Buffer.from(await wb.xlsx.writeBuffer());
+}
+
 /**
  * Mode lot : un fichier XLSX/CSV (liste de pièces) en entrée, le même fichier enrichi en sortie.
  * Colonnes reconnues : code HTS/HS, origine, valeur, quantité, devise, préférence (oui/non), contenu US %.
@@ -118,6 +192,10 @@ export async function runBatch(
     ]);
   }
   ws.columns.forEach((c) => (c.width = 18));
+  ws.views = [{ state: 'frozen', ySplit: 1 }];
+  const firstNew = hdr.length + 1;
+  for (const off of [2, 3, 6, 7, 8]) ws.getColumn(firstNew + off).numFmt = '#,##0.00';
+  ws.autoFilter = { from: { row: 1, column: 1 }, to: { row: 1, column: hdr.length + added.length } };
   const buffer = Buffer.from(await out.xlsx.writeBuffer());
   return { buffer, rows: n, errors };
 }

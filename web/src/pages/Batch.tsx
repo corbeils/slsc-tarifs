@@ -1,12 +1,6 @@
 import { useState } from 'react';
 import type { Direction } from '../api';
 
-const TEMPLATE = `Item,Description,HTS,Origin,Value,Qty,USMCA,US content %
-1,Forging press,8462.11.00.35,CA,250000,1,yes,
-2,Gear box,8483.40.50.10,CA,12000,4,yes,
-3,Machined steel part,7326.90.86.88,CN,3500,120,no,
-`;
-
 export default function Batch() {
   const [direction, setDirection] = useState<Direction>('CA-US');
   const [origin, setOrigin] = useState('CA');
@@ -41,19 +35,12 @@ export default function Batch() {
     }
   };
 
-  const dlTemplate = () => {
-    const a = document.createElement('a');
-    a.href = URL.createObjectURL(new Blob(['﻿' + TEMPLATE], { type: 'text/csv' }));
-    a.download = 'simulation-template.csv';
-    a.click();
-  };
-
   return (
     <div className="narrow">
       <div className="card">
         <h2>Batch simulation (parts list)</h2>
         <p className="muted">
-          Upload an Excel or CSV file: every line is calculated with the same rules as the simulator, and you get the file back with
+          Upload an Excel file (.xlsx — CSV also accepted): every line is calculated with the same rules as the simulator, and you get the file back with
           rates, measures, AD/CVD, licences and warnings added.
         </p>
         <div className="grid3">
@@ -94,15 +81,15 @@ export default function Batch() {
           </label>
         </div>
         <div className="drop">
-          <input type="file" accept=".xlsx,.csv" onChange={(e) => setFile(e.target.files?.[0] ?? null)} />
+          <input type="file" accept=".xlsx,.xls,.csv" onChange={(e) => setFile(e.target.files?.[0] ?? null)} />
         </div>
         <div className="row">
           <button className="btn" disabled={!file || busy} onClick={run}>
             {busy ? 'Calculating…' : 'Calculate and download'}
           </button>
-          <button className="btn ghost" onClick={dlTemplate}>
-            Download template
-          </button>
+          <a className="btn ghost" href="/api/batch/template" download>
+            Download Excel template
+          </a>
         </div>
         {msg && <div className="alert info">{msg}</div>}
       </div>

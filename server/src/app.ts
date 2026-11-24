@@ -14,7 +14,7 @@ import type { CalcInput } from './engine/types.js';
 import { importUsFile, importUsOnline } from './importers/us-hts.js';
 import { importCaFile, importCaUrl } from './importers/ca-tariff.js';
 import { extractCodes, fetchText, fileToText, section, validateCodes, importAdcvdCsv, importFx, importPgaCsv, saveCodeList, setFxManual } from './importers/misc.js';
-import { runBatch } from './batch.js';
+import { buildTemplate, runBatch } from './batch.js';
 import { syncCbsa } from './importers/cbsa-sync.js';
 import { syncOfficialLists } from './importers/official-lists.js';
 import { clearListCache } from './engine/common.js';
@@ -136,6 +136,14 @@ export async function buildApp(db: DB) {
     const input = req.body as CalcInput;
     if (!input?.code || !input.direction) return reply.code(400).send({ error: 'code and direction required' });
     return calculate(db, getRules(), { ...input, value: Number(input.value) || 0 });
+  });
+
+  app.get('/api/batch/template', async (_req, reply) => {
+    const buf = await buildTemplate(listCountries());
+    reply
+      .header('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+      .header('Content-Disposition', 'attachment; filename="slsc-tariff-batch-template.xlsx"');
+    return reply.send(buf);
   });
 
   app.post('/api/batch', async (req, reply) => {

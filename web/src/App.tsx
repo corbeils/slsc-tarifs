@@ -3,6 +3,7 @@ import Simulator from './pages/Simulator';
 import Batch from './pages/Batch';
 import Measures from './pages/Measures';
 import Admin from './pages/Admin';
+import ThemeToggle from './components/ThemeToggle';
 import { api, fmtDate } from './api';
 
 const PAGES = [
@@ -45,13 +46,16 @@ export default function App() {
             <div className="brand-sub">Canada ⇄ United States duty simulator</div>
           </div>
         </div>
-        <nav>
-          {PAGES.map((p) => (
-            <a key={p.id} className={page === p.id ? 'active' : ''} href={`#/${p.id}`}>
-              {p.label}
-            </a>
-          ))}
-        </nav>
+        <div className="topbar-right">
+          <nav>
+            {PAGES.map((p) => (
+              <a key={p.id} className={page === p.id ? 'active' : ''} href={`#/${p.id}`}>
+                {p.label}
+              </a>
+            ))}
+          </nav>
+          <ThemeToggle />
+        </div>
       </header>
       <main>
         {page === 'simulateur' && <Simulator />}

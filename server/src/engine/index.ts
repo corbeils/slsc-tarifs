@@ -1,3 +1,4 @@
+import { localizeRules, t, withLang, type Lang } from '../i18n/index.js';
 import type { DB } from '../db.js';
 import { getMeta } from '../db.js';
 import type { Rules } from '../rules.js';
@@ -11,7 +12,7 @@ export const DEFAULT_FX = 1.38;
 export function currentFx(db: DB): { usdCad: number; source: string; date?: string } {
   const fx = getMeta<{ rate: number; date: string; source: string }>(db, 'fx:USDCAD');
   if (fx) return { usdCad: fx.rate, source: fx.source, date: fx.date };
-  return { usdCad: DEFAULT_FX, source: 'default value (import the Bank of Canada rate)' };
+  return { usdCad: DEFAULT_FX, source: t('default value (import the Bank of Canada rate)') };
 }
 
 /** Ajoute aux règles les dossiers AD/CVD importés par CSV (table adcvd_import). */
@@ -47,18 +48,22 @@ export function withImportedAdcvd(db: DB, rules: Rules): Rules {
   };
 }
 
-export function calculate(db: DB, baseRules: Rules, input: CalcInput): CalcResult {
+export function calculate(db: DB, baseRules: Rules, input: CalcInput, l: Lang = 'en'): CalcResult {
+  return withLang(l, () => calculateIn(db, localizeRules(baseRules, l), input));
+}
+
+function calculateIn(db: DB, baseRules: Rules, input: CalcInput): CalcResult {
   const rules = withImportedAdcvd(db, baseRules);
   const j = input.direction === 'CA-US' ? 'US' : 'CA';
   const fxInfo = currentFx(db);
-  const fx = input.fxUsdCad && input.fxUsdCad > 0 ? { usdCad: input.fxUsdCad, source: 'entered manually' } : fxInfo;
+  const fx = input.fxUsdCad && input.fxUsdCad > 0 ? { usdCad: input.fxUsdCad, source: t('entered manually') } : fxInfo;
   const info = dataInfo(db, j);
   const data = { importedAt: info.importedAt, source: info.source, rulesLoadedAt: rules.loadedAt, seed: info.seed };
   const line = getLine(db, j, input.code);
   if (!line) {
     return {
       ok: false,
-      error: `Code ${input.code} not found in the ${j === 'US' ? 'U.S. tariff (HTSUS)' : 'Canadian Customs Tariff'}.`,
+      error: t(j === 'US' ? 'Code {code} not found in the U.S. tariff (HTSUS).' : 'Code {code} not found in the Canadian Customs Tariff.', { code: input.code }),
       direction: input.direction,
       destination: j,
       currency: j === 'US' ? 'USD' : 'CAD',
@@ -81,14 +86,14 @@ export function calculate(db: DB, baseRules: Rules, input: CalcInput): CalcResul
   if (data.seed)
     r.flags.warnings.unshift({
       level: 'warning',
-      title: 'Demo data',
-      detail: 'The official tariff has not been imported yet. Run the import in Admin for current rates.',
+      title: t('Demo data'),
+      detail: t('The official tariff has not been imported yet. Run the import in Admin for current rates.'),
     });
   if (!line.is_leaf)
     r.flags.warnings.push({
       level: 'warning',
-      title: 'Non-terminal code',
-      detail: 'This code has subdivisions: choose the full tariff line (8/10 digits) for an exact calculation.',
+      title: t('Non-terminal code'),
+      detail: t('This code has subdivisions: choose the full tariff line (8/10 digits) for an exact calculation.'),
     });
   return {
     ...r,

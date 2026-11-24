@@ -1,3 +1,4 @@
+import { t } from '../i18n/index.js';
 import type { DB, LineRow } from '../db.js';
 import { countryName, EU27, matchesOrigin } from '../countries.js';
 import type { Measure, Rules } from '../rules.js';
@@ -33,32 +34,32 @@ export function calcCA(db: DB, rules: Rules, line: LineRow, input: CalcInput, fx
   const prefCode = treatments.find((t) => pref[t] !== undefined && pref[t] !== '');
   const prefEligible = !!prefCode;
   const claimed = !!input.preferential && prefEligible;
-  const prefLabel = origin === 'US' || origin === 'MX' ? 'CUSMA' : 'Free trade agreement';
+  const prefLabel = origin === 'US' || origin === 'MX' ? t('CUSMA') : t('Free trade agreement');
 
   let baseText: string;
   let baseNote: string;
   if (GENERAL_TARIFF_COUNTRIES.includes(origin)) {
     baseText = line.other ?? '35%';
-    baseNote = 'General Tariff';
+    baseNote = t('General Tariff');
   } else if (claimed) {
     baseText = pref[prefCode!];
-    baseNote = `${prefCode} treatment (${prefLabel})`;
+    baseNote = t('{code} treatment ({pref})', { code: prefCode, pref: prefLabel });
   } else {
     baseText = line.general ?? '';
-    baseNote = 'Most-Favoured-Nation Tariff (MFN)';
+    baseNote = t('Most-Favoured-Nation Tariff (MFN)');
   }
   if (eff.baseFree) {
     baseText = 'Free';
-    baseNote = `Regime ${regime.code} — ${regime.label}`;
+    baseNote = t('Regime {code} — {label}', { code: regime.code, label: regime.label });
   }
   const parsed = parseRate(baseText);
   const base = computeDuty(parsed, value, input.quantities ?? {});
   if (base.missingQuantity.length) needs.quantityUnits = base.missingQuantity;
   if (parsed.complex)
-    flags.warnings.push({ level: 'warning', title: 'Complex base rate', detail: `"${parsed.raw}" — verify manually.` });
+    flags.warnings.push({ level: 'warning', title: t('Complex base rate'), detail: t('"{raw}" — verify manually.', { raw: parsed.raw }) });
   lines.push({
     key: 'base',
-    label: 'Customs duty',
+    label: t('Customs duty'),
     program: 'Customs Tariff',
     rateText: parsed.raw || '—',
     ratePct: parsed.specific.length ? null : parsed.adValorem,
@@ -114,10 +115,10 @@ export function calcCA(db: DB, rules: Rules, line: LineRow, input: CalcInput, fx
       needs.caMxContent = true;
       const pct = input.caMxContentPct ?? 0;
       basis = value * (1 - pct / 100);
-      notes.push(`CUSMA : sur le contenu non canadien et non mexicain (${round2(100 - pct)} %)`);
+      notes.push(t('CUSMA: on non-Canadian, non-Mexican content ({pct}%)', { pct: round2(100 - pct) }));
     }
-    if (c.partial) notes.push('The list covers only some subdivisions: specify the 10-digit number');
-    notes.push(`Scope: ${c.via}`);
+    if (c.partial) notes.push(t('The list covers only some subdivisions: specify the 10-digit number'));
+    notes.push(t('Scope: {via}', { via: c.via }));
     computed.push({ c, amount: exempt ? 0 : (c.rate / 100) * basis, basis, exempt, notes });
   }
 
@@ -149,8 +150,8 @@ export function calcCA(db: DB, rules: Rules, line: LineRow, input: CalcInput, fx
       exempted: !!x.exempt,
       notCumulated: nc,
       note: [
-        x.exempt ? `Remission / exemption: ${x.exempt.label}` : '',
-        nc ? 'Not cumulative — another measure in the same group applies (highest amount retained)' : '',
+        x.exempt ? t('Remission / exemption: {label}', { label: x.exempt.label }) : '',
+        nc ? t('Not cumulative — another measure in the same group applies (highest amount retained)') : '',
         ...x.notes,
         x.c.m.note ?? '',
       ]
@@ -163,8 +164,8 @@ export function calcCA(db: DB, rules: Rules, line: LineRow, input: CalcInput, fx
   for (const { flag } of adcvdFlags(rules.adcvd.ca.cases, line.code, origin)) {
     flags.adcvd.push({
       ...flag,
-      title: `SIMA ${flag.title}`,
-      detail: 'Possible anti-dumping/countervailing duties (normal values are exporter-specific). Check the product definition of the measure in force.',
+      title: t('SIMA {title}', { title: flag.title }),
+      detail: t('Possible anti-dumping/countervailing duties (normal values are exporter-specific). Check the product definition of the measure in force.'),
       url: rules.adcvd.ca.searchUrl,
     });
   }
@@ -180,13 +181,13 @@ export function calcCA(db: DB, rules: Rules, line: LineRow, input: CalcInput, fx
   if (hst !== undefined) {
     lines.push({
       key: 'hst',
-      label: `HST (${prov})`,
+      label: t('HST ({prov})', { prov }),
       ratePct: hst,
       basis: round2(taxBase),
       amount: round2((hst / 100) * taxBase),
       kind: 'tax',
       status: 'verified',
-      note: 'Base: value for duty + duties + surtaxes. Recoverable as an input tax credit by registrants.',
+      note: t('Base: value for duty + duties + surtaxes. Recoverable as an input tax credit by registrants.'),
     });
   } else {
     lines.push({
@@ -197,26 +198,25 @@ export function calcCA(db: DB, rules: Rules, line: LineRow, input: CalcInput, fx
       amount: round2((R.taxes.gst.pct / 100) * taxBase),
       kind: 'tax',
       status: R.taxes.gst.status,
-      note: 'Base: value for duty + duties + surtaxes. Recoverable as an input tax credit by registrants.' + (prov === 'QC' ? ' QST is not collected at the border.' : ''),
+      note: t('Base: value for duty + duties + surtaxes. Recoverable as an input tax credit by registrants.') + (prov === 'QC' ? t(' QST is not collected at the border.') : ''),
     });
   }
 
   if (prefEligible && !input.preferential)
     flags.info.push({
       level: 'success',
-      title: `Eligible for ${prefCode} treatment (${prefLabel})`,
-      detail: `Rate: ${pref[prefCode!]}. Tick "Claim" if the goods are originating (proof of origin required).`,
+      title: t('Eligible for {code} treatment ({pref})', { code: prefCode, pref: prefLabel }),
+      detail: t('Rate: {rate}. Tick "Claim" if the goods are originating (proof of origin required).', { rate: pref[prefCode!] }),
     });
   if (origin === 'US' && !prefEligible)
-    flags.info.push({ level: 'info', title: 'No UST rate found for this line', detail: 'Check the imported tariff file.' });
+    flags.info.push({ level: 'info', title: t('No UST rate found for this line'), detail: t('Check the imported tariff file.') });
   if (regime.id !== 'none' && regime.note)
-    flags.info.push({ level: 'info', title: `Regime ${regime.code ?? ''} — ${regime.label}`, detail: regime.note });
+    flags.info.push({ level: 'info', title: t('Regime {code} — {label}', { code: regime.code ?? '', label: regime.label }), detail: regime.note });
   if (!skipAdditional && origin === 'US')
     flags.info.push({
       level: 'info',
-      title: 'Canadian surtaxes: official lists',
-      detail:
-        'Surtaxes apply by tariff item. Until a list is imported, matching uses indicative prefixes (flagged as such).',
+      title: t('Canadian surtaxes: official lists'),
+      detail: t('Surtaxes apply by tariff item. Until a list is imported, matching uses indicative prefixes (flagged as such).'),
     });
 
   const totals = summarize(lines, value);
@@ -245,7 +245,7 @@ function optionLabel(k: string): string {
     overQuota: 'Over-quota import (quarterly TRQ exhausted for the country)',
     chinaMeltedSteel: 'Contains steel melted and poured in China',
   };
-  return m[k] ?? k;
+  return m[k] ? t(m[k]) : k;
 }
 
 export { countryName, matchesOrigin };

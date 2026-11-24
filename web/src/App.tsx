@@ -5,6 +5,7 @@ import Measures from './pages/Measures';
 import Admin from './pages/Admin';
 import ThemeToggle from './components/ThemeToggle';
 import { api, fmtDate } from './api';
+import { LangToggle, useI18n } from './i18n';
 
 const PAGES = [
   { id: 'simulateur', label: 'Simulator' },
@@ -27,11 +28,12 @@ function usePage(): [PageId, (p: PageId) => void] {
 
 export default function App() {
   const [page, go] = usePage();
+  const { t, lang } = useI18n();
   const [meta, setMeta] = useState<any>(null);
   useEffect(() => {
     api.meta().then(setMeta).catch(() => {});
-  }, [page]);
-  const upd = (m: any) => (m?.at ? `${fmtDate(m.at)}${m.source?.startsWith('seed') ? ' (demo)' : ''}` : '—');
+  }, [page, lang]);
+  const upd = (m: any) => (m?.at ? `${fmtDate(m.at)}${m.source?.startsWith('seed') ? t(' (demo)') : ''}` : '—');
   return (
     <div className="app">
       <header className="topbar">
@@ -43,17 +45,18 @@ export default function App() {
           </svg>
           <div>
             <div className="brand-title">SLSC TARIFF SIMULATOR</div>
-            <div className="brand-sub">Canada ⇄ United States duty simulator</div>
+            <div className="brand-sub">{t('Canada ⇄ United States duty simulator')}</div>
           </div>
         </div>
         <div className="topbar-right">
           <nav>
             {PAGES.map((p) => (
               <a key={p.id} className={page === p.id ? 'active' : ''} href={`#/${p.id}`}>
-                {p.label}
+                {t(p.label)}
               </a>
             ))}
           </nav>
+          <LangToggle />
           <ThemeToggle />
         </div>
       </header>
@@ -65,21 +68,21 @@ export default function App() {
       </main>
       <footer className="notice">
         <div className="notice-text">
-          <b>⚠️ Important Notice:</b> This document is provided for informational purposes only.
+          <b>⚠️ {t('Important Notice:')}</b> {t('This document is provided for informational purposes only.')}
           <br />
-          Due to frequent changes in U.S. tariff rates, some information may become outdated or inaccurate.
+          {t('Due to frequent changes in U.S. tariff rates, some information may become outdated or inaccurate.')}
           <br />
-          <b>FOR INFORMATIONAL PURPOSES ONLY, OFFER WITHOUT WARRANTY</b>
+          <b>{t('FOR INFORMATIONAL PURPOSES ONLY, OFFER WITHOUT WARRANTY')}</b>
         </div>
         <div className="notice-dates">
           <span>
-            <b>USITC LAST UPDATE</b> : {upd(meta?.us)}
+            <b>{t('USITC LAST UPDATE')}</b> : {upd(meta?.us)}
           </span>
           <span>
-            <b>ASFC LAST UPDATE</b> : {upd(meta?.ca)}
+            <b>{t('ASFC LAST UPDATE')}</b> : {upd(meta?.ca)}
           </span>
           <span>
-            <b>CURRENCY CONVERTER UPDATE</b> : {meta?.fx?.date ? `${meta.fx.date} (1 USD = ${meta.fx.usdCad.toFixed(4)} CAD)` : '— (default rate)'}
+            <b>{t('CURRENCY CONVERTER UPDATE')}</b> : {meta?.fx?.date ? `${meta.fx.date} (1 USD = ${meta.fx.usdCad.toFixed(4)} CAD)` : t('— (default rate)')}
           </span>
         </div>
       </footer>

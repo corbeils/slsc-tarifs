@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useI18n } from '../i18n';
 
 export type Theme = 'light' | 'dark' | 'system';
 const KEY = 'slsc-tariff-theme';
@@ -31,6 +32,7 @@ const Monitor = () => (
 );
 
 export default function ThemeToggle() {
+  const { t: tr } = useI18n();
   const [t, setT] = useState<Theme>(storedTheme);
   useEffect(() => {
     applyTheme(t);
@@ -42,11 +44,11 @@ export default function ThemeToggle() {
     ['system', 'System', Monitor],
   ];
   return (
-    <div className="theme" role="radiogroup" aria-label="Theme">
+    <div className="theme" role="radiogroup" aria-label={tr('Theme')}>
       {opts.map(([k, label, Icon]) => (
-        <button key={k} role="radio" aria-checked={t === k} className={t === k ? 'on' : ''} title={k === 'system' ? 'Follow the browser / OS setting' : `${label} mode`} onClick={() => setT(k)}>
+        <button key={k} role="radio" aria-checked={t === k} className={t === k ? 'on' : ''} title={k === 'system' ? tr('Follow the browser / OS setting') : tr(`${label} mode`)} onClick={() => setT(k)}>
           <Icon />
-          {label}
+          {tr(label)}
         </button>
       ))}
     </div>

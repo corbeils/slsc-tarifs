@@ -1,3 +1,5 @@
+import { getLang } from './i18n';
+
 export type Direction = 'CA-US' | 'US-CA';
 
 export interface CalcLine {
@@ -103,8 +105,8 @@ export const api = {
   meta: () => req<any>('/api/meta'),
   countries: () => req<Country[]>('/api/countries'),
   search: (j: 'US' | 'CA', q: string) => req<SearchHit[]>(`/api/search?j=${j}&q=${encodeURIComponent(q)}`),
-  calc: (body: unknown) => req<CalcResult>('/api/calc', { method: 'POST', body: JSON.stringify(body) }),
-  measures: () => req<any>('/api/measures'),
+  calc: (body: object) => req<CalcResult>('/api/calc', { method: 'POST', body: JSON.stringify({ ...body, lang: getLang() }) }),
+  measures: () => req<any>(`/api/measures?lang=${getLang()}`),
   login: (username: string, password: string) =>
     req<{ token: string; username: string; mustChange: boolean }>('/api/auth/login', { method: 'POST', body: JSON.stringify({ username, password }) }),
   logout: () => req<any>('/api/auth/logout', { method: 'POST' }, true),
@@ -143,8 +145,9 @@ export const api = {
   },
 };
 
+const loc = () => (getLang() === 'fr' ? 'fr-CA' : 'en-CA');
 export const money = (n: number, cur: string) =>
-  new Intl.NumberFormat('en-CA', { style: 'currency', currency: cur, currencyDisplay: 'code', maximumFractionDigits: 2 }).format(n || 0);
+  new Intl.NumberFormat(loc(), { style: 'currency', currency: cur, currencyDisplay: 'code', maximumFractionDigits: 2 }).format(n || 0);
 export const pct = (n: number | null | undefined) =>
-  n === null || n === undefined ? '—' : `${new Intl.NumberFormat('en-CA', { maximumFractionDigits: 3 }).format(n)}%`;
-export const fmtDate = (s?: string | null) => (s ? new Date(s).toLocaleString('en-CA', { dateStyle: 'medium', timeStyle: 'short' }) : '—');
+  n === null || n === undefined ? '—' : `${new Intl.NumberFormat(loc(), { maximumFractionDigits: 3 }).format(n)}${getLang() === 'fr' ? '\u00a0' : ''}%`;
+export const fmtDate = (s?: string | null) => (s ? new Date(s).toLocaleString(loc(), { dateStyle: 'medium', timeStyle: 'short' }) : '—');

@@ -1,14 +1,17 @@
 import type { Country } from '../api';
+import { useI18n } from '../i18n';
 
 const QUICK = ['CA', 'US', 'MX', 'CN', 'DE', 'JP'];
 
 export default function CountrySelect({ countries, value, onChange }: { countries: Country[]; value: string; onChange: (c: string) => void }) {
+  const { lang } = useI18n();
+  const list = lang === 'fr' ? [...countries].sort((a, b) => a.fr.localeCompare(b.fr, 'fr')) : countries;
   return (
     <div>
       <select className="input" value={value} onChange={(e) => onChange(e.target.value)}>
-        {countries.map((c) => (
+        {list.map((c) => (
           <option key={c.code} value={c.code}>
-            {c.en} ({c.code})
+            {lang === 'fr' ? c.fr : c.en} ({c.code})
           </option>
         ))}
       </select>

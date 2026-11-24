@@ -8,6 +8,7 @@ import { config } from './config.js';
 import type { DB } from './db.js';
 import { digits, getMeta } from './db.js';
 import { listCountries } from './countries.js';
+import { asLang, localizeRules } from './i18n/index.js';
 import { getRules, loadRules, readRuleFile, RULE_FILES, type RuleKey, writeRuleFile } from './rules.js';
 import { calculate, currentFx } from './engine/index.js';
 import type { CalcInput } from './engine/types.js';
@@ -133,13 +134,14 @@ export async function buildApp(db: DB) {
   });
 
   app.post('/api/calc', async (req, reply) => {
-    const input = req.body as CalcInput;
+    const input = req.body as CalcInput & { lang?: string };
     if (!input?.code || !input.direction) return reply.code(400).send({ error: 'code and direction required' });
-    return calculate(db, getRules(), { ...input, value: Number(input.value) || 0 });
+    return calculate(db, getRules(), { ...input, value: Number(input.value) || 0 }, asLang(input.lang ?? (req.query as { lang?: string }).lang));
   });
 
-  app.get('/api/batch/template', async (_req, reply) => {
-    const buf = await buildTemplate(listCountries());
+  app.get('/api/batch/template', async (req, reply) => {
+    const l = asLang((req.query as { lang?: string }).lang);
+    const buf = await buildTemplate(listCountries(), l);
     reply
       .header('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
       .header('Content-Disposition', 'attachment; filename="slsc-tariff-batch-template.xlsx"');
@@ -162,7 +164,7 @@ export async function buildApp(db: DB) {
       preferential: fields.preferential === 'true',
       province: fields.province,
       mode: (fields.mode as CalcInput['mode']) || undefined,
-    });
+    }, asLang(fields.lang));
     reply
       .header('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
       .header('Content-Disposition', `attachment; filename="simulation-${Date.now()}.xlsx"`)
@@ -172,8 +174,8 @@ export async function buildApp(db: DB) {
   });
 
   // Résumé public des mesures (page « Mesures en vigueur »)
-  app.get('/api/measures', async () => {
-    const R = getRules();
+  app.get('/api/measures', async (req) => {
+    const R = localizeRules(getRules(), asLang((req.query as { lang?: string }).lang));
     const lists = Object.fromEntries(
       (db.prepare('SELECT measure_id, COUNT(*) n FROM code_lists GROUP BY measure_id').all() as { measure_id: string; n: number }[]).map((r) => [
         r.measure_id,

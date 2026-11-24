@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { api, type SearchHit } from '../api';
+import { useI18n } from '../i18n';
 
 export default function CodeSearch({
   j,
@@ -10,6 +11,7 @@ export default function CodeSearch({
   value: SearchHit | null;
   onSelect: (h: SearchHit | null) => void;
 }) {
+  const { t } = useI18n();
   const [q, setQ] = useState(value?.display ?? '');
   const [hits, setHits] = useState<SearchHit[]>([]);
   const [open, setOpen] = useState(false);
@@ -58,7 +60,7 @@ export default function CodeSearch({
     <div className="search" ref={box}>
       <input
         className="input mono"
-        placeholder={j === 'US' ? 'HTSUS code or keywords (e.g. 8462.11, press, gear box)' : 'Tariff item or keywords'}
+        placeholder={j === 'US' ? t('HTSUS code or keywords (e.g. 8462.11, press, gear box)') : t('Tariff item or keywords')}
         value={q}
         onChange={(e) => {
           setQ(e.target.value);

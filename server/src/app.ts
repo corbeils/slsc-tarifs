@@ -149,7 +149,7 @@ export async function buildApp(db: DB) {
     const buf = await buildTemplate(listCountries(), l);
     reply
       .header('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
-      .header('Content-Disposition', 'attachment; filename="BATCH TARRIF SIMULATOR.xlsx"');
+      .header('Content-Disposition', 'attachment; filename="BATCH TARIFF SIMULATOR.xlsx"');
     return reply.send(buf);
   });
 
@@ -173,7 +173,7 @@ export async function buildApp(db: DB) {
     }, asLang(fields.lang));
     reply
       .header('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
-      .header('Content-Disposition', `attachment; filename="BATCH TARRIF SIMULATOR - ${new Date().toISOString().slice(0, 10)}.xlsx"`)
+      .header('Content-Disposition', `attachment; filename="BATCH TARIFF SIMULATOR - ${new Date().toISOString().slice(0, 10)}.xlsx"`)
       .header('X-Rows', String(r.rows))
       .header('X-Errors', String(r.errors));
     return reply.send(r.buffer);

@@ -23,15 +23,6 @@ export async function buildTemplate(countries: { code: string; en: string; fr?: 
     { header: 'USMCA', key: 'pref', width: 9 },
     { header: T('US content %'), key: 'us', width: 13 },
   ];
-  const YES = l === 'fr' ? 'oui' : 'yes';
-  const NO = l === 'fr' ? 'non' : 'no';
-  const rows = [
-    [1, T('Closed die forging press'), '8462.11.00.35', 'CA', 250000, 'USD', 1, YES, ''],
-    [2, T('Gear box'), '8483.40.50.10', 'CA', 12000, 'USD', 4, YES, ''],
-    [3, T('Machined steel part'), '7326.90.86.88', 'CN', 3500, 'USD', 120, NO, ''],
-    [4, T('Electric control panel'), '8537.10.91.70', 'MX', 18000, 'USD', 2, YES, 40],
-  ];
-  rows.forEach((r) => ws.addRow(r));
   const head = ws.getRow(1);
   head.font = { bold: true, color: { argb: 'FFFFFFFF' } };
   head.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF12263F' } };

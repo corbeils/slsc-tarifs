@@ -206,7 +206,6 @@ export const FR: Record<string, string> = {
   'Base duty': 'Droit de base',
   'Base rate': 'Taux de base',
   'Batch simulation template': 'Gabarit de simulation par lot',
-  'Closed die forging press': 'Presse à forger à matrices fermées',
   Countries: 'Pays',
   Country: 'Pays',
   'Country of origin, 2-letter ISO code (CA, US, MX, CN, DE…). See the Countries sheet.':
@@ -215,14 +214,12 @@ export const FR: Record<string, string> = {
   'Customs value of the line.': 'Valeur en douane de la ligne.',
   Description: 'Description',
   'Effective duty rate (%)': 'Taux effectif des droits (%)',
-  'Electric control panel': 'Panneau de commande électrique',
   Fees: 'Frais',
   'Fill the "Parts" sheet (one line per part), then upload the file in Batch simulator. You get the same file back with duties, measures, AD/CVD, licences and warnings.':
     'Remplir la feuille « Pièces » (une ligne par pièce), puis téléverser le fichier dans Simulation en lot. Vous recevez le même fichier avec les droits, mesures, AD/CVD, licences et avertissements.',
   'For informational purposes only, offer without warranty. Tariff rates change frequently.':
     'À titre informatif seulement, offert sans garantie. Les taux tarifaires changent fréquemment.',
   'Free text, copied to the result.': 'Texte libre, recopié dans le résultat.',
-  'Gear box': 'Boîte d’engrenages',
   'How to use': 'Mode d’emploi',
   'INBOUND USA: HTSUS code (10 digits recommended, e.g. 8462.11.00.35). INBOUND CANADA: Canadian tariff item (e.g. 8462.11.00).':
     'INBOUND USA : code HTSUS (10 chiffres recommandés, ex. 8462.11.00.35). INBOUND CANADA : numéro tarifaire canadien (ex. 8462.11.00).',
@@ -230,7 +227,6 @@ export const FR: Record<string, string> = {
   Item: 'Article',
   'Item / Description': 'Article / Description',
   'Licences / permits': 'Licences / permis',
-  'Machined steel part': 'Pièce d’acier usinée',
   'Measures detail': 'Détail des mesures',
   'No code column found (HTS / HS / Tariff)': 'Aucune colonne de code trouvée (HTS / HS / Tarif)',
   'No value column found (Value / Price / Amount)': 'Aucune colonne de valeur trouvée (Valeur / Prix / Montant)',

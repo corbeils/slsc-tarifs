@@ -1,0 +1,80 @@
+# =====================================================================
+#  RULES — INBOUND EU (imports into the European Union)
+#  Reference date: November 24, 2026
+#  Duties, preferences, quotas, anti-dumping/countervailing and additional
+#  duties come from TARIC (imported in Admin). This file holds what TARIC
+#  does not contain: national VAT rates and the names/links of the agreements.
+# =====================================================================
+
+currency: EUR
+
+# Standard import VAT rate by member state (%). Reduced rates exist for some goods (food, books, medicines…).
+vat:
+  AT: 20
+  BE: 21
+  BG: 20
+  HR: 25
+  CY: 19
+  CZ: 21
+  DK: 25
+  EE: 24
+  FI: 25.5
+  FR: 20
+  DE: 19
+  GR: 24
+  HU: 27
+  IE: 23
+  IT: 22
+  LV: 21
+  LT: 21
+  LU: 17
+  MT: 18
+  NL: 21
+  PL: 23
+  PT: 23
+  RO: 21
+  SK: 23
+  SI: 22
+  ES: 21
+  SE: 25
+vatNote: "Import VAT base: customs value (CIF) + customs duties + other charges + transport costs to the first destination in the EU. Standard rate shown; check reduced rates for the goods."
+
+# TARIC measure types (code → how the simulator uses it)
+measureTypes:
+  thirdCountry: ["103"]
+  endUse: ["105"]
+  suspension: ["112"]
+  endUseSuspension: ["115", "117", "119"]
+  customsUnion: ["106"]
+  preference: ["141", "142", "145"]
+  preferentialQuota: ["143", "146"]
+  quota: ["122", "123", "147"]
+  antiDumping: ["551", "552", "553", "554", "555", "562", "564"]
+  additional: ["690", "692", "693", "695", "696"]
+  agricultural: ["672", "673", "674"]
+
+# Free trade agreements by TARIC origin (country or group code). Origins not listed use the TARIC description.
+agreements:
+  CA: { name: "EU-Canada Comprehensive Economic and Trade Agreement", short: "CETA", url: "https://policy.trade.ec.europa.eu/eu-trade-relationships-country-and-region/countries-and-regions/canada/eu-canada-agreement_en" }
+  MX: { name: "EU-Mexico Global Agreement", short: "EU-Mexico", url: "https://trade.ec.europa.eu/access-to-markets/en/content/free-trade-agreements" }
+  JP: { name: "EU-Japan Economic Partnership Agreement", short: "EU-Japan EPA", url: "https://trade.ec.europa.eu/access-to-markets/en/content/free-trade-agreements" }
+  KR: { name: "EU-South Korea Free Trade Agreement", short: "EU-Korea FTA", url: "https://trade.ec.europa.eu/access-to-markets/en/content/free-trade-agreements" }
+  GB: { name: "EU-UK Trade and Cooperation Agreement", short: "TCA", url: "https://trade.ec.europa.eu/access-to-markets/en/content/free-trade-agreements" }
+  CH: { name: "EU-Switzerland Free Trade Agreement", short: "EU-Switzerland", url: "https://trade.ec.europa.eu/access-to-markets/en/content/free-trade-agreements" }
+  NO: { name: "European Economic Area (EEA)", short: "EEA", url: "https://policy.trade.ec.europa.eu/eu-trade-relationships-country-and-region/negotiations-and-agreements_en" }
+  IS: { name: "European Economic Area (EEA)", short: "EEA", url: "https://policy.trade.ec.europa.eu/eu-trade-relationships-country-and-region/negotiations-and-agreements_en" }
+  LI: { name: "European Economic Area (EEA)", short: "EEA", url: "https://policy.trade.ec.europa.eu/eu-trade-relationships-country-and-region/negotiations-and-agreements_en" }
+  SG: { name: "EU-Singapore Free Trade Agreement", short: "EUSFTA", url: "https://trade.ec.europa.eu/access-to-markets/en/content/free-trade-agreements" }
+  VN: { name: "EU-Vietnam Free Trade Agreement", short: "EVFTA", url: "https://trade.ec.europa.eu/access-to-markets/en/content/free-trade-agreements" }
+  NZ: { name: "EU-New Zealand Free Trade Agreement", short: "EU-NZ FTA", url: "https://trade.ec.europa.eu/access-to-markets/en/content/free-trade-agreements" }
+  CL: { name: "EU-Chile Interim Trade Agreement", short: "EU-Chile ITA", url: "https://trade.ec.europa.eu/access-to-markets/en/content/free-trade-agreements" }
+  CO: { name: "EU-Colombia-Peru-Ecuador Trade Agreement", short: "EU-Andean", url: "https://trade.ec.europa.eu/access-to-markets/en/content/free-trade-agreements" }
+  PE: { name: "EU-Colombia-Peru-Ecuador Trade Agreement", short: "EU-Andean", url: "https://trade.ec.europa.eu/access-to-markets/en/content/free-trade-agreements" }
+  EC: { name: "EU-Colombia-Peru-Ecuador Trade Agreement", short: "EU-Andean", url: "https://trade.ec.europa.eu/access-to-markets/en/content/free-trade-agreements" }
+  UA: { name: "EU-Ukraine Association Agreement (DCFTA)", short: "EU-Ukraine DCFTA", url: "https://policy.trade.ec.europa.eu/eu-trade-relationships-country-and-region/negotiations-and-agreements_en" }
+  TR: { name: "EU-Turkey Customs Union", short: "Customs Union", url: "https://policy.trade.ec.europa.eu/eu-trade-relationships-country-and-region/negotiations-and-agreements_en" }
+  IL: { name: "EU-Israel Association Agreement", short: "EU-Israel", url: "https://policy.trade.ec.europa.eu/eu-trade-relationships-country-and-region/negotiations-and-agreements_en" }
+  MA: { name: "EU-Morocco Association Agreement", short: "EU-Morocco", url: "https://policy.trade.ec.europa.eu/eu-trade-relationships-country-and-region/negotiations-and-agreements_en" }
+  TN: { name: "EU-Tunisia Association Agreement", short: "EU-Tunisia", url: "https://policy.trade.ec.europa.eu/eu-trade-relationships-country-and-region/negotiations-and-agreements_en" }
+  EG: { name: "EU-Egypt Association Agreement", short: "EU-Egypt", url: "https://policy.trade.ec.europa.eu/eu-trade-relationships-country-and-region/negotiations-and-agreements_en" }
+  ZA: { name: "EU-SADC Economic Partnership Agreement", short: "EU-SADC EPA", url: "https://policy.trade.ec.europa.eu/eu-trade-relationships-country-and-region/negotiations-and-agreements_en" }

@@ -27,5 +27,7 @@ export const config = {
   cbsaBase: process.env.CBSA_BASE ?? 'https://www.cbsa-asfc.gc.ca',
   fxUrl:
     process.env.FX_URL ??
-    'https://www.bankofcanada.ca/valet/observations/FXUSDCAD/json?recent=1',
+    'https://www.bankofcanada.ca/valet/observations/FXUSDCAD,FXEURCAD/json?recent=1',
+  /** Monthly TARIC re-import from the URLs saved in Admin (2nd of the month). */
+  cronEu: process.env.CRON_EU ?? '30 5 2 * *',
 };

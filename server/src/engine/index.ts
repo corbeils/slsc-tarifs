@@ -6,13 +6,17 @@ import { calcCA } from './ca.js';
 import { dataInfo, getLine } from './common.js';
 import type { CalcInput, CalcResult } from './types.js';
 import { calcUS } from './us.js';
+import { calcEU } from './eu.js';
 
 export const DEFAULT_FX = 1.38;
+export const DEFAULT_EUR_CAD = 1.6;
 
-export function currentFx(db: DB): { usdCad: number; source: string; date?: string } {
+export function currentFx(db: DB): { usdCad: number; source: string; date?: string; eurCad: number } {
   const fx = getMeta<{ rate: number; date: string; source: string }>(db, 'fx:USDCAD');
-  if (fx) return { usdCad: fx.rate, source: fx.source, date: fx.date };
-  return { usdCad: DEFAULT_FX, source: t('default value (import the Bank of Canada rate)') };
+  const eur = getMeta<{ rate: number }>(db, 'fx:EURCAD');
+  const eurCad = eur?.rate ?? DEFAULT_EUR_CAD;
+  if (fx) return { usdCad: fx.rate, source: fx.source, date: fx.date, eurCad };
+  return { usdCad: DEFAULT_FX, source: t('default value (import the Bank of Canada rate)'), eurCad };
 }
 
 /** Ajoute aux règles les dossiers AD/CVD importés par CSV (table adcvd_import). */
@@ -54,19 +58,22 @@ export function calculate(db: DB, baseRules: Rules, input: CalcInput, l: Lang = 
 
 function calculateIn(db: DB, baseRules: Rules, input: CalcInput): CalcResult {
   const rules = withImportedAdcvd(db, baseRules);
-  const j = input.direction === 'CA-US' ? 'US' : 'CA';
+  const j = input.direction === 'CA-US' ? 'US' : input.direction === 'IN-EU' ? 'EU' : 'CA';
   const fxInfo = currentFx(db);
-  const fx = input.fxUsdCad && input.fxUsdCad > 0 ? { usdCad: input.fxUsdCad, source: t('entered manually') } : fxInfo;
+  const fx = input.fxUsdCad && input.fxUsdCad > 0 ? { ...fxInfo, usdCad: input.fxUsdCad, source: t('entered manually') } : fxInfo;
   const info = dataInfo(db, j);
   const data = { importedAt: info.importedAt, source: info.source, rulesLoadedAt: rules.loadedAt, seed: info.seed };
   const line = getLine(db, j, input.code);
   if (!line) {
     return {
       ok: false,
-      error: t(j === 'US' ? 'Code {code} not found in the U.S. tariff (HTSUS).' : 'Code {code} not found in the Canadian Customs Tariff.', { code: input.code }),
+      error:
+        j === 'EU' && !info.importedAt
+          ? t('The EU tariff (TARIC) has not been imported yet: import it in Admin.')
+          : t(j === 'US' ? 'Code {code} not found in the U.S. tariff (HTSUS).' : j === 'EU' ? 'Code {code} not found in the EU tariff (TARIC).' : 'Code {code} not found in the Canadian Customs Tariff.', { code: input.code }),
       direction: input.direction,
       destination: j,
-      currency: j === 'US' ? 'USD' : 'CAD',
+      currency: j === 'US' ? 'USD' : j === 'EU' ? 'EUR' : 'CAD',
       value: 0,
       valueInput: { amount: input.value, currency: input.currency },
       fx,
@@ -83,8 +90,13 @@ function calculateIn(db: DB, baseRules: Rules, input: CalcInput): CalcResult {
       data,
     };
   }
-  const r = j === 'US' ? calcUS(db, rules, line, input, fx.usdCad) : calcCA(db, rules, line, input, fx.usdCad);
-  if (data.seed)
+  const r =
+    j === 'US'
+      ? calcUS(db, rules, line, input, fx.usdCad)
+      : j === 'EU'
+        ? calcEU(db, rules, line, input, { usdCad: fx.usdCad, eurCad: fx.eurCad })
+        : calcCA(db, rules, line, input, fx.usdCad);
+  if (data.seed && j !== 'EU')
     r.flags.warnings.unshift({
       level: 'warning',
       title: t('Demo data'),

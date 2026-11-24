@@ -1,5 +1,6 @@
-import { useState } from 'react';
-import type { Direction } from '../api';
+import { useEffect, useState } from 'react';
+import { api, type Country, type Direction } from '../api';
+import { EU27 } from './Simulator';
 import { useI18n } from '../i18n';
 
 const PROVINCES = ['QC', 'ON', 'NB', 'NS', 'PE', 'NL', 'MB', 'SK', 'AB', 'BC', 'YT', 'NT', 'NU'];
@@ -8,6 +9,11 @@ export default function Batch() {
   const { t, lang } = useI18n();
   const [direction, setDirection] = useState<Direction>('CA-US');
   const [province, setProvince] = useState('QC');
+  const [memberState, setMemberState] = useState('FR');
+  const [countries, setCountries] = useState<Country[]>([]);
+  useEffect(() => {
+    api.countries().then(setCountries).catch(() => {});
+  }, []);
   const [mode, setMode] = useState('truck');
   const [file, setFile] = useState<File | null>(null);
   const [busy, setBusy] = useState(false);
@@ -21,7 +27,7 @@ export default function Batch() {
     setErrs([]);
     try {
       const fd = new FormData();
-      Object.entries({ direction, preferential: 'false', province, mode, lang }).forEach(([k, v]) => fd.append(k, v));
+      Object.entries({ direction, preferential: 'false', province, memberState, mode, lang }).forEach(([k, v]) => fd.append(k, v));
       fd.append('file', file);
       const res = await fetch('/api/batch', { method: 'POST', body: fd });
       if (!res.ok) throw new Error((await res.json()).error ?? `HTTP ${res.status}`);
@@ -56,6 +62,7 @@ export default function Batch() {
             <select className="input" value={direction} onChange={(e) => setDirection(e.target.value as Direction)}>
               <option value="CA-US">INBOUND USA — {t('import into the United States')}</option>
               <option value="US-CA">INBOUND CANADA — {t('import into Canada')}</option>
+              <option value="IN-EU">INBOUND EU — {t('import into the European Union')}</option>
             </select>
           </div>
           <div>
@@ -67,6 +74,20 @@ export default function Batch() {
               <option value="air">{t('Air')}</option>
             </select>
           </div>
+          {direction === 'IN-EU' && (
+            <div>
+              <label className="lbl">{t('Member state of destination (VAT)')}</label>
+              <select className="input" value={memberState} onChange={(e) => setMemberState(e.target.value)}>
+                {EU27.map((c) => ({ c, n: countries.find((x) => x.code === c)?.[lang === 'fr' ? 'fr' : 'en'] ?? c }))
+                  .sort((a, b) => a.n.localeCompare(b.n, lang))
+                  .map(({ c, n }) => (
+                    <option key={c} value={c}>
+                      {n} ({c})
+                    </option>
+                  ))}
+              </select>
+            </div>
+          )}
           {direction === 'US-CA' && (
             <div>
               <label className="lbl">{t('Province (Inbound Canada)')}</label>
@@ -78,7 +99,9 @@ export default function Batch() {
             </div>
           )}
         </div>
-        <p className="small muted batch-note">{t('Province for Canada inbounds is for tax (GST) calculation.')}</p>
+        <p className="small muted batch-note">
+          {t('Province for Canada inbounds is for tax (GST) calculation.')} {t('For INBOUND EU, the member state sets the import VAT; optional Freight (EU) and Insurance (EU) columns give the CIF value.')}
+        </p>
         <div className="drop">
           <input type="file" accept=".xlsx,.xls,.csv" onChange={(e) => setFile(e.target.files?.[0] ?? null)} />
         </div>

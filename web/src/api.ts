@@ -1,6 +1,6 @@
 import { getLang } from './i18n';
 
-export type Direction = 'CA-US' | 'US-CA';
+export type Direction = 'CA-US' | 'US-CA' | 'IN-EU';
 
 export interface CalcLine {
   key: string;
@@ -31,8 +31,8 @@ export interface CalcResult {
   ok: boolean;
   error?: string;
   direction: Direction;
-  destination: 'US' | 'CA';
-  currency: 'USD' | 'CAD';
+  destination: 'US' | 'CA' | 'EU';
+  currency: 'USD' | 'CAD' | 'EUR';
   line?: {
     code: string;
     display: string;
@@ -48,7 +48,7 @@ export interface CalcResult {
   };
   value: number;
   valueInput: { amount: number; currency: string };
-  fx: { usdCad: number; source: string; date?: string };
+  fx: { usdCad: number; source: string; date?: string; eurCad?: number };
   dutiableValue: number;
   lines: CalcLine[];
   totals: { duties: number; adcvd: number; fees: number; taxes: number; total: number; dutyPct: number; landed: number };
@@ -117,9 +117,10 @@ async function req<T>(url: string, init: RequestInit = {}, admin = false): Promi
 export const api = {
   meta: () => req<any>('/api/meta'),
   countries: () => req<Country[]>('/api/countries'),
-  search: (j: 'US' | 'CA', q: string) => req<SearchHit[]>(`/api/search?j=${j}&q=${encodeURIComponent(q)}`),
+  search: (j: 'US' | 'CA' | 'EU', q: string) => req<SearchHit[]>(`/api/search?j=${j}&q=${encodeURIComponent(q)}`),
   calc: (body: object) => req<CalcResult>('/api/calc', { method: 'POST', body: JSON.stringify({ ...body, lang: getLang() }) }),
   measures: () => req<any>(`/api/measures?lang=${getLang()}`),
+  measuresEu: (origin: string) => req<any>(`/api/measures/eu?lang=${getLang()}&origin=${encodeURIComponent(origin)}`),
   login: (username: string, password: string) =>
     req<{ token: string; username: string; mustChange: boolean }>('/api/auth/login', { method: 'POST', body: JSON.stringify({ username, password }) }),
   logout: () => req<any>('/api/auth/logout', { method: 'POST' }, true),
@@ -144,6 +145,13 @@ export const api = {
     syncCbsa: (force = false) => req<{ job: string }>('/api/admin/sync/cbsa', { method: 'POST', body: JSON.stringify({ force }) }, true),
     fxOnline: () => req<any>('/api/admin/import/fx', { method: 'POST' }, true),
     siteVersion: (version: string, beta: boolean) => req<any>('/api/admin/site-version', { method: 'POST', body: JSON.stringify({ version, beta }) }, true),
+    taricUpload: (files: File[]) => {
+      const fd = new FormData();
+      files.forEach((f) => fd.append('file', f, f.name));
+      return req<{ job: string }>('/api/admin/import/taric', { method: 'POST', body: fd }, true);
+    },
+    taricUrls: (urls: string[]) => req<any>('/api/admin/taric-urls', { method: 'POST', body: JSON.stringify({ urls }) }, true),
+    taricSync: () => req<{ job: string }>('/api/admin/sync/taric', { method: 'POST' }, true),
     fxManual: (rate: number) => req<any>('/api/admin/fx', { method: 'POST', body: JSON.stringify({ rate }) }, true),
     codes: (body: Record<string, unknown>, file?: File | null) => {
       if (!file) return req<any>('/api/admin/codes', { method: 'POST', body: JSON.stringify(body) }, true);

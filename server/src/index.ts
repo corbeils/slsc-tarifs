@@ -9,6 +9,8 @@ import { syncCbsa } from './importers/cbsa-sync.js';
 import { syncOfficialLists } from './importers/official-lists.js';
 import { getRules } from './rules.js';
 import { importFx } from './importers/misc.js';
+import { syncTaricUrls } from './importers/taric.js';
+import { getMeta } from './db.js';
 
 const db = openDb();
 loadRules();
@@ -36,5 +38,9 @@ schedule(config.cronUs, 'import-us', () => importUsOnline(db));
 schedule(config.cronFx, 'import-fx', () => importFx(db));
 schedule(config.cronCa, 'sync-cbsa', () => syncCbsa(db));
 schedule(config.cronLists, 'sync-lists', () => syncOfficialLists(db, getRules()));
+schedule(config.cronEu, 'sync-taric', async () => {
+  const urls = getMeta<string[]>(db, 'taric:urls') ?? [];
+  return urls.length ? syncTaricUrls(db, urls) : 'no TARIC URL saved';
+});
 
 await app.listen({ port: config.port, host: config.host });

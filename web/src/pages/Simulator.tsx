@@ -15,13 +15,14 @@ const UNIT_LABELS: Record<string, string> = {
   t: 'Metric tons',
 };
 const PROVINCES = ['QC', 'ON', 'NB', 'NS', 'PE', 'NL', 'MB', 'SK', 'AB', 'BC', 'YT', 'NT', 'NU'];
+export const EU27 = ['AT', 'BE', 'BG', 'HR', 'CY', 'CZ', 'DK', 'EE', 'FI', 'FR', 'DE', 'GR', 'HU', 'IE', 'IT', 'LV', 'LT', 'LU', 'MT', 'NL', 'PL', 'PT', 'RO', 'SK', 'SI', 'ES', 'SE'];
 
 interface Form {
   direction: Direction;
   hit: SearchHit | null;
   origin: string;
   value: string;
-  currency: 'USD' | 'CAD';
+  currency: 'USD' | 'CAD' | 'EUR';
   date: string;
   mode: 'truck' | 'rail' | 'ocean' | 'air';
   preferential: boolean;
@@ -30,6 +31,11 @@ interface Form {
   caMxContentPct: string;
   metalWeightPct: string;
   province: string;
+  memberState: string;
+  freight: string;
+  insurance: string;
+  inlandFreight: string;
+  adcvdCompany: string;
   regime: string;
   repairValue: string;
   includeAdcvd: boolean;
@@ -56,6 +62,11 @@ const initial = (): Form => {
     caMxContentPct: '',
     metalWeightPct: '',
     province: 'QC',
+    memberState: 'FR',
+    freight: '',
+    insurance: '',
+    inlandFreight: '',
+    adcvdCompany: '',
     regime: 'none',
     repairValue: '',
     includeAdcvd: false,
@@ -80,7 +91,7 @@ export default function Simulator() {
   const [loading, setLoading] = useState(false);
   const [err, setErr] = useState('');
   const set = <K extends keyof Form>(k: K, v: Form[K]) => setF((x) => ({ ...x, [k]: v }));
-  const j = f.direction === 'CA-US' ? 'US' : 'CA';
+  const j: 'US' | 'CA' | 'EU' = f.direction === 'CA-US' ? 'US' : f.direction === 'IN-EU' ? 'EU' : 'CA';
 
   useEffect(() => {
     api.countries().then(setCountries).catch(() => {});
@@ -94,8 +105,8 @@ export default function Simulator() {
       ...x,
       direction: d,
       hit: null,
-      origin: d === 'CA-US' ? (x.origin === 'US' ? 'CA' : x.origin) : x.origin === 'CA' ? 'US' : x.origin,
-      currency: d === 'CA-US' ? 'USD' : 'CAD',
+      origin: d === 'CA-US' ? (x.origin === 'US' ? 'CA' : x.origin) : d === 'US-CA' ? (x.origin === 'CA' ? 'US' : x.origin) : EU27.includes(x.origin) ? 'CA' : x.origin,
+      currency: d === 'CA-US' ? 'USD' : d === 'IN-EU' ? 'EUR' : 'CAD',
       options: {},
       claimExemptions: [],
       ch99Choice: {},
@@ -121,6 +132,11 @@ export default function Simulator() {
       caMxContentPct: n(f.caMxContentPct),
       metalWeightPct: n(f.metalWeightPct),
       province: f.province,
+      memberState: f.memberState,
+      freight: n(f.freight),
+      insurance: n(f.insurance),
+      inlandFreight: n(f.inlandFreight),
+      adcvdCompany: f.adcvdCompany || undefined,
       regime: f.regime,
       repairValue: n(f.repairValue),
       includeAdcvd: f.includeAdcvd,
@@ -168,9 +184,12 @@ export default function Simulator() {
           <button className={f.direction === 'US-CA' ? 'on' : ''} onClick={() => switchDir('US-CA')}>
             <span className="dir"><i>INBOUND CANADA</i></span> {t('Import into Canada')}
           </button>
+          <button className={f.direction === 'IN-EU' ? 'on' : ''} onClick={() => switchDir('IN-EU')}>
+            <span className="dir"><i>INBOUND EU</i></span> {t('Import into the European Union')}
+          </button>
         </div>
 
-        <label className="lbl">{j === 'US' ? t('HTSUS code (10 digits)') : t('Canadian tariff item')}</label>
+        <label className="lbl">{j === 'US' ? t('HTSUS code (10 digits)') : j === 'EU' ? t('TARIC code (10 digits)') : t('Canadian tariff item')}</label>
         <CodeSearch j={j} value={f.hit} onSelect={(h) => set('hit', h)} />
 
         <div className="grid2">
@@ -192,6 +211,7 @@ export default function Simulator() {
               <select className="input" value={f.currency} onChange={(e) => set('currency', e.target.value as Form['currency'])}>
                 <option>USD</option>
                 <option>CAD</option>
+                <option>EUR</option>
               </select>
             </div>
           </div>
@@ -242,7 +262,24 @@ export default function Simulator() {
           </div>
         )}
 
-        <div className={j === 'CA' ? 'grid2' : ''}>
+        {j === 'EU' && (
+          <div className="grid3">
+            <div>
+              <label className="lbl">{t('Freight to the EU border ({cur})', { cur: f.currency })}</label>
+              <input className="input num" inputMode="decimal" placeholder="0" value={f.freight} onChange={(e) => set('freight', e.target.value)} />
+            </div>
+            <div>
+              <label className="lbl">{t('Insurance ({cur})', { cur: f.currency })}</label>
+              <input className="input num" inputMode="decimal" placeholder="0" value={f.insurance} onChange={(e) => set('insurance', e.target.value)} />
+            </div>
+            <div>
+              <label className="lbl">{t('Transport to destination in the EU ({cur})', { cur: f.currency })}</label>
+              <input className="input num" inputMode="decimal" placeholder="0" value={f.inlandFreight} onChange={(e) => set('inlandFreight', e.target.value)} />
+            </div>
+          </div>
+        )}
+
+        <div className={j !== 'US' ? 'grid2' : ''}>
           <div>
             <label className="lbl">{t('Special regime')}</label>
             <select className="input" value={f.regime} onChange={(e) => set('regime', e.target.value)}>
@@ -254,6 +291,21 @@ export default function Simulator() {
               ))}
             </select>
           </div>
+          {j === 'EU' && (
+            <div>
+              <label className="lbl">{t('Member state of destination (VAT)')}</label>
+              <select className="input" value={f.memberState} onChange={(e) => set('memberState', e.target.value)}>
+                {[...EU27]
+                  .map((c) => ({ c, n: countries.find((x) => x.code === c)?.[lang === 'fr' ? 'fr' : 'en'] ?? c }))
+                  .sort((a, b) => a.n.localeCompare(b.n, lang))
+                  .map(({ c, n }) => (
+                    <option key={c} value={c}>
+                      {n} ({c})
+                    </option>
+                  ))}
+              </select>
+            </div>
+          )}
           {j === 'CA' && (
             <div>
               <label className="lbl">{t("Importer's province")}</label>
@@ -414,13 +466,13 @@ function AgreementsCard({ r, origin }: { r: CalcResult; origin: string }) {
   );
 }
 
-function Empty({ j }: { j: 'US' | 'CA' }) {
+function Empty({ j }: { j: 'US' | 'CA' | 'EU' }) {
   const { t } = useI18n();
   return (
     <div className="card empty">
       <h2>{t('Estimate duties, surtaxes, fees and taxes')}</h2>
       <p>
-        {t(j === 'US' ? 'Choose the direction, then type a full HTSUS code or keywords and' : 'Choose the direction, then type a full tariff item or keywords and')}{' '}
+        {t(j === 'US' ? 'Choose the direction, then type a full HTSUS code or keywords and' : j === 'EU' ? 'Choose the direction, then type a full TARIC code or keywords and' : 'Choose the direction, then type a full tariff item or keywords and')}{' '}
         <b>{t('pick the line from the list')}</b>. {t('The calculation updates on every change.')}
       </p>
       <ul>
@@ -440,7 +492,7 @@ function Result({ r, loading, f, setChoice }: { r: CalcResult; loading: boolean;
   const copy = () => {
     const txt = [
       `${r.line!.display} — ${r.line!.description}`,
-      `${t('Origin')} ${f.origin} · ${t('Value')} ${money(r.value, cur)} · ${r.direction === 'CA-US' ? 'INBOUND USA' : 'INBOUND CANADA'}`,
+      `${t('Origin')} ${f.origin} · ${t('Value')} ${money(r.value, cur)} · ${r.direction === 'CA-US' ? 'INBOUND USA' : r.direction === 'IN-EU' ? 'INBOUND EU' : 'INBOUND CANADA'}`,
       ...r.lines.map((l) => `${l.label}${l.ch99 ? ' (' + l.ch99 + ')' : ''}: ${l.ratePct !== null && l.ratePct !== undefined ? pct(l.ratePct) : l.rateText ?? ''} → ${money(l.amount, cur)}`),
       `${t('TOTAL')}: ${money(r.totals.total, cur)} (${t('duties')} ${pct(r.totals.dutyPct)})`,
       ...r.flags.bans.map((x) => `${t('PROHIBITED')}: ${x.title}`),
@@ -480,7 +532,12 @@ function Result({ r, loading, f, setChoice }: { r: CalcResult; loading: boolean;
           </div>
         </div>
         <div className="rates">
-          {r.destination === 'US' ? (
+          {r.destination === 'EU' ? (
+            <>
+              <Rate label={t('Applied customs duty')} v={r.lines.find((l) => l.key === 'base')?.rateText} />
+              <Rate label={t('Import VAT')} v={r.lines.find((l) => l.key === 'vat') ? pct(r.lines.find((l) => l.key === 'vat')!.ratePct) : null} />
+            </>
+          ) : r.destination === 'US' ? (
             <>
               <Rate label={t('General (Col. 1)')} v={r.line!.general} />
               <Rate label={t('Special')} v={r.line!.special} />
@@ -584,7 +641,7 @@ function Result({ r, loading, f, setChoice }: { r: CalcResult; loading: boolean;
       <FlagBlock title={t('Information')} flags={r.flags.info} />
 
       <div className="meta-line">
-        {t('Converted value:')} {money(r.valueInput.amount, r.valueInput.currency)} → {money(r.value, cur)} (1 USD = {r.fx.usdCad.toFixed(4)} CAD, {r.fx.source}
+        {t('Converted value:')} {money(r.valueInput.amount, r.valueInput.currency)} → {money(r.value, cur)} (1 USD = {r.fx.usdCad.toFixed(4)} CAD{r.destination === 'EU' && r.fx.eurCad ? ` · 1 EUR = ${r.fx.eurCad.toFixed(4)} CAD` : ''}, {r.fx.source}
         {r.fx.date ? `, ${r.fx.date}` : ''}) · {t('Tariff:')} {r.data.source} ({fmtDate(r.data.importedAt)}) · {t('Rules:')} {fmtDate(r.data.rulesLoadedAt)}
       </div>
     </div>

@@ -106,7 +106,7 @@ export function getCh99(db: DB, code: string): Ch99Row | undefined {
   return db.prepare('SELECT * FROM ch99 WHERE code = ?').get(code) as Ch99Row | undefined;
 }
 
-export function getLine(db: DB, j: 'US' | 'CA', code: string): LineRow | undefined {
+export function getLine(db: DB, j: 'US' | 'CA' | 'EU', code: string): LineRow | undefined {
   const c = digits(code);
   const exact = db.prepare('SELECT * FROM lines WHERE j = ? AND code = ?').get(j, c) as LineRow | undefined;
   if (exact) return exact;
@@ -205,7 +205,7 @@ export function licenceFlags(db: DB | null, list: Licence[], code: string, origi
   return flags.sort((a, b) => order[a.level] - order[b.level]);
 }
 
-export function dataInfo(db: DB, j: 'US' | 'CA') {
+export function dataInfo(db: DB, j: 'US' | 'CA' | 'EU') {
   const meta = getMeta<{ at: string; source: string; count: number }>(db, `import:${j}`);
   return { importedAt: meta?.at ?? null, source: meta?.source ?? 'none', seed: (meta?.source ?? 'seed').startsWith('seed') };
 }

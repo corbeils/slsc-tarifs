@@ -22,6 +22,8 @@ export async function buildTemplate(countries: { code: string; en: string; fr?: 
     { header: T('Qty'), key: 'qty', width: 9 },
     { header: 'USMCA', key: 'pref', width: 9 },
     { header: T('US content %'), key: 'us', width: 13 },
+    { header: T('Freight (EU)'), key: 'fr', width: 13 },
+    { header: T('Insurance (EU)'), key: 'ins', width: 14 },
   ];
   const head = ws.getRow(1);
   head.font = { bold: true, color: { argb: 'FFFFFFFF' } };
@@ -34,11 +36,11 @@ export async function buildTemplate(countries: { code: string; en: string; fr?: 
   for (let r = 2; r <= 500; r++) {
     ws.getCell(`C${r}`).numFmt = '@';
     ws.getCell(`D${r}`).dataValidation = { type: 'list', allowBlank: true, formulae: [`'${T('Countries')}'!$A$2:$A$${countries.length + 1}`], showErrorMessage: true, errorTitle: T('Origin'), error: T('Use a 2-letter ISO code (see the Countries sheet).') };
-    ws.getCell(`F${r}`).dataValidation = { type: 'list', allowBlank: true, formulae: ['"USD,CAD"'] };
+    ws.getCell(`F${r}`).dataValidation = { type: 'list', allowBlank: true, formulae: ['"USD,CAD,EUR"'] };
     ws.getCell(`H${r}`).dataValidation = { type: 'list', allowBlank: true, formulae: [l === 'fr' ? '"oui,non"' : '"yes,no"'] };
     ws.getCell(`I${r}`).dataValidation = { type: 'decimal', operator: 'between', allowBlank: true, formulae: [0, 100], showErrorMessage: true, error: T('Percentage between 0 and 100') };
   }
-  ws.autoFilter = 'A1:I1';
+  ws.autoFilter = 'A1:K1';
 
   const help = wb.addWorksheet(T('Instructions'));
   help.columns = [{ width: 20 }, { width: 90 }];
@@ -52,10 +54,11 @@ export async function buildTemplate(countries: { code: string; en: string; fr?: 
     ['HTS', T('INBOUND USA: HTSUS code (10 digits recommended, e.g. 8462.11.00.35). INBOUND CANADA: Canadian tariff item (e.g. 8462.11.00).')],
     [T('Origin'), T('Country of origin, 2-letter ISO code (CA, US, MX, CN, DE…). See the Countries sheet.')],
     [T('Value'), T('Customs value of the line.')],
-    [T('Currency'), T('USD or CAD. Empty = USD for INBOUND USA, CAD for INBOUND CANADA.')],
+    [T('Currency'), T('USD, CAD or EUR. Empty = USD for INBOUND USA, CAD for INBOUND CANADA, EUR for INBOUND EU.')],
     [T('Qty'), T('Quantity (kg or units) — used only for specific rates (¢/kg, $/unit).')],
     ['USMCA', T('yes / no — claim USMCA (INBOUND USA) or CUSMA (INBOUND CANADA) preferential treatment.')],
     [T('US content %'), T('U.S. content as % of value — for Section 232 programs calculated on non-U.S. content (USMCA vehicles, Annex I-C).')],
+    [T('Freight (EU) / Insurance (EU)'), T('INBOUND EU only: international freight and insurance to the EU border, added to the value (CIF customs value).')],
     ['', ''],
     [T('Notice'), T('For informational purposes only, offer without warranty. Tariff rates change frequently.')],
   ];
@@ -99,7 +102,7 @@ export async function runBatch(
   rules: Rules,
   buf: Buffer,
   filename: string,
-  defaults: { direction: Direction; origin: string; currency: 'USD' | 'CAD'; preferential: boolean; province?: string; mode?: CalcInput['mode'] },
+  defaults: { direction: Direction; origin: string; currency: 'USD' | 'CAD' | 'EUR'; preferential: boolean; province?: string; memberState?: string; mode?: CalcInput['mode'] },
   l: Lang = 'en',
 ): Promise<{ buffer: Buffer; rows: number; errors: number; errorList: { row: number; code: string; error: string }[] }> {
   const T = (x: string) => withLang(l, () => t(x));
@@ -138,6 +141,8 @@ export async function runBatch(
   const di = find(/devise|currency|curr/i);
   const pi = find(/usmca|cusma|aceum|pr[ée]f/i);
   const ui = find(/contenu.*(us|é\.-u)|us content/i);
+  const fi = find(/freight|fret/i);
+  const ii = find(/insurance|assurance/i);
   if (vi < 0) throw new Error('No value column found (Value / Price / Amount)');
 
   const out = new ExcelJS.Workbook();
@@ -181,6 +186,9 @@ export async function runBatch(
       preferential: pi >= 0 ? /^(o|y|oui|yes|1|x|true|vrai)/.test(prefCell) : defaults.preferential,
       usContentPct: ui >= 0 ? num(r[ui]) || undefined : undefined,
       province: defaults.province,
+      memberState: defaults.memberState,
+      freight: fi >= 0 ? num(r[fi]) || 0 : 0,
+      insurance: ii >= 0 ? num(r[ii]) || 0 : 0,
       mode: defaults.mode,
       quantities: qi >= 0 && num(r[qi]) ? { kg: num(r[qi]), 'no.': num(r[qi]) } : undefined,
     };

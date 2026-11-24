@@ -283,9 +283,21 @@ export type Licence = z.infer<typeof Licence>;
 export const LicenceRules = z.object({ us: z.array(Licence), ca: z.array(Licence) });
 export type LicenceRules = z.infer<typeof LicenceRules>;
 
+export const EuRules = z
+  .object({
+    currency: z.literal('EUR'),
+    vat: z.record(z.number()),
+    vatNote: z.string().optional(),
+    measureTypes: z.record(z.array(z.string())),
+    agreements: z.record(Agreement).default({}),
+  })
+  .passthrough();
+export type EuRules = z.infer<typeof EuRules>;
+
 export interface Rules {
   us: UsRules;
   ca: CaRules;
+  eu: EuRules;
   adcvd: AdcvdRules;
   licences: LicenceRules;
   loadedAt: string;
@@ -294,6 +306,7 @@ export interface Rules {
 export const RULE_FILES = {
   us: { file: 'us.yaml', schema: UsRules },
   ca: { file: 'ca.yaml', schema: CaRules },
+  eu: { file: 'eu.yaml', schema: EuRules },
   adcvd: { file: 'adcvd.yaml', schema: AdcvdRules },
   licences: { file: 'licences.yaml', schema: LicenceRules },
 } as const;
@@ -311,6 +324,7 @@ export function loadRules(dir = config.rulesDir): Rules {
   current = {
     us: read('us') as UsRules,
     ca: read('ca') as CaRules,
+    eu: read('eu') as EuRules,
     adcvd: read('adcvd') as AdcvdRules,
     licences: read('licences') as LicenceRules,
     loadedAt: new Date().toISOString(),

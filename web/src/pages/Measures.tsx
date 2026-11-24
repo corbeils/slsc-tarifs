@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { api } from '../api';
+import { api, type Country } from '../api';
 import { useI18n } from '../i18n';
 
 function St({ s }: { s?: string }) {
@@ -10,7 +10,7 @@ function St({ s }: { s?: string }) {
 export default function Measures() {
   const { t, lang } = useI18n();
   const [d, setD] = useState<any>(null);
-  const [tab, setTab] = useState<'us' | 'ca' | 'adcvd' | 'lic'>('us');
+  const [tab, setTab] = useState<'us' | 'ca' | 'eu' | 'adcvd' | 'lic'>('us');
   useEffect(() => {
     api.measures().then(setD);
   }, [lang]);
@@ -20,6 +20,7 @@ export default function Measures() {
       <div className="seg small">
         <button className={tab === 'us' ? 'on' : ''} onClick={() => setTab('us')}>INBOUND USA</button>
         <button className={tab === 'ca' ? 'on' : ''} onClick={() => setTab('ca')}>INBOUND CANADA</button>
+        <button className={tab === 'eu' ? 'on' : ''} onClick={() => setTab('eu')}>INBOUND EU</button>
         <button className={tab === 'adcvd' ? 'on' : ''} onClick={() => setTab('adcvd')}>AD/CVD · SIMA</button>
         <button className={tab === 'lic' ? 'on' : ''} onClick={() => setTab('lic')}>{t('Licences and permits')}</button>
       </div>
@@ -61,6 +62,7 @@ export default function Measures() {
           </div>
         </>
       )}
+      {tab === 'eu' && <EuMeasures />}
       {tab === 'adcvd' && (
         <>
           <div className="card">
@@ -153,5 +155,121 @@ function RegimeTable({ list }: { list: any[] }) {
         </tbody>
       </table>
     </div>
+  );
+}
+
+function EuMeasures() {
+  const { t, lang } = useI18n();
+  const [origin, setOrigin] = useState('CA');
+  const [d, setD] = useState<any>(null);
+  const [countries, setCountries] = useState<Country[]>([]);
+  useEffect(() => {
+    api.countries().then(setCountries).catch(() => {});
+  }, []);
+  useEffect(() => {
+    setD(null);
+    api.measuresEu(origin).then(setD).catch(() => setD({ error: true }));
+  }, [origin, lang]);
+  const name = (c: string) => countries.find((x) => x.code === c)?.[lang === 'fr' ? 'fr' : 'en'] ?? c;
+  const Table = ({ title, rows, quota }: { title: string; rows: any[]; quota?: boolean }) => (
+    <div className="card">
+      <h3>
+        {title} <span className="muted small">({rows.length})</span>
+      </h3>
+      {rows.length === 0 ? (
+        <div className="muted small">{t('None for this origin.')}</div>
+      ) : (
+        <table className="simple">
+          <thead>
+            <tr>
+              {quota && <th>{t('Order No.')}</th>}
+              <th>{t('Measure')}</th>
+              <th>{t('Origin')}</th>
+              <th>{t('Duty')}</th>
+              <th>{t('Legal base')}</th>
+              <th className="r">{t('Codes')}</th>
+            </tr>
+          </thead>
+          <tbody>
+            {rows.map((r: any, i: number) => (
+              <tr key={i}>
+                {quota && <td className="mono">{r.order_no || '—'}</td>}
+                <td>
+                  {r.type_desc} <span className="muted small mono">{r.type}</span>
+                </td>
+                <td>{r.origin === '1011' ? t('All third countries (ERGA OMNES)') : r.origin_desc || r.origin}</td>
+                <td className="mono small">{r.duty === r.duty_max ? r.duty : `${r.duty} … ${r.duty_max}`}</td>
+                <td className="mono small">{r.legal}</td>
+                <td className="r">
+                  {r.codes} <span className="muted small mono">({r.first_code}{r.codes > 1 ? '…' : ''})</span>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      )}
+    </div>
+  );
+  return (
+    <>
+      <div className="card">
+        <div className="row" style={{ marginTop: 0 }}>
+          <label className="lbl" style={{ margin: 0 }}>{t('Country of origin')}</label>
+          <select className="input" style={{ maxWidth: 320 }} value={origin} onChange={(e) => setOrigin(e.target.value)}>
+            {[...countries]
+              .sort((a, b) => (lang === 'fr' ? a.fr.localeCompare(b.fr, 'fr') : a.en.localeCompare(b.en, 'en')))
+              .map((c) => (
+                <option key={c.code} value={c.code}>
+                  {lang === 'fr' ? c.fr : c.en} ({c.code})
+                </option>
+              ))}
+          </select>
+          <span className="small muted">{t('Measures of TARIC that apply to this origin (country, its groups and ERGA OMNES).')}</span>
+        </div>
+        {d && !d.error && !d.imported && <div className="alert warning">{t('The EU tariff (TARIC) has not been imported yet: import it in Admin.')}</div>}
+      </div>
+      {!d && <div className="card">{t('Loading…')}</div>}
+      {d && !d.error && (
+        <>
+          <Table title={t('Preferences (free trade agreements)')} rows={d.preferences} />
+          <Table title={t('Tariff quotas')} rows={d.quotas} quota />
+          <Table title={t('Anti-dumping / countervailing')} rows={d.antiDumping} />
+          <Table title={t('Additional duties (safeguard, countermeasures)')} rows={d.additional} />
+          <div className="grid2 gap">
+            <div className="card">
+              <h3>{t('Import VAT by member state')}</h3>
+              <table className="simple">
+                <tbody>
+                  {Object.entries(d.vat as Record<string, number>)
+                    .sort((a, b) => name(a[0]).localeCompare(name(b[0]), lang))
+                    .map(([c, r]) => (
+                      <tr key={c}>
+                        <td>{name(c)}</td>
+                        <td className="mono">{c}</td>
+                        <td className="r">{r} %</td>
+                      </tr>
+                    ))}
+                </tbody>
+              </table>
+              <p className="small muted">{d.vatNote}</p>
+            </div>
+            <div className="card">
+              <h3>{t('EU free trade agreements')}</h3>
+              <table className="simple">
+                <tbody>
+                  {Object.entries(d.agreements as Record<string, any>).map(([c, a]) => (
+                    <tr key={c}>
+                      <td className="mono">{c}</td>
+                      <td>{a.url ? <a href={a.url} target="_blank" rel="noreferrer">{a.name}</a> : a.name}</td>
+                      <td className="muted small">{a.short}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </>
+      )}
+    </>
   );
 }

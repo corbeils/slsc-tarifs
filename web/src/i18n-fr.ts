@@ -1,7 +1,7 @@
 /* French UI strings, keyed by the English source text. The Admin panel stays in English. */
 export const FR: Record<string, string> = {
   // Header, nav, theme, footer
-  'Canada ⇄ United States duty simulator': 'Simulateur de droits Canada ⇄ États-Unis',
+  'Canada · United States · European Union duty simulator': 'Simulateur de droits Canada · États-Unis · Union européenne',
   Simulator: 'Simulateur',
   'Batch simulator': 'Simulation en lot',
   'Measures in force': 'Mesures en vigueur',
@@ -141,6 +141,35 @@ export const FR: Record<string, string> = {
   'other countries': 'autres pays',
   'View this line on the official tariff': 'Voir cette ligne dans le tarif officiel',
   USMCA: 'ACEUM',
+
+  // INBOUND EU
+  'TARIC LAST UPDATE': 'DERNIÈRE MISE À JOUR TARIC',
+  'TARIC code or keywords (e.g. 8462.11, press)': 'Code TARIC ou mots-clés en anglais (ex. 8462.11, press)',
+  'Import into the European Union': 'Importation dans l’Union européenne',
+  'import into the European Union': 'importation dans l’Union européenne',
+  'TARIC code (10 digits)': 'Code TARIC (10 chiffres)',
+  'Freight to the EU border ({cur})': 'Fret jusqu’à la frontière de l’UE ({cur})',
+  'Insurance ({cur})': 'Assurance ({cur})',
+  'Transport to destination in the EU ({cur})': 'Transport jusqu’à destination dans l’UE ({cur})',
+  'Member state of destination (VAT)': 'État membre de destination (TVA)',
+  'Choose the direction, then type a full TARIC code or keywords and': 'Choisissez la direction, puis tapez un code TARIC complet ou des mots-clés et',
+  'Applied customs duty': 'Droit de douane appliqué',
+  'Import VAT': 'TVA à l’importation',
+  'For INBOUND EU, the member state sets the import VAT; optional Freight (EU) and Insurance (EU) columns give the CIF value.':
+    'Pour INBOUND EU, l’État membre détermine la TVA à l’importation ; les colonnes facultatives Fret (UE) et Assurance (UE) donnent la valeur CAF.',
+  'None for this origin.': 'Aucune pour cette origine.',
+  'Order No.': 'N° d’ordre',
+  Duty: 'Droit',
+  'Legal base': 'Base juridique',
+  Codes: 'Codes',
+  'All third countries (ERGA OMNES)': 'Tous les pays tiers (ERGA OMNES)',
+  'Measures of TARIC that apply to this origin (country, its groups and ERGA OMNES).': 'Mesures du TARIC applicables à cette origine (pays, ses groupes et ERGA OMNES).',
+  'The EU tariff (TARIC) has not been imported yet: import it in Admin.': 'Le tarif de l’UE (TARIC) n’a pas encore été importé : l’importer dans Admin.',
+  'Preferences (free trade agreements)': 'Préférences (accords de libre-échange)',
+  'Tariff quotas': 'Contingents tarifaires',
+  'Additional duties (safeguard, countermeasures)': 'Droits additionnels (sauvegarde, contre-mesures)',
+  'Import VAT by member state': 'TVA à l’importation par État membre',
+  'EU free trade agreements': 'Accords de libre-échange de l’UE',
 
   // Batch
   'Batch simulation (parts list)': 'Simulation en lot (liste de pièces)',

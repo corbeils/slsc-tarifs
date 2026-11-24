@@ -1,5 +1,5 @@
-export type Direction = 'CA-US' | 'US-CA';
-export type Jurisdiction = 'US' | 'CA';
+export type Direction = 'CA-US' | 'US-CA' | 'IN-EU';
+export type Jurisdiction = 'US' | 'CA' | 'EU';
 
 export interface CalcInput {
   /** CA-US = importation aux États-Unis ; US-CA = importation au Canada */
@@ -7,7 +7,12 @@ export interface CalcInput {
   code: string;
   origin: string;
   value: number;
-  currency: 'USD' | 'CAD';
+  currency: 'USD' | 'CAD' | 'EUR';
+  /** INBOUND EU: member state of destination (VAT), international freight and insurance to the EU border (CIF), transport to destination (VAT base). */
+  memberState?: string;
+  freight?: number;
+  insurance?: number;
+  inlandFreight?: number;
   quantities?: Record<string, number>;
   date?: string;
   mode?: 'truck' | 'rail' | 'ocean' | 'air';
@@ -81,7 +86,7 @@ export interface CalcResult {
   error?: string;
   direction: Direction;
   destination: Jurisdiction;
-  currency: 'USD' | 'CAD';
+  currency: 'USD' | 'CAD' | 'EUR';
   line?: {
     code: string;
     display: string;
@@ -97,7 +102,7 @@ export interface CalcResult {
   };
   value: number;
   valueInput: { amount: number; currency: string };
-  fx: { usdCad: number; source: string; date?: string };
+  fx: { usdCad: number; source: string; date?: string; eurCad?: number };
   dutiableValue: number;
   lines: CalcLine[];
   totals: { duties: number; adcvd: number; fees: number; taxes: number; total: number; dutyPct: number; landed: number };

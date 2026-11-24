@@ -54,7 +54,7 @@ export default function App() {
           </span>
           <div>
             <div className="brand-title">SLSC TARIFF SIMULATOR</div>
-            <div className="brand-sub">{t('Canada ⇄ United States duty simulator')}</div>
+            <div className="brand-sub">{t('Canada · United States · European Union duty simulator')}</div>
           </div>
         </div>
         <div className="topbar-right">
@@ -87,6 +87,9 @@ export default function App() {
           </span>
           <span>
             <b>{t('ASFC LAST UPDATE')}</b> : {upd(meta?.ca)}
+          </span>
+          <span>
+            <b>{t('TARIC LAST UPDATE')}</b> : {upd(meta?.eu)}
           </span>
           <span>
             <b>{t('SITE VERSION')}</b> : {meta?.site ? t(meta.site.beta ? 'BETA VERSION {v}' : 'VERSION {v}', { v: meta.site.version }) : '—'}

@@ -229,13 +229,15 @@ export async function fetchText(url: string): Promise<string> {
 export async function importFx(db: DB) {
   const res = await fetch(config.fxUrl);
   if (!res.ok) throw new Error(`HTTP ${res.status} (Bank of Canada)`);
-  const j = (await res.json()) as { observations: { d: string; FXUSDCAD?: { v: string } }[] };
+  const j = (await res.json()) as { observations: { d: string; FXUSDCAD?: { v: string }; FXEURCAD?: { v: string } }[] };
   const obs = j.observations?.at(-1);
   const rate = Number(obs?.FXUSDCAD?.v);
   if (!rate) throw new Error('FXUSDCAD rate missing from response');
   const v = { rate, date: obs!.d, source: 'Bank of Canada (Valet FXUSDCAD)' };
   setMeta(db, 'fx:USDCAD', v);
-  return v;
+  const eur = Number(obs?.FXEURCAD?.v);
+  if (eur) setMeta(db, 'fx:EURCAD', { rate: eur, date: obs!.d, source: 'Bank of Canada (Valet FXEURCAD)' });
+  return { ...v, eurCad: eur || undefined };
 }
 
 export function setFxManual(db: DB, rate: number) {

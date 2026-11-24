@@ -39,7 +39,7 @@ export function tx(s: string | undefined): string | undefined {
   return FR[s] ?? FR[s.trim()] ?? s;
 }
 
-export const TEXT_KEYS = new Set(['name', 'label', 'note', 'description', 'title', 'detail', 'context', 'warning', 'product', 'text', 'intro', 'short']);
+export const TEXT_KEYS = new Set(['name', 'label', 'note', 'description', 'title', 'detail', 'context', 'warning', 'product', 'text', 'intro', 'short', 'vatNote']);
 
 function deep<T>(o: T, key?: string): T {
   if (typeof o === 'string') return (key && TEXT_KEYS.has(key) ? FR[o] ?? o : o) as T;

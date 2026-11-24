@@ -18,6 +18,7 @@ import { extractCodes, fetchText, fileToText, section, validateCodes, importAdcv
 import { buildTemplate, runBatch } from './batch.js';
 import { syncCbsa } from './importers/cbsa-sync.js';
 import { syncOfficialLists } from './importers/official-lists.js';
+import { importTaric, syncTaricUrls, type TaricFile } from './importers/taric.js';
 import { clearListCache } from './engine/common.js';
 import { changePassword, createUser, deleteUser, listUsers, login, logout, resetPassword, sessionUser } from './auth.js';
 
@@ -41,7 +42,7 @@ export function startJob(kind: string, fn: (log: (m: string) => void) => Promise
 
 export async function buildApp(db: DB) {
   const app = Fastify({ logger: { level: process.env.LOG_LEVEL ?? 'info' }, bodyLimit: 20 * 1024 * 1024 });
-  await app.register(multipart, { limits: { fileSize: 200 * 1024 * 1024 } });
+  await app.register(multipart, { limits: { fileSize: 600 * 1024 * 1024, files: 20 } });
 
   const bearer = (req: FastifyRequest) => (req.headers.authorization ?? '').replace(/^Bearer\s+/i, '').trim();
   const admin = async (req: FastifyRequest, reply: FastifyReply) => {
@@ -83,6 +84,8 @@ export async function buildApp(db: DB) {
     return {
       us: { ...(getMeta(db, 'import:US') ?? {}), lines: count('US') },
       ca: { ...(getMeta(db, 'import:CA') ?? {}), lines: count('CA') },
+      eu: { ...(getMeta(db, 'import:EU') ?? {}), lines: count('EU') },
+      taricUrls: getMeta<string[]>(db, 'taric:urls') ?? [],
       pga: getMeta(db, 'import:PGA'),
       cbsa: getMeta(db, 'cbsa:sync'),
       officialLists: getMeta(db, 'lists:sync'),
@@ -97,7 +100,7 @@ export async function buildApp(db: DB) {
 
   app.get('/api/search', async (req) => {
     const q = (req.query as { j?: string; q?: string; limit?: string }) ?? {};
-    const j = q.j === 'CA' ? 'CA' : 'US';
+    const j = q.j === 'CA' ? 'CA' : q.j === 'EU' ? 'EU' : 'US';
     const term = (q.q ?? '').trim();
     const limit = Math.min(Number(q.limit ?? 25), 100);
     if (!term) return [];
@@ -163,10 +166,14 @@ export async function buildApp(db: DB) {
     }
     if (!file) return reply.code(400).send({ error: 'Missing file' });
     const r = await runBatch(db, getRules(), file.buf, file.name, {
-      direction: fields.direction === 'US-CA' ? 'US-CA' : 'CA-US',
+      direction: fields.direction === 'US-CA' ? 'US-CA' : fields.direction === 'IN-EU' ? 'IN-EU' : 'CA-US',
       // No defaults on the page any more: the file's Origin / Currency columns are used; fallbacks follow the direction
       origin: (fields.origin || (fields.direction === 'US-CA' ? 'US' : 'CA')).toUpperCase(),
-      currency: fields.currency === 'USD' || fields.currency === 'CAD' ? fields.currency : fields.direction === 'US-CA' ? 'CAD' : 'USD',
+      currency:
+        fields.currency === 'USD' || fields.currency === 'CAD' || fields.currency === 'EUR'
+          ? fields.currency
+          : fields.direction === 'US-CA' ? 'CAD' : fields.direction === 'IN-EU' ? 'EUR' : 'USD',
+      memberState: fields.memberState,
       preferential: fields.preferential === 'true',
       province: fields.province,
       mode: (fields.mode as CalcInput['mode']) || undefined,
@@ -201,6 +208,45 @@ export async function buildApp(db: DB) {
       ca: { measures: R.ca.measures.map((m) => ({ ...m, listCount: lists[m.id] ?? 0 })), regimes: R.ca.regimes, taxes: R.ca.taxes },
       adcvd: R.adcvd,
       licences: R.licences,
+    };
+  });
+
+  // INBOUND EU: VAT, agreements and the TARIC measures by origin (quotas, AD/CVD, additional duties)
+  app.get('/api/measures/eu', async (req) => {
+    const q = req.query as { origin?: string; lang?: string };
+    const R = localizeRules(getRules(), asLang(q.lang));
+    const T = R.eu.measureTypes;
+    const origin = (q.origin ?? '').toUpperCase();
+    const today = new Date().toISOString().slice(0, 10);
+    const groups = origin
+      ? [origin, ...(db.prepare("SELECT grp FROM eu_geo WHERE member = ? AND (end = '' OR end >= ?)").all(origin, today) as { grp: string }[]).map((r) => r.grp), '1011']
+      : [];
+    const list = (types: string[], groupBy: string) => {
+      if (!types?.length) return [];
+      const where = [`type IN (${types.map(() => '?').join(',')})`, "(end = '' OR end >= ?)"];
+      const args: unknown[] = [...types, today];
+      if (groups.length) {
+        where.push(`origin IN (${groups.map(() => '?').join(',')})`);
+        args.push(...groups);
+      }
+      return db
+        .prepare(
+          `SELECT type, type_desc, origin, origin_desc, legal, order_no, MIN(duty) duty, MAX(duty) duty_max, COUNT(DISTINCT code) codes, MIN(code) first_code
+           FROM eu_measures WHERE ${where.join(' AND ')} GROUP BY ${groupBy} ORDER BY origin, type, legal LIMIT 2000`,
+        )
+        .all(...args);
+    };
+    const origins = db.prepare("SELECT DISTINCT origin, origin_desc FROM eu_measures WHERE origin != '1011' ORDER BY origin_desc").all();
+    return {
+      vat: R.eu.vat,
+      vatNote: R.eu.vatNote,
+      agreements: R.eu.agreements,
+      imported: getMeta(db, 'import:EU'),
+      origins,
+      antiDumping: list(T.antiDumping, 'type, legal, origin'),
+      quotas: list([...(T.preferentialQuota ?? []), ...(T.quota ?? [])], 'order_no, origin'),
+      additional: list(T.additional, 'type, legal, origin'),
+      preferences: list(T.preference, 'origin'),
     };
   });
 
@@ -286,6 +332,26 @@ export async function buildApp(db: DB) {
       return { job: job.id };
     });
     a.post('/api/admin/import/fx', async () => importFx(db));
+
+    // ---- EU TARIC ----
+    a.post('/api/admin/import/taric', async (req, reply) => {
+      const files: TaricFile[] = [];
+      for await (const p of req.parts()) if (p.type === 'file') files.push({ name: p.filename, buf: await p.toBuffer() });
+      if (!files.length) return reply.code(400).send({ error: 'Missing file' });
+      const job = startJob('import-taric', (log) => importTaric(db, files, log));
+      return { job: job.id };
+    });
+    a.post('/api/admin/taric-urls', async (req) => {
+      const urls = ((req.body as { urls?: string[] })?.urls ?? []).map((u) => String(u).trim()).filter((u) => /^https?:\/\//.test(u));
+      setMeta(db, 'taric:urls', urls);
+      return { ok: true, urls };
+    });
+    a.post('/api/admin/sync/taric', async (req, reply) => {
+      const urls = getMeta<string[]>(db, 'taric:urls') ?? [];
+      if (!urls.length) return reply.code(400).send({ error: 'No TARIC file URL saved' });
+      const job = startJob('sync-taric', (log) => syncTaricUrls(db, urls, log));
+      return { job: job.id };
+    });
     a.post('/api/admin/site-version', async (req, reply) => {
       const b = (req.body ?? {}) as { version?: string; beta?: boolean };
       const version = String(b.version ?? '').trim().toUpperCase();

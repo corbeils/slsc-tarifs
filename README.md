@@ -45,6 +45,20 @@ Volumes :
 | 3. Taux USD/CAD | **Banque du Canada (Valet)** | automatique les jours ouvrables (`CRON_FX`) |
 | 4. Listes des surtaxes canadiennes | Admin → *Listes de codes* : coller l'annexe du décret / de l'avis | à chaque nouveau décret |
 | 5. (optionnel) Indicateurs PGA CBP, dossiers AD/CVD | CSV | au besoin |
+| 6. TARIC (INBOUND EU) | Admin → *EU tariff — TARIC* : téléverser les extractions Excel de la DG TAXUD (CIRCABC, groupe « TARIC and Quota data & information ») : **Nomenclature EN**, **Duties Import 01-99**, **Geographical area composition**, et au besoin **Measure exclusions** et **Additional codes descriptions** — ou enregistrer leurs liens directs | mensuelle (`CRON_EU`, le 2 du mois, si des liens sont enregistrés) |
+
+### INBOUND EU (TARIC)
+
+Le fichier *Duties Import 01-99* contient toutes les mesures à l'importation par origine. Le moteur en tire :
+
+- le droit tiers pays (103), les suspensions autonomes (112) et les destinations particulières (105, 115, 117, 119) ;
+- les préférences (141, 142, 145) : chaque accord présent sur la ligne est listé, réclamable si l'origine en fait partie, directement ou par un groupe de pays comme le SPG ;
+- les contingents (122, 123, 143, 146) : proposés en option avec leur numéro d'ordre ;
+- l'antidumping et les droits compensateurs (55x) : taux « toutes les autres sociétés » par défaut ;
+- les droits additionnels (69x : sauvegarde, contre-mesures) ;
+- les contrôles et interdictions (autres types).
+
+La valeur en douane est la valeur **CAF** (fret et assurance jusqu'à la frontière de l'UE). La TVA à l'importation de l'État membre choisi est calculée sur la valeur en douane + droits + transport jusqu'à destination. Les taux de TVA et les noms des accords sont dans `rules/eu.yaml`.
 
 ### Pourquoi l'étape 4 ?
 

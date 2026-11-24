@@ -7,7 +7,7 @@ export default function CodeSearch({
   value,
   onSelect,
 }: {
-  j: 'US' | 'CA';
+  j: 'US' | 'CA' | 'EU';
   value: SearchHit | null;
   onSelect: (h: SearchHit | null) => void;
 }) {
@@ -60,7 +60,7 @@ export default function CodeSearch({
     <div className="search" ref={box}>
       <input
         className="input mono"
-        placeholder={j === 'US' ? t('HTSUS code or keywords (e.g. 8462.11, press, gear box)') : t('Tariff item or keywords')}
+        placeholder={j === 'US' ? t('HTSUS code or keywords (e.g. 8462.11, press, gear box)') : j === 'EU' ? t('TARIC code or keywords (e.g. 8462.11, press)') : t('Tariff item or keywords')}
         value={q}
         onChange={(e) => {
           setQ(e.target.value);

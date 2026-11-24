@@ -7,7 +7,7 @@ import { migrateAuth } from './auth.js';
 export type DB = Database.Database;
 
 export interface LineRow {
-  j: 'US' | 'CA';
+  j: 'US' | 'CA' | 'EU';
   code: string; // chiffres seulement
   display: string; // avec points
   indent: number;
@@ -108,6 +108,40 @@ function migrate(db: DB) {
       note TEXT,
       url TEXT,
       PRIMARY KEY (j, case_no, country)
+    );
+    CREATE TABLE IF NOT EXISTS eu_measures (
+      code TEXT NOT NULL,
+      add_code TEXT NOT NULL DEFAULT '',
+      order_no TEXT NOT NULL DEFAULT '',
+      start TEXT NOT NULL DEFAULT '',
+      end TEXT NOT NULL DEFAULT '',
+      origin TEXT NOT NULL,
+      origin_desc TEXT NOT NULL DEFAULT '',
+      type TEXT NOT NULL,
+      type_desc TEXT NOT NULL DEFAULT '',
+      duty TEXT NOT NULL DEFAULT '',
+      legal TEXT NOT NULL DEFAULT ''
+    );
+    CREATE INDEX IF NOT EXISTS idx_eu_measures_code ON eu_measures(code);
+    CREATE INDEX IF NOT EXISTS idx_eu_measures_type ON eu_measures(type);
+    CREATE TABLE IF NOT EXISTS eu_geo (
+      grp TEXT NOT NULL,
+      member TEXT NOT NULL,
+      start TEXT NOT NULL DEFAULT '',
+      end TEXT NOT NULL DEFAULT '',
+      grp_desc TEXT NOT NULL DEFAULT ''
+    );
+    CREATE INDEX IF NOT EXISTS idx_eu_geo_member ON eu_geo(member);
+    CREATE TABLE IF NOT EXISTS eu_excl (
+      code TEXT NOT NULL,
+      type TEXT NOT NULL,
+      grp TEXT NOT NULL,
+      excluded TEXT NOT NULL
+    );
+    CREATE INDEX IF NOT EXISTS idx_eu_excl_code ON eu_excl(code);
+    CREATE TABLE IF NOT EXISTS eu_addcodes (
+      code TEXT PRIMARY KEY,
+      description TEXT NOT NULL
     );
     CREATE TABLE IF NOT EXISTS meta (
       key TEXT PRIMARY KEY,

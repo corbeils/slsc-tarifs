@@ -144,6 +144,8 @@ function AdminPanel({ me, onLogout, onPasswordChanged }: { me: Me; onLogout: () 
           <tbody>
             <tr><td>HTSUS (U.S.)</td><td>{meta?.us?.lines} lines · {meta?.us?.ch99 ?? 0} 9903 headings</td><td>{meta?.us?.source}</td><td>{fmtDate(meta?.us?.at)}</td></tr>
             <tr><td>Customs Tariff (Canada)</td><td>{meta?.ca?.lines} lines</td><td>{meta?.ca?.source}</td><td>{fmtDate(meta?.ca?.at)}</td></tr>
+            <tr><td>TARIC (EU)</td><td>{meta?.eu?.lines ?? 0} lines · {meta?.eu?.measures ?? 0} measures · {meta?.eu?.groups ?? 0} country groups</td><td>{meta?.eu?.source}</td><td>{fmtDate(meta?.eu?.at)}</td></tr>
+            <tr><td>EUR/CAD rate</td><td>{meta?.fx?.eurCad}</td><td></td><td></td></tr>
             <tr><td>USD/CAD rate</td><td>{meta?.fx?.usdCad}</td><td>{meta?.fx?.source}</td><td>{meta?.fx?.date}</td></tr>
             <tr><td>PGA flags</td><td>{meta?.pga?.count ?? 0}</td><td></td><td>{fmtDate(meta?.pga?.at)}</td></tr>
           </tbody>
@@ -194,6 +196,13 @@ function AdminPanel({ me, onLogout, onPasswordChanged }: { me: Me; onLogout: () 
         </div>
       </div>
 
+      <TaricCard
+        urls={meta?.taricUrls ?? []}
+        onUpload={async (files) => { const r = await wrap('TARIC import', () => api.admin.taricUpload(files)); if (r?.job) poll('TARIC import', r.job); }}
+        onSaveUrls={(urls) => wrap('TARIC URLs', () => api.admin.taricUrls(urls))}
+        onSync={async () => { const r = await wrap('TARIC download', api.admin.taricSync); if (r?.job) poll('TARIC download', r.job); }}
+      />
+
       <div className="card">
         <h3>Official lists — U.S. Section 232 annexes and Canadian surtaxes on U.S. goods</h3>
         <p className="small muted">
@@ -242,6 +251,36 @@ function summarize(r: any): string {
   if (r.rate !== undefined) return `1 USD = ${r.rate} CAD`;
   if (r.job) return 'started…';
   return 'done';
+}
+
+function TaricCard({ urls, onUpload, onSaveUrls, onSync }: { urls: string[]; onUpload: (f: File[]) => Promise<void>; onSaveUrls: (u: string[]) => void; onSync: () => void }) {
+  const [files, setFiles] = useState<File[]>([]);
+  const [busy, setBusy] = useState(false);
+  const [text, setText] = useState('');
+  useEffect(() => setText(urls.join('\n')), [urls.join('|')]);
+  return (
+    <div className="card">
+      <h3>EU tariff — TARIC (INBOUND EU)</h3>
+      <p className="small muted">
+        Monthly Excel extractions of DG TAXUD ("TARIC and Quota data &amp; information" group on CIRCABC). Select several files at once — the kind of each file is detected
+        automatically: <b>Nomenclature EN</b> (codes and descriptions), <b>Duties Import 01-99</b> (all measures by origin: third-country duty, preferences, quotas,
+        anti-dumping, additional duties, controls), <b>Geographical area composition</b> (country groups, e.g. GSP), <b>Measure exclusions</b> and{' '}
+        <b>Additional codes descriptions</b> (company names of AD/CVD rates). VAT rates and agreement names are in <span className="mono">rules/eu.yaml</span>.
+      </p>
+      <div className="join" style={{ marginTop: 6, alignItems: 'center' }}>
+        <input type="file" multiple accept=".xlsx,.csv" onChange={(e) => setFiles([...(e.target.files ?? [])])} />
+        <button className="btn" disabled={!files.length || busy} onClick={async () => { setBusy(true); await onUpload(files); setBusy(false); }}>
+          {busy ? 'Uploading…' : `Upload ${files.length || ''} file(s)`}
+        </button>
+      </div>
+      <div className="sep">or direct links to the files (one per line) — downloaded now and on the 2nd of every month (CRON_EU)</div>
+      <textarea className="input mono" rows={4} style={{ width: '100%' }} placeholder="https://circabc.europa.eu/…/Nomenclature%20EN.xlsx" value={text} onChange={(e) => setText(e.target.value)} />
+      <div className="row">
+        <button className="btn ghost" onClick={() => onSaveUrls(text.split(/\s+/).filter(Boolean))}>Save links</button>
+        <button className="btn" disabled={!urls.length} onClick={onSync}>Download and import now</button>
+      </div>
+    </div>
+  );
 }
 
 function FileUpload({ accept, label, onUpload }: { accept: string; label: string; onUpload: (f: File) => Promise<any> }) {
@@ -495,7 +534,7 @@ function RulesEditor({ wrap }: { wrap: Wrap }) {
     <div className="card">
       <h3>Rules (YAML)</h3>
       <div className="row">
-        {['us', 'ca', 'adcvd', 'licences'].map((k) => (
+        {['us', 'ca', 'eu', 'adcvd', 'licences'].map((k) => (
           <button key={k} className={`btn ${key === k ? '' : 'ghost'}`} onClick={() => setKey(k)}>{k}.yaml</button>
         ))}
         <span className="spacer" />

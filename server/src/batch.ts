@@ -28,7 +28,7 @@ export async function buildTemplate(countries: { code: string; en: string; fr?: 
   head.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF12263F' } };
   head.alignment = { vertical: 'middle' };
   head.height = 20;
-  ['C', 'D', 'E', 'H'].forEach((c) => (ws.getCell(`${c}1`).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFF08A3C' } }));
+  ['C', 'D', 'E'].forEach((c) => (ws.getCell(`${c}1`).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFF08A3C' } }));
   ws.getColumn('value').numFmt = '#,##0.00';
   ws.getColumn('hts').numFmt = '@';
   for (let r = 2; r <= 500; r++) {
@@ -46,7 +46,7 @@ export async function buildTemplate(countries: { code: string; en: string; fr?: 
     ['SLSC TARIFF SIMULATOR', T('Batch simulation template')],
     ['', ''],
     [T('How to use'), T('Fill the "Parts" sheet (one line per part), then upload the file in Batch simulator. You get the same file back with duties, measures, AD/CVD, licences and warnings.')],
-    ['', T('Orange columns are required: HTS, Origin, Value and USMCA (otherwise the "Claim USMCA" box of the page applies).')],
+    ['', T('Orange columns are required: HTS, Origin and Value. USMCA: yes to claim the preference (empty = not claimed).')],
     ['', ''],
     [T('Item / Description'), T('Free text, copied to the result.')],
     ['HTS', T('INBOUND USA: HTSUS code (10 digits recommended, e.g. 8462.11.00.35). INBOUND CANADA: Canadian tariff item (e.g. 8462.11.00).')],

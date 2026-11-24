@@ -231,8 +231,8 @@ export const FR: Record<string, string> = {
   'No code column found (HTS / HS / Tariff)': 'Aucune colonne de code trouvée (HTS / HS / Tarif)',
   'No value column found (Value / Price / Amount)': 'Aucune colonne de valeur trouvée (Valeur / Prix / Montant)',
   Notice: 'Avis',
-  'Orange columns are required: HTS, Origin, Value and USMCA (otherwise the "Claim USMCA" box of the page applies).':
-    'Les colonnes orange sont obligatoires : HTS, Origine, Valeur et USMCA (sinon la case « Réclamer USMCA » de la page s’applique).',
+  'Orange columns are required: HTS, Origin and Value. USMCA: yes to claim the preference (empty = not claimed).':
+    'Les colonnes orange sont obligatoires : HTS, Origine et Valeur. USMCA : oui pour réclamer la préférence (vide = non réclamée).',
   Origin: 'Origine',
   Parts: 'Pièces',
   'Percentage between 0 and 100': 'Pourcentage entre 0 et 100',

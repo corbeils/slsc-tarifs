@@ -151,7 +151,6 @@ export const FR: Record<string, string> = {
   'import into Canada': 'importation au Canada',
   Mode: 'Mode',
   'Province (Inbound Canada)': 'Province (Inbound Canada)',
-  'Claim USMCA': 'Réclamer USMCA',
   'Province for Canada inbounds is for tax (GST) calculation.': 'La province (Inbound Canada) sert au calcul des taxes (TPS/TVH).',
   'Calculating…': 'Calcul en cours…',
   'Calculate and download': 'Calculer et télécharger',
@@ -171,7 +170,7 @@ export const FR: Record<string, string> = {
   Currency: 'Devise',
   'Qty / Quantity': 'Qté / Quantité',
   'Used for specific rates (kg or units)': 'Sert aux taux spécifiques (kg ou unités)',
-  'yes / no — claim the preference (otherwise the "Claim USMCA" box)': 'oui / non — réclamer la préférence (sinon la case « Réclamer USMCA »)',
+  'yes / no — claim the preference (empty = not claimed)': 'oui / non — réclamer la préférence (vide = non réclamée)',
   'US content %': 'Contenu É.-U. %',
   'For Section 232 programs calculated on non-U.S. content': 'Pour les programmes de l’article 232 calculés sur le contenu non américain',
 

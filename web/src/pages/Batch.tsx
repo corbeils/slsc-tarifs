@@ -7,7 +7,6 @@ const PROVINCES = ['QC', 'ON', 'NB', 'NS', 'PE', 'NL', 'MB', 'SK', 'AB', 'BC', '
 export default function Batch() {
   const { t, lang } = useI18n();
   const [direction, setDirection] = useState<Direction>('CA-US');
-  const [preferential, setPref] = useState(false);
   const [province, setProvince] = useState('QC');
   const [mode, setMode] = useState('truck');
   const [file, setFile] = useState<File | null>(null);
@@ -22,7 +21,7 @@ export default function Batch() {
     setErrs([]);
     try {
       const fd = new FormData();
-      Object.entries({ direction, preferential: String(preferential), province, mode, lang }).forEach(([k, v]) => fd.append(k, v));
+      Object.entries({ direction, preferential: 'false', province, mode, lang }).forEach(([k, v]) => fd.append(k, v));
       fd.append('file', file);
       const res = await fetch('/api/batch', { method: 'POST', body: fd });
       if (!res.ok) throw new Error((await res.json()).error ?? `HTTP ${res.status}`);
@@ -80,10 +79,6 @@ export default function Batch() {
           )}
         </div>
         <p className="small muted batch-note">{t('Province for Canada inbounds is for tax (GST) calculation.')}</p>
-        <label className="check">
-          <input type="checkbox" checked={preferential} onChange={(e) => setPref(e.target.checked)} />
-          <span>{t('Claim USMCA')}</span>
-        </label>
         <div className="drop">
           <input type="file" accept=".xlsx,.xls,.csv" onChange={(e) => setFile(e.target.files?.[0] ?? null)} />
         </div>
@@ -122,7 +117,7 @@ export default function Batch() {
             <tr><td>{t('Origin / Country / COO')}</td><td>{t('2-letter ISO code (required)')}</td></tr>
             <tr><td>{t('Currency')}</td><td>{t('USD or CAD (empty = USD for INBOUND USA, CAD for INBOUND CANADA)')}</td></tr>
             <tr><td>{t('Qty / Quantity')}</td><td>{t('Used for specific rates (kg or units)')}</td></tr>
-            <tr><td>USMCA / CUSMA / Pref.</td><td>{t('yes / no — claim the preference (otherwise the "Claim USMCA" box)')}</td></tr>
+            <tr><td>USMCA / CUSMA / Pref.</td><td>{t('yes / no — claim the preference (empty = not claimed)')}</td></tr>
             <tr><td>{t('US content %')}</td><td>{t('For Section 232 programs calculated on non-U.S. content')}</td></tr>
           </tbody>
         </table>

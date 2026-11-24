@@ -23,6 +23,7 @@ export const FR: Record<string, string> = {
   'ASFC LAST UPDATE': 'DERNIÈRE MISE À JOUR ASFC',
   'SITE VERSION': 'VERSION DU SITE',
   'BETA VERSION {v}': 'VERSION BETA {v}',
+  'VERSION {v}': 'VERSION {v}',
   ' (demo)': ' (démo)',
 
   // Simulator — form

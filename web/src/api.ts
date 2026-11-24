@@ -143,6 +143,7 @@ export const api = {
     syncLists: () => req<{ job: string }>('/api/admin/sync/official-lists', { method: 'POST' }, true),
     syncCbsa: (force = false) => req<{ job: string }>('/api/admin/sync/cbsa', { method: 'POST', body: JSON.stringify({ force }) }, true),
     fxOnline: () => req<any>('/api/admin/import/fx', { method: 'POST' }, true),
+    siteVersion: (version: string, beta: boolean) => req<any>('/api/admin/site-version', { method: 'POST', body: JSON.stringify({ version, beta }) }, true),
     fxManual: (rate: number) => req<any>('/api/admin/fx', { method: 'POST', body: JSON.stringify({ rate }) }, true),
     codes: (body: Record<string, unknown>, file?: File | null) => {
       if (!file) return req<any>('/api/admin/codes', { method: 'POST', body: JSON.stringify(body) }, true);

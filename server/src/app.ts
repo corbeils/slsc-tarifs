@@ -6,7 +6,7 @@ import multipart from '@fastify/multipart';
 import fastifyStatic from '@fastify/static';
 import { config } from './config.js';
 import type { DB } from './db.js';
-import { digits, getMeta } from './db.js';
+import { digits, getMeta, setMeta } from './db.js';
 import { listCountries } from './countries.js';
 import { asLang, localizeRules } from './i18n/index.js';
 import { getRules, loadRules, readRuleFile, RULE_FILES, type RuleKey, writeRuleFile } from './rules.js';
@@ -73,6 +73,10 @@ export async function buildApp(db: DB) {
 
   app.get('/api/health', async () => ({ ok: true }));
 
+  /** Site version shown in the footer (editable in Admin). Format: 1.3.0 or 1.1.4R2 (revision of the day). */
+  const DEFAULT_SITE = { version: '1.3.0', beta: true };
+  const siteVersion = () => ({ ...DEFAULT_SITE, ...(getMeta<{ version: string; beta: boolean }>(db, 'site:version') ?? {}) });
+
   app.get('/api/meta', async () => {
     const count = (j: string) => (db.prepare('SELECT COUNT(*) n FROM lines WHERE j = ?').get(j) as { n: number }).n;
     const lists = db.prepare('SELECT measure_id, COUNT(*) n, MAX(added_at) at FROM code_lists GROUP BY measure_id').all();
@@ -85,6 +89,7 @@ export async function buildApp(db: DB) {
       fx: currentFx(db),
       rulesLoadedAt: getRules().loadedAt,
       codeLists: lists,
+      site: siteVersion(),
     };
   });
 
@@ -279,6 +284,16 @@ export async function buildApp(db: DB) {
       return { job: job.id };
     });
     a.post('/api/admin/import/fx', async () => importFx(db));
+    a.post('/api/admin/site-version', async (req, reply) => {
+      const b = (req.body ?? {}) as { version?: string; beta?: boolean };
+      const version = String(b.version ?? '').trim().toUpperCase();
+      if (!/^\d+\.\d+\.\d+(R\d+)?$/.test(version))
+        return reply.code(400).send({ error: 'Invalid version: use 3 numbers, optionally followed by a revision (e.g. 1.3.0 or 1.1.4R2)' });
+      const v = { version, beta: b.beta !== false, at: new Date().toISOString() };
+      setMeta(db, 'site:version', v);
+      return { ok: true, ...v };
+    });
+
     a.post('/api/admin/fx', async (req) => setFxManual(db, Number((req.body as { rate: number }).rate)));
 
     a.get('/api/admin/jobs/:id', async (req, reply) => {

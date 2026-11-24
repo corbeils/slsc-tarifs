@@ -150,6 +150,8 @@ function AdminPanel({ me, onLogout, onPasswordChanged }: { me: Me; onLogout: () 
         </table>
       </div>
 
+      <SiteVersion current={meta?.site} onSave={async (v, b) => { await wrap('Site version', () => api.admin.siteVersion(v, b)); window.dispatchEvent(new Event('slsc-meta')); }} />
+
       <div className="grid2 gap">
         <div className="card">
           <h3>U.S. tariff (USITC)</h3>
@@ -269,6 +271,38 @@ function UrlImport({ onRun }: { onRun: (u: string) => void }) {
     <div className="join" style={{ marginTop: 10 }}>
       <input className="input" placeholder="https://… (XLSX/CSV file)" value={u} onChange={(e) => setU(e.target.value)} />
       <button className="btn ghost" disabled={!u} onClick={() => onRun(u)}>Import</button>
+    </div>
+  );
+}
+
+const VERSION_RE = /^\d+\.\d+\.\d+(R\d+)?$/i;
+function SiteVersion({ current, onSave }: { current?: { version: string; beta: boolean; at?: string }; onSave: (v: string, beta: boolean) => void }) {
+  const [v, setV] = useState('');
+  const [beta, setBeta] = useState(true);
+  useEffect(() => {
+    if (current) {
+      setV(current.version);
+      setBeta(current.beta);
+    }
+  }, [current?.version, current?.beta]);
+  const ok = VERSION_RE.test(v.trim());
+  return (
+    <div className="card">
+      <h3>Site version</h3>
+      <p className="small muted">
+        Shown in the footer as <b>SITE VERSION : {beta ? 'BETA VERSION' : 'VERSION'} {v.trim().toUpperCase() || '…'}</b>. Format: 3 numbers (1.3.0), with an optional revision of
+        the day (1.1.4R2).
+      </p>
+      <div className="row">
+        <input className="input mono" style={{ maxWidth: 160 }} placeholder="1.3.0" value={v} onChange={(e) => setV(e.target.value)} />
+        <label className="check">
+          <input type="checkbox" checked={beta} onChange={(e) => setBeta(e.target.checked)} />
+          <span>Beta</span>
+        </label>
+        <button className="btn" disabled={!ok} onClick={() => onSave(v.trim().toUpperCase(), beta)}>Save</button>
+        {!ok && v.trim() && <span className="small" style={{ color: 'var(--danger, #c0392b)' }}>Invalid format</span>}
+        {current?.at && <span className="small muted">Last change {fmtDate(current.at)}</span>}
+      </div>
     </div>
   );
 }

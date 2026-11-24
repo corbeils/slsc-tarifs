@@ -7,8 +7,6 @@ import ThemeToggle from './components/ThemeToggle';
 import { api, fmtDate } from './api';
 import { LangToggle, useI18n } from './i18n';
 
-const SITE_VERSION = '1.3';
-
 const PAGES = [
   { id: 'simulateur', label: 'Simulator' },
   { id: 'lot', label: 'Excel batch' },
@@ -35,6 +33,11 @@ export default function App() {
   useEffect(() => {
     api.meta().then(setMeta).catch(() => {});
   }, [page, lang]);
+  useEffect(() => {
+    const on = () => api.meta().then(setMeta).catch(() => {});
+    window.addEventListener('slsc-meta', on);
+    return () => window.removeEventListener('slsc-meta', on);
+  }, []);
   const upd = (m: any) => (m?.at ? `${fmtDate(m.at)}${m.source?.startsWith('seed') ? t(' (demo)') : ''}` : '—');
   return (
     <div className="app">
@@ -82,7 +85,7 @@ export default function App() {
             <b>{t('ASFC LAST UPDATE')}</b> : {upd(meta?.ca)}
           </span>
           <span>
-            <b>{t('SITE VERSION')}</b> : {t('BETA VERSION {v}', { v: SITE_VERSION })}
+            <b>{t('SITE VERSION')}</b> : {meta?.site ? t(meta.site.beta ? 'BETA VERSION {v}' : 'VERSION {v}', { v: meta.site.version }) : '—'}
           </span>
         </div>
       </footer>

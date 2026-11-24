@@ -43,11 +43,15 @@ export default function App() {
     <div className="app">
       <header className="topbar">
         <div className="brand" onClick={() => go('simulateur')}>
-          <svg viewBox="0 0 32 32" width="30" height="30" aria-hidden>
-            <rect width="32" height="32" rx="7" fill="var(--navy)" />
-            <path d="M7 20h18M7 12h18" stroke="var(--accent)" strokeWidth="3" strokeLinecap="round" />
-            <path d="M21 8l4 4-4 4M11 16l-4 4 4 4" stroke="#fff" strokeWidth="2.4" fill="none" strokeLinecap="round" strokeLinejoin="round" />
-          </svg>
+          <span className="logo" aria-hidden>
+            <svg viewBox="0 0 100 64">
+              <g transform="skewX(-12) translate(10 0)" fill="none" strokeLinejoin="round">
+                <path d="M44 16H21C11 16 11 32 21 32H31C41 32 41 48 31 48H6" stroke="#dfe1e6" strokeWidth="11" />
+                <path d="M92 16H66C54 16 54 48 66 48H92" stroke="#dfe1e6" strokeWidth="11" />
+                <path d="M38 24L26 60" stroke="#8cdb00" strokeWidth="3.2" strokeDasharray="5 3.5" />
+              </g>
+            </svg>
+          </span>
           <div>
             <div className="brand-title">SLSC TARIFF SIMULATOR</div>
             <div className="brand-sub">{t('Canada ⇄ United States duty simulator')}</div>

@@ -164,8 +164,9 @@ export async function buildApp(db: DB) {
     if (!file) return reply.code(400).send({ error: 'Missing file' });
     const r = await runBatch(db, getRules(), file.buf, file.name, {
       direction: fields.direction === 'US-CA' ? 'US-CA' : 'CA-US',
-      origin: (fields.origin || 'CA').toUpperCase(),
-      currency: fields.currency === 'USD' ? 'USD' : 'CAD',
+      // No defaults on the page any more: the file's Origin / Currency columns are used; fallbacks follow the direction
+      origin: (fields.origin || (fields.direction === 'US-CA' ? 'US' : 'CA')).toUpperCase(),
+      currency: fields.currency === 'USD' || fields.currency === 'CAD' ? fields.currency : fields.direction === 'US-CA' ? 'CAD' : 'USD',
       preferential: fields.preferential === 'true',
       province: fields.province,
       mode: (fields.mode as CalcInput['mode']) || undefined,

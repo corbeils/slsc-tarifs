@@ -9,7 +9,7 @@ import { LangToggle, useI18n } from './i18n';
 
 const PAGES = [
   { id: 'simulateur', label: 'Simulator' },
-  { id: 'lot', label: 'Excel batch' },
+  { id: 'lot', label: 'Batch simulator' },
   { id: 'mesures', label: 'Measures in force' },
   { id: 'admin', label: 'Admin' },
 ] as const;

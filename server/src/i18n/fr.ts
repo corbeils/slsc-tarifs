@@ -217,8 +217,8 @@ export const FR: Record<string, string> = {
   'Effective duty rate (%)': 'Taux effectif des droits (%)',
   'Electric control panel': 'Panneau de commande électrique',
   Fees: 'Frais',
-  'Fill the "Parts" sheet (one line per part), then upload the file in Excel batch. You get the same file back with duties, measures, AD/CVD, licences and warnings.':
-    'Remplir la feuille « Pièces » (une ligne par pièce), puis téléverser le fichier dans Lot Excel. Vous recevez le même fichier avec les droits, mesures, AD/CVD, licences et avertissements.',
+  'Fill the "Parts" sheet (one line per part), then upload the file in Batch simulator. You get the same file back with duties, measures, AD/CVD, licences and warnings.':
+    'Remplir la feuille « Pièces » (une ligne par pièce), puis téléverser le fichier dans Simulation en lot. Vous recevez le même fichier avec les droits, mesures, AD/CVD, licences et avertissements.',
   'For informational purposes only, offer without warranty. Tariff rates change frequently.':
     'À titre informatif seulement, offert sans garantie. Les taux tarifaires changent fréquemment.',
   'Free text, copied to the result.': 'Texte libre, recopié dans le résultat.',
@@ -235,8 +235,8 @@ export const FR: Record<string, string> = {
   'No code column found (HTS / HS / Tariff)': 'Aucune colonne de code trouvée (HTS / HS / Tarif)',
   'No value column found (Value / Price / Amount)': 'Aucune colonne de valeur trouvée (Valeur / Prix / Montant)',
   Notice: 'Avis',
-  'Orange columns are required: HTS, Origin (or the default origin chosen on the page), Value, USMCA (or the default).':
-    'Les colonnes orange sont obligatoires : HTS, Origine (ou l’origine par défaut choisie dans la page), Valeur, USMCA (ou la valeur par défaut).',
+  'Orange columns are required: HTS, Origin, Value and USMCA (otherwise the "Claim USMCA" box of the page applies).':
+    'Les colonnes orange sont obligatoires : HTS, Origine, Valeur et USMCA (sinon la case « Réclamer USMCA » de la page s’applique).',
   Origin: 'Origine',
   Parts: 'Pièces',
   'Percentage between 0 and 100': 'Pourcentage entre 0 et 100',
@@ -250,7 +250,8 @@ export const FR: Record<string, string> = {
   'U.S. content as % of value — for Section 232 programs calculated on non-U.S. content (USMCA vehicles, Annex I-C).':
     'Contenu américain en % de la valeur — pour les programmes de l’article 232 calculés sur le contenu non américain (véhicules ACEUM, annexe I-C).',
   'US content %': 'Contenu É.-U. %',
-  'USD or CAD. Empty = default currency chosen on the page.': 'USD ou CAD. Vide = devise par défaut choisie dans la page.',
+  'USD or CAD. Empty = USD for INBOUND USA, CAD for INBOUND CANADA.':
+    'USD ou CAD. Vide = USD pour INBOUND USA, CAD pour INBOUND CANADA.',
   'Use a 2-letter ISO code (see the Countries sheet).': 'Utiliser un code ISO à 2 lettres (voir la feuille Pays).',
   Value: 'Valeur',
   Warnings: 'Avertissements',

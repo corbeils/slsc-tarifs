@@ -175,7 +175,8 @@ export async function buildApp(db: DB) {
       .header('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
       .header('Content-Disposition', `attachment; filename="BATCH TARIFF SIMULATOR - ${new Date().toISOString().slice(0, 10)}.xlsx"`)
       .header('X-Rows', String(r.rows))
-      .header('X-Errors', String(r.errors));
+      .header('X-Errors', String(r.errors))
+      .header('X-Error-List', encodeURIComponent(JSON.stringify(r.errorList)));
     return reply.send(r.buffer);
   });
 

@@ -159,6 +159,8 @@ export const FR: Record<string, string> = {
   '{rows} lines calculated, {errors} error(s).': '{rows} lignes calculées, {errors} erreur(s).',
   'Error: ': 'Erreur : ',
   'USD or CAD (empty = USD for INBOUND USA, CAD for INBOUND CANADA)': 'USD ou CAD (vide = USD pour INBOUND USA, CAD pour INBOUND CANADA)',
+  'Lines in error (also flagged in red in the downloaded file):': 'Lignes en erreur (aussi signalées en rouge dans le fichier téléchargé) :',
+  'Row {n}': 'Ligne {n}',
   'Recognized columns': 'Colonnes reconnues',
   'HTS / HS / Tariff / Code': 'HTS / HS / Tarif / Code',
   'Code to calculate (required)': 'Code à calculer (obligatoire)',

@@ -240,6 +240,7 @@ export const FR: Record<string, string> = {
   Qty: 'Qté',
   'Quantity (kg or units) — used only for specific rates (¢/kg, $/unit).': 'Quantité (kg ou unités) — utilisée seulement pour les taux spécifiques (¢/kg, $/unité).',
   Simulation: 'Simulation',
+  ERROR: 'ERREUR',
   'Tariff — description': 'Tarif — description',
   Taxes: 'Taxes',
   'Total duties+fees+taxes': 'Total droits+frais+taxes',

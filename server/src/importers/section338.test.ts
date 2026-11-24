@@ -32,3 +32,15 @@ describe('Section 338 CBP list', () => {
     expect(extractCodes(section(fr, '^Annex I'), false, { headings: false }).map((c) => c.code)).toEqual(['87115000', '87116000']);
   });
 });
+
+import { cellToCode } from '../batch.js';
+describe('codes saisis dans Excel', () => {
+  it('reconstitue les zéros perdus par Excel', () => {
+    expect(cellToCode(8483.4)).toBe('8483.40');
+    expect(cellToCode(402.1)).toBe('0402.10');
+    expect(cellToCode(402100000)).toBe('0402100000');
+    expect(cellToCode(8462110035)).toBe('8462110035');
+    expect(cellToCode(7326.9086)).toBe('7326.9086');
+    expect(cellToCode(' 8462.11.00.35 ')).toBe('8462.11.00.35');
+  });
+});

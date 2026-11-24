@@ -75,6 +75,22 @@ export async function buildTemplate(countries: { code: string; en: string; fr?: 
 }
 
 /**
+ * Tariff number from a spreadsheet cell. Excel turns codes typed in a General cell into numbers:
+ * 8483.40 → 8483.4 (trailing zero lost), 0402.10 → 402.1 (leading zero lost), 0402100000 → 402100000.
+ */
+export function cellToCode(v: unknown): string {
+  if (v === null || v === undefined) return '';
+  if (typeof v === 'number') {
+    const [int, frac = ''] = String(v).split('.');
+    const i = int.length % 2 ? '0' + int : int; // headings and full codes have an even number of digits
+    if (!frac) return i;
+    const head = i.padStart(4, '0');
+    return `${head}.${frac.length % 2 ? frac + '0' : frac}`;
+  }
+  return String(v).trim();
+}
+
+/**
  * Mode lot : un fichier XLSX/CSV (liste de pièces) en entrée, le même fichier enrichi en sortie.
  * Colonnes reconnues : code HTS/HS, origine, valeur, quantité, devise, préférence (oui/non), contenu US %.
  */
@@ -85,18 +101,21 @@ export async function runBatch(
   filename: string,
   defaults: { direction: Direction; origin: string; currency: 'USD' | 'CAD'; preferential: boolean; province?: string; mode?: CalcInput['mode'] },
   l: Lang = 'en',
-): Promise<{ buffer: Buffer; rows: number; errors: number }> {
+): Promise<{ buffer: Buffer; rows: number; errors: number; errorList: { row: number; code: string; error: string }[] }> {
   const T = (x: string) => withLang(l, () => t(x));
   let rows: unknown[][];
+  let rowNums: number[] = [];
   if (/\.(csv|txt)$/i.test(filename)) {
     const t = buf.toString('utf8').replace(/^﻿/, '');
     rows = parseCsv(t, t.split(';').length > t.split(',').length ? ';' : ',');
+    rowNums = rows.map((_, i) => i + 1);
   } else {
     const wb = new ExcelJS.Workbook();
     await wb.xlsx.load(buf as unknown as ArrayBuffer);
     const ws = wb.worksheets[0];
     rows = [];
-    ws.eachRow({ includeEmpty: false }, (r) =>
+    ws.eachRow({ includeEmpty: false }, (r) => {
+      rowNums.push(r.number);
       rows.push(
         (r.values as unknown[]).slice(1).map((v) => {
           if (v && typeof v === 'object') {
@@ -105,8 +124,8 @@ export async function runBatch(
           }
           return v;
         }),
-      ),
-    );
+      );
+    });
   }
   const hdrIdx = rows.findIndex((r) => r.some((c) => /hts|hs\b|tarif|code/i.test(String(c ?? ''))));
   if (hdrIdx < 0) throw new Error('No code column found (HTS / HS / Tariff)');
@@ -144,8 +163,11 @@ export async function runBatch(
   ws.getRow(1).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF1E3A5F' } };
   let n = 0;
   let errors = 0;
+  const errorList: { row: number; code: string; error: string }[] = [];
+  let idx = hdrIdx;
   for (const r of rows.slice(hdrIdx + 1)) {
-    const code = String(r[ci] ?? '').trim();
+    const rowNo = rowNums[++idx] ?? idx + 1;
+    const code = cellToCode(r[ci]);
     if (!code) continue;
     n++;
     const num = (v: unknown) => Number(String(v ?? '').replace(/[\s$]/g, '').replace(',', '.'));
@@ -165,7 +187,9 @@ export async function runBatch(
     const res = calculate(db, rules, input, l);
     if (!res.ok) {
       errors++;
-      ws.addRow([...hdr.map((_, i) => r[i] ?? ''), res.error]);
+      const row = ws.addRow([...hdr.map((_, i) => r[i] ?? ''), `${T('ERROR')}: ${res.error}`]);
+      row.getCell(hdr.length + 1).font = { bold: true, color: { argb: 'FFC0392B' } };
+      if (errorList.length < 20) errorList.push({ row: rowNo, code, error: res.error ?? '' });
       continue;
     }
     const base = res.lines.find((l) => l.kind === 'base');
@@ -194,5 +218,5 @@ export async function runBatch(
   for (const off of [2, 3, 6, 7, 8]) ws.getColumn(firstNew + off).numFmt = '#,##0.00';
   ws.autoFilter = { from: { row: 1, column: 1 }, to: { row: 1, column: hdr.length + added.length } };
   const buffer = Buffer.from(await out.xlsx.writeBuffer());
-  return { buffer, rows: n, errors };
+  return { buffer, rows: n, errors, errorList };
 }

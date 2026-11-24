@@ -13,11 +13,13 @@ export default function Batch() {
   const [file, setFile] = useState<File | null>(null);
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState('');
+  const [errs, setErrs] = useState<{ row: number; code: string; error: string }[]>([]);
 
   const run = async () => {
     if (!file) return;
     setBusy(true);
     setMsg('');
+    setErrs([]);
     try {
       const fd = new FormData();
       Object.entries({ direction, preferential: String(preferential), province, mode, lang }).forEach(([k, v]) => fd.append(k, v));
@@ -30,6 +32,11 @@ export default function Batch() {
       a.download = `BATCH TARIFF SIMULATOR - ${file.name.replace(/\.[^.]+$/, '')}.xlsx`;
       a.click();
       setMsg(t('{rows} lines calculated, {errors} error(s).', { rows: res.headers.get('X-Rows'), errors: res.headers.get('X-Errors') }));
+      try {
+        setErrs(JSON.parse(decodeURIComponent(res.headers.get('X-Error-List') ?? '[]')));
+      } catch {
+        /* ignore */
+      }
     } catch (e) {
       setMsg(t('Error: ') + (e as Error).message);
     } finally {
@@ -89,6 +96,22 @@ export default function Batch() {
           </a>
         </div>
         {msg && <div className="alert info">{msg}</div>}
+        {errs.length > 0 && (
+          <div className="alert danger">
+            <b>{t('Lines in error (also flagged in red in the downloaded file):')}</b>
+            <table className="simple">
+              <tbody>
+                {errs.map((e) => (
+                  <tr key={e.row}>
+                    <td>{t('Row {n}', { n: e.row })}</td>
+                    <td className="mono">{e.code}</td>
+                    <td>{e.error}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
       </div>
       <div className="card">
         <h3>{t('Recognized columns')}</h3>

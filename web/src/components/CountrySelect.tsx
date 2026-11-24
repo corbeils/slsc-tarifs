@@ -1,7 +1,7 @@
 import type { Country } from '../api';
 import { useI18n } from '../i18n';
 
-const QUICK = ['CA', 'US', 'MX', 'CN', 'DE', 'JP'];
+const QUICK = ['CA', 'US', 'MX', 'FR', 'CN', 'IT', 'DE', 'ES', 'KR', 'JP'];
 
 export default function CountrySelect({ countries, value, onChange }: { countries: Country[]; value: string; onChange: (c: string) => void }) {
   const { lang } = useI18n();

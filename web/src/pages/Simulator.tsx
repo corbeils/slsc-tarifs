@@ -36,7 +36,6 @@ interface Form {
   claimExemptions: string[];
   ch99Choice: Record<string, string>;
   quantities: Record<string, string>;
-  fx: string;
 }
 
 const today = () => new Date().toISOString().slice(0, 10);
@@ -62,7 +61,6 @@ const initial = (): Form => {
     claimExemptions: [],
     ch99Choice: {},
     quantities: {},
-    fx: '',
   };
   try {
     return saved ? { ...base, ...JSON.parse(saved), date: today() } : base;
@@ -124,7 +122,6 @@ export default function Simulator() {
       claimExemptions: f.claimExemptions,
       ch99Choice: f.ch99Choice,
       quantities: q,
-      fxUsdCad: n(f.fx),
     };
   }, [f]);
 
@@ -247,7 +244,7 @@ export default function Simulator() {
           </div>
         )}
 
-        <div className="grid2">
+        <div className={j === 'CA' ? 'grid2' : ''}>
           <div>
             <label className="lbl">{t('Special regime')}</label>
             <select className="input" value={f.regime} onChange={(e) => set('regime', e.target.value)}>
@@ -259,7 +256,7 @@ export default function Simulator() {
               ))}
             </select>
           </div>
-          {j === 'CA' ? (
+          {j === 'CA' && (
             <div>
               <label className="lbl">{t("Importer's province")}</label>
               <select className="input" value={f.province} onChange={(e) => set('province', e.target.value)}>
@@ -267,11 +264,6 @@ export default function Simulator() {
                   <option key={p}>{p}</option>
                 ))}
               </select>
-            </div>
-          ) : (
-            <div>
-              <label className="lbl">{t('USD/CAD rate (optional)')}</label>
-              <input className="input num" placeholder={res?.fx.usdCad?.toFixed(4)} value={f.fx} onChange={(e) => set('fx', e.target.value)} />
             </div>
           )}
         </div>

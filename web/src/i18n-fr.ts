@@ -63,7 +63,6 @@ export const FR: Record<string, string> = {
   'Special regime': 'Régime particulier',
   'Ordinary import': 'Importation ordinaire',
   "Importer's province": 'Province de l’importateur',
-  'USD/CAD rate (optional)': 'Taux USD/CAD (facultatif)',
   'Repair / alteration value ({cur})': 'Valeur de la réparation / modification ({cur})',
   'Special conditions and exemptions': 'Conditions particulières et exemptions',
   'Include the AD/CVD cash deposit ("all others" rate) in the total': 'Inclure le dépôt AD/CVD (taux « tous les autres ») dans le total',

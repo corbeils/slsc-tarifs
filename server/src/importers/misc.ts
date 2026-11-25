@@ -227,9 +227,17 @@ export async function fetchText(url: string): Promise<string> {
 // Taux de change USD/CAD — Banque du Canada (API Valet)
 // ---------------------------------------------------------------------------
 export async function importFx(db: DB) {
-  const res = await fetch(config.fxUrl);
+  const empty = !(db.prepare('SELECT 1 FROM fx_history LIMIT 1').get());
+  const res = await fetch(empty ? config.fxHistoryUrl : config.fxUrl);
   if (!res.ok) throw new Error(`HTTP ${res.status} (Bank of Canada)`);
   const j = (await res.json()) as { observations: { d: string; FXUSDCAD?: { v: string }; FXEURCAD?: { v: string } }[] };
+  const ins = db.prepare('INSERT OR REPLACE INTO fx_history (date, series, rate) VALUES (?, ?, ?)');
+  db.transaction(() => {
+    for (const o of j.observations ?? []) {
+      if (Number(o.FXUSDCAD?.v)) ins.run(o.d, 'USDCAD', Number(o.FXUSDCAD!.v));
+      if (Number(o.FXEURCAD?.v)) ins.run(o.d, 'EURCAD', Number(o.FXEURCAD!.v));
+    }
+  })();
   const obs = j.observations?.at(-1);
   const rate = Number(obs?.FXUSDCAD?.v);
   if (!rate) throw new Error('FXUSDCAD rate missing from response');

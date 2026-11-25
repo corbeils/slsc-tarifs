@@ -143,6 +143,12 @@ function migrate(db: DB) {
       code TEXT PRIMARY KEY,
       description TEXT NOT NULL
     );
+    CREATE TABLE IF NOT EXISTS fx_history (
+      date TEXT NOT NULL,
+      series TEXT NOT NULL,
+      rate REAL NOT NULL,
+      PRIMARY KEY (date, series)
+    );
     CREATE TABLE IF NOT EXISTS meta (
       key TEXT PRIMARY KEY,
       value TEXT

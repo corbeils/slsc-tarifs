@@ -39,6 +39,8 @@ function schedule(expr: string, name: string, fn: () => Promise<unknown>) {
 
 schedule(config.cronUs, 'import-us', () => importUsOnline(db));
 schedule(config.cronFx, 'import-fx', () => importFx(db));
+// First start: fill the exchange-rate history for the Fiscal tab
+if (!db.prepare('SELECT 1 FROM fx_history LIMIT 1').get()) importFx(db).catch((e) => app.log.warn({ err: e }, 'FX history import failed'));
 schedule(config.cronCa, 'sync-cbsa', () => syncCbsa(db));
 schedule(config.cronLists, 'sync-lists', () => syncOfficialLists(db, getRules()));
 schedule(config.cronEu, 'sync-taric', async () => {

@@ -99,6 +99,16 @@ export async function buildApp(db: DB) {
 
   app.get('/api/countries', async () => listCountries());
 
+  // Fiscal tab: exchange rates used by the simulator (Bank of Canada) + daily history
+  app.get('/api/fx', async (req) => {
+    const days = Math.min(Math.max(Number((req.query as { days?: string }).days) || 90, 5), 400);
+    const since = new Date(Date.now() - days * 86400000).toISOString().slice(0, 10);
+    const rows = db.prepare('SELECT date, series, rate FROM fx_history WHERE date >= ? ORDER BY date').all(since) as { date: string; series: string; rate: number }[];
+    const byDate = new Map<string, { date: string; USDCAD?: number; EURCAD?: number }>();
+    for (const r of rows) byDate.set(r.date, { ...(byDate.get(r.date) ?? { date: r.date }), [r.series]: r.rate });
+    return { latest: currentFx(db), history: [...byDate.values()] };
+  });
+
   app.get('/api/search', async (req) => {
     const q = (req.query as { j?: string; q?: string; limit?: string }) ?? {};
     const j = q.j === 'CA' ? 'CA' : q.j === 'EU' ? 'EU' : 'US';

@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import Simulator from './pages/Simulator';
 import Batch from './pages/Batch';
 import Measures from './pages/Measures';
+import Fiscal from './pages/Fiscal';
 import Admin from './pages/Admin';
 import ThemeToggle from './components/ThemeToggle';
 import { api, fmtDate } from './api';
@@ -11,6 +12,7 @@ const PAGES = [
   { id: 'simulateur', label: 'Simulator' },
   { id: 'lot', label: 'Batch simulator' },
   { id: 'mesures', label: 'Measures in force' },
+  { id: 'fiscal', label: 'Fiscal' },
   { id: 'admin', label: 'Admin' },
 ] as const;
 type PageId = (typeof PAGES)[number]['id'];
@@ -73,6 +75,7 @@ export default function App() {
         {page === 'simulateur' && <Simulator />}
         {page === 'lot' && <Batch />}
         {page === 'mesures' && <Measures />}
+        {page === 'fiscal' && <Fiscal />}
         {page === 'admin' && <Admin />}
       </main>
       <footer className="notice">

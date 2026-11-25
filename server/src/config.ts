@@ -28,6 +28,8 @@ export const config = {
   fxUrl:
     process.env.FX_URL ??
     'https://www.bankofcanada.ca/valet/observations/FXUSDCAD,FXEURCAD/json?recent=1',
+  /** Daily history for the Fiscal tab (backfilled on the first import). */
+  fxHistoryUrl: 'https://www.bankofcanada.ca/valet/observations/FXUSDCAD,FXEURCAD/json?recent=260',
   /** Monthly TARIC re-import from the URLs saved in Admin (2nd of the month). */
   cronEu: process.env.CRON_EU ?? '30 5 2 * *',
 };

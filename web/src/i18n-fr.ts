@@ -143,6 +143,27 @@ export const FR: Record<string, string> = {
   USMCA: 'ACEUM',
 
   'The server could not be reached. Check your connection and try again.': 'Le serveur n’a pas pu être joint. Vérifiez la connexion et réessayez.',
+  // Fiscal (exchange rates)
+  Fiscal: 'Fiscal',
+  'Exchange rates used by the simulator': 'Taux de change utilisés par le simulateur',
+  'Source: {source}': 'Source : {source}',
+  'rate of {date}': 'taux du {date}',
+  'updated automatically every business day': 'mis à jour automatiquement chaque jour ouvrable',
+  'cross rate': 'taux croisé',
+  'Currency converter': 'Convertisseur de devises',
+  'Which rate does customs use?': 'Quel taux la douane utilise-t-elle ?',
+  'CBSA: Bank of Canada rates (the ones used here).': 'ASFC : taux de la Banque du Canada (ceux utilisés ici).',
+  'CBP: rates certified by the Federal Reserve Bank of New York for the date of exportation.':
+    'CBP : taux certifiés par la Federal Reserve Bank of New York à la date d’exportation.',
+  'EU: monthly customs exchange rates set from the European Central Bank rate (published by the Commission).':
+    'UE : taux de change douaniers mensuels établis à partir du taux de la Banque centrale européenne (publiés par la Commission).',
+  'The simulator converts with the Bank of Canada rate in all three directions: the official customs conversion can differ slightly.':
+    'Le simulateur convertit avec le taux de la Banque du Canada dans les trois directions : la conversion douanière officielle peut différer légèrement.',
+  History: 'Historique',
+  '{n} days': '{n} jours',
+  'History not available yet: it is filled by the first Bank of Canada import.': 'Historique pas encore disponible : il se remplit au premier import de la Banque du Canada.',
+  Date: 'Date',
+
   // INBOUND EU
   'TARIC LAST UPDATE': 'DERNIÈRE MISE À JOUR TARIC',
   'TARIC code or keywords (e.g. 8462.11, press)': 'Code TARIC ou mots-clés en anglais (ex. 8462.11, press)',

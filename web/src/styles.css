@@ -321,3 +321,26 @@ a.btn:hover { text-decoration: none; }
 .topbar-right { display: flex; align-items: center; }
 
 .batch-note { margin: 8px 0 4px; }
+
+/* Fiscal tab */
+.fx-tiles { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+.fx-tile { border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px; background: var(--surface-2); display: flex; flex-direction: column; gap: 2px; }
+.fx-tile b { font-size: 26px; font-family: var(--mono, ui-monospace, monospace); color: var(--heading); }
+.fx-pair { font-size: 12px; font-weight: 700; letter-spacing: .04em; color: var(--muted); }
+.fx-pair em { font-weight: 400; font-style: normal; }
+.fx-inv { font-size: 12px; color: var(--muted); }
+.fx-inv .up { color: var(--ok); }
+.fx-inv .down { color: #c0392b; }
+.fx-chart { width: 100%; height: auto; margin: 8px 0 4px; }
+.fx-chart .fx-usd { stroke: var(--accent); }
+.fx-chart .fx-eur { stroke: #4f8fd6; }
+.fx-chart .fx-axis { font-size: 11px; fill: var(--muted); }
+.fx-chart .fx-usd-t { fill: var(--ok); }
+.fx-chart .fx-eur-t { fill: #4f8fd6; }
+.fx-table { margin-top: 6px; }
+.fx-rules { padding-left: 18px; margin: 6px 0; }
+.fx-rules li { margin-bottom: 6px; }
+@media (max-width: 800px) { .fx-tiles { grid-template-columns: 1fr; } }
+nav a { white-space: nowrap; }
+.brand-sub { white-space: nowrap; }
+.fx-chart .fx-axis { font-size: 13px; }

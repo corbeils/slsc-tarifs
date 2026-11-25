@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { api } from '../api';
 import { useI18n } from '../i18n';
+import Classifier from '../components/Classifier';
 
 type J = 'US' | 'CA' | 'EU';
 interface Hit {
@@ -75,6 +76,7 @@ export default function HsLookup() {
 
   return (
     <div className="lookup">
+      <Classifier onCompare={(h) => { setHs6(h); setTimeout(() => document.getElementById('hs-detail')?.scrollIntoView({ behavior: 'smooth' }), 300); }} />
       <div className="card">
         <h2 style={{ marginTop: 0 }}>{t('HS code lookup')}</h2>
         <p className="small muted">{t('Search a product by keywords (in English) or by code in the three tariffs at once. Click a result to compare the 6-digit HS subheading in the United States, Canada and the EU.')}</p>
@@ -116,7 +118,7 @@ export default function HsLookup() {
       )}
 
       {hs6 && (
-        <div className="card">
+        <div className="card" id="hs-detail">
           <h3>
             {t('HS subheading')} <span className="mono">{fmt6(hs6)}</span>
             {detail?.heading && <span className="muted small"> — {detail.heading}</span>}

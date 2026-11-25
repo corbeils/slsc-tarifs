@@ -372,3 +372,15 @@ tr.dim td { opacity: .6; }
 }
 @media (max-width: 1250px) { .topbar { flex-wrap: wrap; gap: 8px; } }
 .brand-title { white-space: nowrap; }
+
+/* Classification assistant */
+.classifier .thumb { position: relative; display: inline-block; }
+.classifier .thumb img { width: 56px; height: 56px; object-fit: cover; border-radius: 8px; border: 1px solid var(--line); display: block; }
+.classifier .thumb button { position: absolute; top: -6px; right: -6px; width: 20px; height: 20px; border-radius: 50%; border: 0; background: #0e1113; color: #fff; cursor: pointer; line-height: 20px; padding: 0; }
+.cls-questions { display: grid; gap: 8px; margin-top: 12px; }
+.cls-result { margin-top: 12px; }
+.cls-cand { border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px; margin-bottom: 10px; background: var(--surface-2); }
+.cls-cand.best { border-color: var(--accent); box-shadow: inset 4px 0 0 var(--accent); }
+.cls-head { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 4px; }
+.cls-code { font-size: 20px; font-weight: 700; color: var(--heading); }
+.badge.danger { background: #fde8e6; color: #b42318; }

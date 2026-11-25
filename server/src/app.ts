@@ -19,6 +19,7 @@ import { buildTemplate, runBatch } from './batch.js';
 import { syncCbsa } from './importers/cbsa-sync.js';
 import { syncOfficialLists } from './importers/official-lists.js';
 import { importTaric, syncTaricUrls, type TaricFile } from './importers/taric.js';
+import { classify, publicAiConfig, setAiConfig, type ChatTurn, type ClassJ } from './classify.js';
 import { clearListCache } from './engine/common.js';
 import { changePassword, createUser, deleteUser, listUsers, login, logout, resetPassword, sessionUser } from './auth.js';
 
@@ -297,6 +298,19 @@ export async function buildApp(db: DB) {
       }
       return out;
     });
+    a.post('/api/lookup/classify', async (req, reply) => {
+      const b = (req.body ?? {}) as { j?: string; turns?: ChatTurn[]; lang?: string };
+      const j: ClassJ = b.j === 'CA' ? 'CA' : b.j === 'EU' ? 'EU' : 'US';
+      if (!b.turns?.length) return reply.code(400).send({ error: 'Describe the goods' });
+      try {
+        return await classify(db, j, b.turns, b.lang === 'fr' ? 'fr' : 'en');
+      } catch (e) {
+        const err = e as Error & { status?: number };
+        return reply.code(err.status ?? 500).send({ error: err.message });
+      }
+    });
+    a.get('/api/admin/ai', async () => publicAiConfig(db));
+    a.post('/api/admin/ai', async (req) => setAiConfig(db, (req.body ?? {}) as { key?: string; model?: string }));
     a.get('/api/lookup/hs/:hs6', async (req) => {
       const hs6 = digits((req.params as { hs6: string }).hs6).slice(0, 6);
       if (hs6.length < 4) return { hs6, heading: null, lines: [] };

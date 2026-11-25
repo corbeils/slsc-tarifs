@@ -152,6 +152,8 @@ function AdminPanel({ me, onLogout, onPasswordChanged }: { me: Me; onLogout: () 
         </table>
       </div>
 
+      <AiCard notify={notify} />
+
       <SiteVersion current={meta?.site} onSave={async (v, b) => { await wrap('Site version', () => api.admin.siteVersion(v, b)); window.dispatchEvent(new Event('slsc-meta')); }} />
 
       <div className="grid2 gap">
@@ -245,6 +247,49 @@ function summarize(r: any): string {
   if (r.rate !== undefined) return `1 USD = ${r.rate} CAD`;
   if (r.job) return 'started…';
   return 'done';
+}
+
+function AiCard({ notify }: { notify: (ok: boolean, text: string) => void }) {
+  const [cfg, setCfg] = useState<any>(null);
+  const [key, setKey] = useState('');
+  const [model, setModel] = useState('');
+  useEffect(() => {
+    api.admin.aiGet().then((c) => {
+      setCfg(c);
+      setModel(c.model);
+    }).catch(() => {});
+  }, []);
+  const save = async (v: { key?: string; model?: string }) => {
+    try {
+      const c = await api.admin.aiSet(v);
+      setCfg(c);
+      setKey('');
+      notify(true, 'AI settings saved');
+    } catch (e) {
+      notify(false, (e as Error).message);
+    }
+  };
+  return (
+    <div className="card">
+      <h3>AI classification assistant (HS code lookup)</h3>
+      <p className="small muted">
+        Uses the Anthropic API (Claude) to classify a description or photos. The key stays on this server and is never sent to the browser.{' '}
+        {cfg?.configured ? <b>Configured ({cfg.keyHint}{cfg.fromEnv ? ', from ANTHROPIC_API_KEY' : ''}).</b> : <b>Not configured.</b>}
+      </p>
+      <div className="row">
+        <input className="input mono" type="password" style={{ maxWidth: 380 }} placeholder="sk-ant-…" value={key} onChange={(e) => setKey(e.target.value)} autoComplete="off" />
+        <select className="input" style={{ maxWidth: 220 }} value={model} onChange={(e) => setModel(e.target.value)}>
+          {(cfg?.models ?? []).map((m: string) => (
+            <option key={m}>{m}</option>
+          ))}
+        </select>
+        <button className="btn" onClick={() => save({ ...(key ? { key } : {}), model })}>Save</button>
+        {cfg?.configured && !cfg.fromEnv && (
+          <button className="btn ghost" onClick={() => save({ key: '' })}>Remove key</button>
+        )}
+      </div>
+    </div>
+  );
 }
 
 function TaricCard({ urls, onUpload, onSaveUrls, onSync }: { urls: string[]; onUpload: (f: File[]) => Promise<void>; onSaveUrls: (u: string[]) => void; onSync: () => void }) {

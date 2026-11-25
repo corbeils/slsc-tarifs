@@ -80,6 +80,12 @@ Tant qu'une liste n'est pas importée, la mesure s'applique par **préfixe indic
 
 ---
 
+## Assistant de classement (onglet Recherche de HS code)
+
+Réservé aux utilisateurs connectés. Une description et/ou jusqu'à 4 photos → l'assistant (API Anthropic, Claude) applique les RGI, pose au besoin jusqu'à 4 questions, et propose 1 à 3 lignes du pays choisi. Il cherche dans les tarifs importés dans la base (outils `search_tariff` / `list_lines`) : un code qui n'existe pas dans le tarif est signalé.
+
+Configuration : Admin → *AI classification assistant* (clé API et modèle), ou les variables `ANTHROPIC_API_KEY` / `ANTHROPIC_MODEL` (défaut `claude-sonnet-5-5`). La clé reste sur le serveur.
+
 ## Fonctionnement du moteur
 
 **Importation aux États-Unis**

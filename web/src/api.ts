@@ -138,6 +138,7 @@ export const api = {
   },
   measures: () => req<any>(`/api/measures?lang=${getLang()}`),
   lookup: (q: string, j: string) => req<any[]>(`/api/lookup/search?q=${encodeURIComponent(q)}&j=${j}`, {}, true),
+  classify: (j: string, turns: unknown[]) => req<any>('/api/lookup/classify', { method: 'POST', body: JSON.stringify({ j, turns, lang: getLang() }) }, true),
   lookupHs: (hs6: string) => req<any>(`/api/lookup/hs/${hs6}`, {}, true),
   measuresEu: (origin: string) => req<any>(`/api/measures/eu?lang=${getLang()}&origin=${encodeURIComponent(origin)}`),
   login: (username: string, password: string) =>
@@ -170,6 +171,8 @@ export const api = {
       return req<{ job: string }>('/api/admin/import/taric', { method: 'POST', body: fd }, true);
     },
     taricUrls: (urls: string[]) => req<any>('/api/admin/taric-urls', { method: 'POST', body: JSON.stringify({ urls }) }, true),
+    aiGet: () => req<any>('/api/admin/ai', {}, true),
+    aiSet: (v: { key?: string; model?: string }) => req<any>('/api/admin/ai', { method: 'POST', body: JSON.stringify(v) }, true),
     taricSync: () => req<{ job: string }>('/api/admin/sync/taric', { method: 'POST' }, true),
     fxManual: (rate: number) => req<any>('/api/admin/fx', { method: 'POST', body: JSON.stringify({ rate }) }, true),
     codes: (body: Record<string, unknown>, file?: File | null) => {

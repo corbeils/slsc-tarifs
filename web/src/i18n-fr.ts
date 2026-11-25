@@ -163,6 +163,28 @@ export const FR: Record<string, string> = {
   'History not available yet: it is filled by the first Bank of Canada import.': 'Historique pas encore disponible : il se remplit au premier import de la Banque du Canada.',
   Date: 'Date',
 
+  // Classification assistant
+  'Classification assistant': 'Assistant de classement',
+  'Describe the goods and/or add photos: the assistant applies the General Rules of Interpretation, asks questions if needed and proposes the tariff line of the chosen country (only codes that exist in the imported tariff).':
+    'Décrivez la marchandise et/ou ajoutez des photos : l’assistant applique les Règles générales interprétatives, pose des questions au besoin et propose la ligne tarifaire du pays choisi (seulement des codes qui existent dans le tarif importé).',
+  'e.g. Hydraulic press for closed-die forging of steel parts, 2,500 tonnes, CNC controlled, new':
+    'ex. Presse hydraulique pour le forgeage en matrice fermée de pièces d’acier, 2 500 tonnes, commande numérique, neuve',
+  'Add photos': 'Ajouter des photos',
+  'Analysing…': 'Analyse en cours…',
+  Classify: 'Classer',
+  'Goods:': 'Marchandise :',
+  'photo(s)': 'photo(s)',
+  'New classification': 'Nouveau classement',
+  'Send answers': 'Envoyer les réponses',
+  'confidence {n}%': 'confiance {n} %',
+  'code not found in the tariff': 'code introuvable dans le tarif',
+  'Base rate': 'Taux de base',
+  'Compare HS {hs} in the 3 tariffs': 'Comparer le SH {hs} dans les 3 tarifs',
+  'Suggestion produced by AI: check it against the tariff and the notes. For certainty, request an advance ruling (CBP, CBSA or EU BTI).':
+    'Suggestion produite par l’IA : la vérifier avec le tarif et les notes. Pour une certitude, demander une décision anticipée (CBP, ASFC ou RTC de l’UE).',
+
+  'AI classification is not configured: add an Anthropic API key in Admin.': 'Le classement par IA n’est pas configuré : ajouter une clé API Anthropic dans Admin.',
+  'The classification did not converge; add details and try again.': 'Le classement n’a pas abouti ; ajoutez des détails et réessayez.',
   // HS code lookup
   'HS code lookup': 'Recherche de HS code',
   'Search a product by keywords (in English) or by code in the three tariffs at once. Click a result to compare the 6-digit HS subheading in the United States, Canada and the EU.':

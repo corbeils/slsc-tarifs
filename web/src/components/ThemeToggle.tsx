@@ -37,7 +37,17 @@ export default function ThemeToggle() {
   useEffect(() => {
     applyTheme(t);
     localStorage.setItem(KEY, t);
+    window.dispatchEvent(new CustomEvent('slsc-prefs', { detail: { theme: t } }));
   }, [t]);
+  // Theme restored from the signed-in account
+  useEffect(() => {
+    const on = (e: Event) => {
+      const v = (e as CustomEvent<Theme>).detail;
+      if (v === 'light' || v === 'dark' || v === 'system') setT(v);
+    };
+    window.addEventListener('slsc-set-theme', on);
+    return () => window.removeEventListener('slsc-set-theme', on);
+  }, []);
   const opts: [Theme, string, () => JSX.Element][] = [
     ['light', 'Light', Sun],
     ['dark', 'Dark', Moon],

@@ -21,7 +21,7 @@ import { syncOfficialLists } from './importers/official-lists.js';
 import { importTaric, syncTaricUrls, type TaricFile } from './importers/taric.js';
 import { classify, publicAiConfig, setAiConfig, type ChatTurn, type ClassJ } from './classify.js';
 import { clearListCache } from './engine/common.js';
-import { changePassword, createUser, deleteUser, listUsers, login, logout, resetPassword, sessionUser, renameUser } from './auth.js';
+import { asRole, changePassword, createUser, deleteUser, listUsers, login, logout, renameUser, resetPassword, sessionUser, setPrefs, setRole } from './auth.js';
 
 type Job = { id: string; kind: string; status: 'running' | 'done' | 'error'; log: string[]; result?: unknown; error?: string; started: string };
 const jobs = new Map<string, Job>();
@@ -51,14 +51,18 @@ export async function buildApp(db: DB) {
     const t = bearer(req);
     // ADMIN_TOKEN (optional) still works for scripts / API calls
     if (config.adminToken && (t === config.adminToken || req.headers['x-admin-token'] === config.adminToken)) {
-      (req as FastifyRequest & { user?: unknown }).user = { id: '_token', username: 'API token', mustChange: false };
+      (req as FastifyRequest & { user?: unknown }).user = { id: '_token', username: 'API token', mustChange: false, role: 'admin', prefs: {} };
       return;
     }
     const u = sessionUser(db, t);
     if (!u) return reply.code(401).send({ error: 'Please sign in' });
     (req as FastifyRequest & { user?: unknown }).user = u;
+    // USER group: own account, measures in force and HS code lookup only; the rest of /api/admin is for ADMIN
+    const path = req.url.split('?')[0];
+    const ownAccount = ['/api/admin/me', '/api/admin/password', '/api/admin/username', '/api/admin/prefs'].includes(path);
+    if (path.startsWith('/api/admin/') && !ownAccount && u.role !== 'admin') return reply.code(403).send({ error: 'Administrators only' });
   };
-  const userOf = (req: FastifyRequest) => (req as FastifyRequest & { user: { id: string; username: string; mustChange: boolean } }).user;
+  const userOf = (req: FastifyRequest) => (req as FastifyRequest & { user: { id: string; username: string; mustChange: boolean; role: 'admin' | 'user' } }).user;
 
   app.post('/api/auth/login', async (req, reply) => {
     const b = (req.body ?? {}) as { username?: string; password?: string };
@@ -200,7 +204,8 @@ export async function buildApp(db: DB) {
   });
 
   // Résumé public des mesures (page « Mesures en vigueur »)
-  app.get('/api/measures', async (req) => {
+  // Measures in force: signed-in users (USER and ADMIN groups)
+  app.get('/api/measures', { preHandler: admin }, async (req) => {
     const R = localizeRules(getRules(), asLang((req.query as { lang?: string }).lang));
     const lists = Object.fromEntries(
       (db.prepare('SELECT measure_id, COUNT(*) n FROM code_lists GROUP BY measure_id').all() as { measure_id: string; n: number }[]).map((r) => [
@@ -224,7 +229,7 @@ export async function buildApp(db: DB) {
   });
 
   // INBOUND EU: VAT, agreements and the TARIC measures by origin (quotas, AD/CVD, additional duties)
-  app.get('/api/measures/eu', async (req) => {
+  app.get('/api/measures/eu', { preHandler: admin }, async (req) => {
     const q = req.query as { origin?: string; lang?: string };
     const R = localizeRules(getRules(), asLang(q.lang));
     const T = R.eu.measureTypes;
@@ -267,6 +272,15 @@ export async function buildApp(db: DB) {
     a.addHook('preHandler', admin);
 
     a.get('/api/admin/me', async (req) => userOf(req));
+    a.post('/api/admin/prefs', async (req) => setPrefs(db, userOf(req).id, (req.body ?? {}) as Record<string, unknown>));
+    a.post('/api/admin/users/:u/role', async (req, reply) => {
+      try {
+        setRole(db, (req.params as { u: string }).u, asRole((req.body as { role?: string })?.role), userOf(req).id);
+        return { ok: true };
+      } catch (e) {
+        return reply.code(400).send({ error: (e as Error).message });
+      }
+    });
     a.get('/api/admin/changelog', async () => getMeta(db, 'site:changelog') ?? []);
     a.post('/api/admin/username', async (req, reply) => {
       const b = (req.body ?? {}) as { username?: string; password?: string };
@@ -359,9 +373,9 @@ export async function buildApp(db: DB) {
     });
     a.get('/api/admin/users', async () => listUsers(db));
     a.post('/api/admin/users', async (req, reply) => {
-      const b = req.body as { username: string; password: string };
+      const b = req.body as { username: string; password: string; role?: string };
       try {
-        createUser(db, b.username ?? '', b.password ?? '', true);
+        createUser(db, b.username ?? '', b.password ?? '', true, asRole(b.role));
         return { ok: true };
       } catch (e) {
         return reply.code(400).send({ error: (e as Error).message });

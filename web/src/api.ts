@@ -136,20 +136,22 @@ export const api = {
       }
     }
   },
-  measures: () => req<any>(`/api/measures?lang=${getLang()}`),
+  measures: () => req<any>(`/api/measures?lang=${getLang()}`, {}, true),
   lookup: (q: string, j: string) => req<any[]>(`/api/lookup/search?q=${encodeURIComponent(q)}&j=${j}`, {}, true),
   classify: (j: string, turns: unknown[]) => req<any>('/api/lookup/classify', { method: 'POST', body: JSON.stringify({ j, turns, lang: getLang() }) }, true),
   lookupHs: (hs6: string) => req<any>(`/api/lookup/hs/${hs6}`, {}, true),
-  measuresEu: (origin: string) => req<any>(`/api/measures/eu?lang=${getLang()}&origin=${encodeURIComponent(origin)}`),
+  measuresEu: (origin: string) => req<any>(`/api/measures/eu?lang=${getLang()}&origin=${encodeURIComponent(origin)}`, {}, true),
   login: (username: string, password: string) =>
     req<{ token: string; username: string; mustChange: boolean }>('/api/auth/login', { method: 'POST', body: JSON.stringify({ username, password }) }),
   logout: () => req<any>('/api/auth/logout', { method: 'POST' }, true),
   admin: {
-    me: () => req<{ username: string; mustChange: boolean }>('/api/admin/me', {}, true),
+    me: () => req<{ username: string; mustChange: boolean; role: 'admin' | 'user'; prefs: Record<string, string> }>('/api/admin/me', {}, true),
+    prefs: (p: Record<string, string>) => req<any>('/api/admin/prefs', { method: 'POST', body: JSON.stringify(p) }, true),
+    setRole: (u: string, role: string) => req<any>(`/api/admin/users/${encodeURIComponent(u)}/role`, { method: 'POST', body: JSON.stringify({ role }) }, true),
     changePassword: (current: string, next: string) =>
       req<any>('/api/admin/password', { method: 'POST', body: JSON.stringify({ current, next }) }, true),
-    users: () => req<{ username: string; mustChange: number; createdAt: string }[]>('/api/admin/users', {}, true),
-    addUser: (username: string, password: string) => req<any>('/api/admin/users', { method: 'POST', body: JSON.stringify({ username, password }) }, true),
+    users: () => req<{ username: string; mustChange: number; createdAt: string; role: 'admin' | 'user' }[]>('/api/admin/users', {}, true),
+    addUser: (username: string, password: string, role = 'user') => req<any>('/api/admin/users', { method: 'POST', body: JSON.stringify({ username, password, role }) }, true),
     resetUser: (username: string, password: string) =>
       req<any>(`/api/admin/users/${encodeURIComponent(username)}/reset`, { method: 'POST', body: JSON.stringify({ password }) }, true),
     deleteUser: (username: string) => req<any>(`/api/admin/users/${encodeURIComponent(username)}`, { method: 'DELETE' }, true),

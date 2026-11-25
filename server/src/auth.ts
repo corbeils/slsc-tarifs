@@ -22,28 +22,36 @@ export function migrateAuth(db: DB) {
       expires_at TEXT NOT NULL
     );
   `);
+  // v2: groups (admin / user) and per-account display preferences. Existing accounts stay administrators.
+  const cols = (db.prepare('PRAGMA table_info(users)').all() as { name: string }[]).map((c) => c.name);
+  if (!cols.includes('role')) db.exec("ALTER TABLE users ADD COLUMN role TEXT NOT NULL DEFAULT 'admin'");
+  if (!cols.includes('prefs')) db.exec("ALTER TABLE users ADD COLUMN prefs TEXT NOT NULL DEFAULT '{}'");
   const n = (db.prepare('SELECT COUNT(*) n FROM users').get() as { n: number }).n;
-  if (n === 0) createUser(db, DEFAULT_USER, DEFAULT_PASSWORD, true);
+  if (n === 0) createUser(db, DEFAULT_USER, DEFAULT_PASSWORD, true, 'admin');
 }
+
+export type Role = 'admin' | 'user';
+export const asRole = (r: unknown): Role => (r === 'admin' ? 'admin' : 'user');
 
 function hashPassword(password: string, salt = crypto.randomBytes(16).toString('hex')) {
   const hash = crypto.scryptSync(password, salt, 64).toString('hex');
   return { salt, hash };
 }
 
-export function createUser(db: DB, username: string, password: string, mustChange = false) {
+export function createUser(db: DB, username: string, password: string, mustChange = false, role: Role = 'user') {
   const u = username.trim();
   if (!/^[A-Za-z0-9._@-]{2,40}$/.test(u)) throw new Error('Invalid username (2–40 characters: letters, digits, . _ - @)');
   if (password.length < 4) throw new Error('Password too short (min. 4 characters)');
   if (db.prepare('SELECT 1 FROM users WHERE id = ?').get(u.toLowerCase())) throw new Error('This user already exists');
   const { salt, hash } = hashPassword(password);
-  db.prepare('INSERT INTO users (id, username, salt, hash, must_change, created_at) VALUES (?, ?, ?, ?, ?, ?)').run(
+  db.prepare('INSERT INTO users (id, username, salt, hash, must_change, created_at, role) VALUES (?, ?, ?, ?, ?, ?, ?)').run(
     u.toLowerCase(),
     u,
     salt,
     hash,
     mustChange ? 1 : 0,
     new Date().toISOString(),
+    role,
   );
 }
 
@@ -58,15 +66,45 @@ export function login(db: DB, username: string, password: string) {
   const expires = new Date(Date.now() + SESSION_DAYS * 86400_000).toISOString();
   db.prepare('DELETE FROM sessions WHERE expires_at < ?').run(new Date().toISOString());
   db.prepare('INSERT INTO sessions (token, user_id, expires_at) VALUES (?, ?, ?)').run(token, u.id, expires);
-  return { token, username: u.username, mustChange: !!u.must_change };
+  return { token, username: u.username, mustChange: !!u.must_change, role: asRole((u as UserRow & { role?: string }).role) };
 }
 
 export function sessionUser(db: DB, token: string) {
   if (!token) return null;
   const r = db
-    .prepare('SELECT u.id, u.username, u.must_change FROM sessions s JOIN users u ON u.id = s.user_id WHERE s.token = ? AND s.expires_at > ?')
-    .get(token, new Date().toISOString()) as { id: string; username: string; must_change: number } | undefined;
-  return r ? { id: r.id, username: r.username, mustChange: !!r.must_change } : null;
+    .prepare('SELECT u.id, u.username, u.must_change, u.role, u.prefs FROM sessions s JOIN users u ON u.id = s.user_id WHERE s.token = ? AND s.expires_at > ?')
+    .get(token, new Date().toISOString()) as { id: string; username: string; must_change: number; role: string; prefs: string } | undefined;
+  if (!r) return null;
+  let prefs: Record<string, string> = {};
+  try {
+    prefs = JSON.parse(r.prefs || '{}');
+  } catch {
+    /* ignore */
+  }
+  return { id: r.id, username: r.username, mustChange: !!r.must_change, role: asRole(r.role), prefs };
+}
+
+/** Display preferences saved with the account (language, display currency, theme). */
+export function setPrefs(db: DB, userId: string, p: Record<string, unknown>) {
+  const clean: Record<string, string> = {};
+  if (p.lang === 'en' || p.lang === 'fr') clean.lang = p.lang;
+  if (p.currency === 'CAD' || p.currency === 'USD' || p.currency === 'EUR') clean.currency = p.currency;
+  if (p.theme === 'light' || p.theme === 'dark' || p.theme === 'system') clean.theme = p.theme;
+  const cur = db.prepare('SELECT prefs FROM users WHERE id = ?').get(userId) as { prefs: string } | undefined;
+  const next = { ...JSON.parse(cur?.prefs || '{}'), ...clean };
+  db.prepare('UPDATE users SET prefs = ? WHERE id = ?').run(JSON.stringify(next), userId);
+  return next;
+}
+
+export function setRole(db: DB, username: string, role: Role, selfId: string) {
+  const id = username.toLowerCase();
+  if (!db.prepare('SELECT 1 FROM users WHERE id = ?').get(id)) throw new Error('Unknown user');
+  if (role !== 'admin') {
+    if (id === selfId) throw new Error('You cannot remove your own administrator rights');
+    const admins = (db.prepare("SELECT COUNT(*) n FROM users WHERE role = 'admin' AND id != ?").get(id) as { n: number }).n;
+    if (!admins) throw new Error('At least one administrator is required');
+  }
+  db.prepare('UPDATE users SET role = ? WHERE id = ?').run(role, id);
 }
 
 export function logout(db: DB, token: string) {
@@ -107,14 +145,14 @@ export function resetPassword(db: DB, username: string, next: string) {
 }
 
 export function listUsers(db: DB) {
-  return db.prepare('SELECT username, must_change AS mustChange, created_at AS createdAt FROM users ORDER BY username').all();
+  return db.prepare('SELECT username, must_change AS mustChange, created_at AS createdAt, role FROM users ORDER BY username').all();
 }
 
 export function deleteUser(db: DB, username: string, selfId: string) {
   const id = username.toLowerCase();
   if (id === selfId) throw new Error('You cannot delete your own account');
-  const n = (db.prepare('SELECT COUNT(*) n FROM users').get() as { n: number }).n;
-  if (n <= 1) throw new Error('At least one administrator must remain');
+  const admins = (db.prepare("SELECT COUNT(*) n FROM users WHERE role = 'admin' AND id != ?").get(id) as { n: number }).n;
+  if (!admins) throw new Error('At least one administrator must remain');
   db.prepare('DELETE FROM sessions WHERE user_id = ?').run(id);
   db.prepare('DELETE FROM users WHERE id = ?').run(id);
 }

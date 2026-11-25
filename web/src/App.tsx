@@ -2,22 +2,22 @@ import { useEffect, useState } from 'react';
 import Simulator from './pages/Simulator';
 import Batch from './pages/Batch';
 import Measures from './pages/Measures';
-import Fiscal from './pages/Fiscal';
 import HsLookup from './pages/HsLookup';
 import Admin from './pages/Admin';
 import ThemeToggle from './components/ThemeToggle';
 import { api, fmtDate, session } from './api';
 import { LangToggle, useI18n } from './i18n';
 import { CurrencyToggle } from './currency';
+import { useAuth } from './auth';
 
 const PAGES = [
-  { id: 'simulateur', label: 'Simulator' },
-  { id: 'lot', label: 'Batch simulator' },
-  { id: 'mesures', label: 'Measures in force' },
-  { id: 'fiscal', label: 'Currency converter' },
-  { id: 'hscode', label: 'HS code lookup', signedIn: true },
-  { id: 'admin', label: 'Admin' },
+  { id: 'simulateur', label: 'Simulator', access: 'public' },
+  { id: 'lot', label: 'Batch simulator', access: 'public' },
+  { id: 'mesures', label: 'Measures in force', access: 'user' },
+  { id: 'hscode', label: 'HS code lookup', access: 'user' },
+  { id: 'admin', label: 'Admin', access: 'admin' },
 ] as const;
+type Access = (typeof PAGES)[number]['access'];
 type PageId = (typeof PAGES)[number]['id'];
 
 function usePage(): [PageId, (p: PageId) => void] {
@@ -35,16 +35,8 @@ export default function App() {
   const [page, go] = usePage();
   const { t, lang } = useI18n();
   const [meta, setMeta] = useState<any>(null);
-  const [signedIn, setSignedIn] = useState(() => !!session.get());
-  useEffect(() => {
-    const on = () => setSignedIn(!!session.get());
-    window.addEventListener('slsc-session', on);
-    window.addEventListener('storage', on);
-    return () => {
-      window.removeEventListener('slsc-session', on);
-      window.removeEventListener('storage', on);
-    };
-  }, []);
+  const { user, ready } = useAuth();
+  const can = (a: Access) => a === 'public' || (a === 'user' && !!user) || (a === 'admin' && user?.role === 'admin');
   useEffect(() => {
     api.meta().then(setMeta).catch(() => {});
   }, [page, lang]);
@@ -74,11 +66,21 @@ export default function App() {
         </div>
         <div className="topbar-right">
           <nav>
-            {PAGES.filter((p) => !('signedIn' in p) || signedIn).map((p) => (
+            {PAGES.filter((p) => can(p.access)).map((p) => (
               <a key={p.id} className={page === p.id ? 'active' : ''} href={`#/${p.id}`}>
                 {t(p.label)}
               </a>
             ))}
+            {ready && user?.role === 'user' && (
+              <a className={page === 'admin' ? 'active' : ''} href="#/admin">
+                {t('My account')}
+              </a>
+            )}
+            {ready && !user && (
+              <a className={page === 'admin' ? 'active' : ''} href="#/admin">
+                {t('Sign in')}
+              </a>
+            )}
           </nav>
           <LangToggle />
           <CurrencyToggle />
@@ -88,16 +90,8 @@ export default function App() {
       <main>
         {page === 'simulateur' && <Simulator />}
         {page === 'lot' && <Batch />}
-        {page === 'mesures' && <Measures />}
-        {page === 'fiscal' && <Fiscal />}
-        {page === 'hscode' &&
-          (signedIn ? (
-            <HsLookup />
-          ) : (
-            <div className="card">
-              {t('This tab is reserved for signed-in users.')} <a href="#/admin">{t('Sign in')}</a>
-            </div>
-          ))}
+        {page === 'mesures' && (can('user') ? <Measures /> : <SignInFirst />)}
+        {page === 'hscode' && (can('user') ? <HsLookup /> : <SignInFirst />)}
         {page === 'admin' && <Admin />}
       </main>
       <footer className="notice">
@@ -121,6 +115,15 @@ export default function App() {
           </span>
         </div>
       </footer>
+    </div>
+  );
+}
+
+function SignInFirst() {
+  const { t } = useI18n();
+  return (
+    <div className="card">
+      {t('This tab is reserved for signed-in users.')} <a href="#/admin">{t('Sign in')}</a>
     </div>
   );
 }

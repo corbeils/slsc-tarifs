@@ -204,6 +204,7 @@ export const FR: Record<string, string> = {
     'Les 6 premiers chiffres (SH) sont communs aux trois pays ; les chiffres suivants sont nationaux et diffèrent.',
   'This tab is reserved for signed-in users.': 'Cet onglet est réservé aux utilisateurs connectés.',
   'Sign in': 'Se connecter',
+  'My account': 'Mon compte',
 
   // INBOUND EU
   'TARIC LAST UPDATE': 'DERNIÈRE MISE À JOUR TARIC',

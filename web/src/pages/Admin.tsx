@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
 import { api, fmtDate, session } from '../api';
+import Fiscal from './Fiscal';
 
-type Me = { username: string; mustChange: boolean };
+type Me = { username: string; mustChange: boolean; role?: 'admin' | 'user' };
 
 export default function Admin() {
   const [me, setMe] = useState<Me | null>(null);
@@ -15,7 +16,28 @@ export default function Admin() {
       .finally(() => setChecking(false));
   }, []);
   if (checking) return <div className="narrow"><div className="card">Loading…</div></div>;
-  if (!me) return <Login onLogin={setMe} />;
+  if (!me) return <Login onLogin={(m) => api.admin.me().then(setMe).catch(() => setMe(m))} />;
+  if (me.role === 'user')
+    return (
+      <div className="admin narrow-wide">
+        <div className="card userbar">
+          <div>
+            Signed in as <b>{me.username}</b> <span className="badge muted">USER</span>
+          </div>
+          <button
+            className="btn ghost"
+            onClick={async () => {
+              await api.logout().catch(() => {});
+              session.clear();
+              setMe(null);
+            }}
+          >
+            Sign out
+          </button>
+        </div>
+        <MyAccount me={me} wrap={async (_l, f) => f().catch(() => null)} onChanged={() => setMe({ ...me, mustChange: false })} onRenamed={(u) => setMe({ ...me, username: u })} />
+      </div>
+    );
   return (
     <AdminPanel
       me={me}
@@ -76,6 +98,7 @@ const ADMIN_TABS = [
   { id: 'database', label: 'DATABASE' },
   { id: 'rules', label: 'RULES' },
   { id: 'users', label: 'USERS' },
+  { id: 'fx', label: 'CURRENCY CONVERTER' },
   { id: 'account', label: 'MY ACCOUNT' },
 ] as const;
 type AdminTab = (typeof ADMIN_TABS)[number]['id'];
@@ -264,6 +287,7 @@ function AdminPanel({ me, onLogout, onPasswordChanged, onRenamed }: { me: Me; on
       )}
       {tab === 'rules' && <RulesEditor wrap={wrap} />}
       {tab === 'users' && <Users me={me} wrap={wrap} />}
+      {tab === 'fx' && <Fiscal />}
       {tab === 'account' && <MyAccount me={me} wrap={wrap} onChanged={onPasswordChanged} onRenamed={onRenamed} />}
     </div>
   );
@@ -561,27 +585,45 @@ function MyAccount({ me, wrap, onChanged, onRenamed }: { me: Me; wrap: Wrap; onC
 }
 
 function Users({ me, wrap }: { me: Me; wrap: Wrap }) {
-  const [users, setUsers] = useState<{ username: string; mustChange: number; createdAt: string }[]>([]);
+  const [users, setUsers] = useState<{ username: string; mustChange: number; createdAt: string; role: 'admin' | 'user' }[]>([]);
   const [u, setU] = useState('');
   const [p, setP] = useState('');
+  const [role, setRoleNew] = useState<'admin' | 'user'>('user');
   const load = () => api.admin.users().then(setUsers).catch(() => {});
   useEffect(() => {
     load();
   }, []);
   return (
     <div className="card">
-      <h3>Administrator accounts</h3>
+      <h3>Users</h3>
+      <p className="small muted">
+        <b>ADMIN</b>: everything, including Admin. <b>USER</b>: Simulator, Batch simulator, Measures in force and HS code lookup. Without an account: Simulator and Batch
+        simulator only.
+      </p>
       <table className="simple">
         <tbody>
           {users.map((x) => (
             <tr key={x.username}>
               <td>
-                <b>{x.username}</b> {x.mustChange ? <span className="badge warn">temporary password</span> : null}
+                <b>{x.username}</b> <span className={`badge ${x.role === 'admin' ? 'ok' : 'muted'}`}>{x.role.toUpperCase()}</span>{' '}
+                {x.mustChange ? <span className="badge warn">temporary password</span> : null}
                 <div className="muted small">created {fmtDate(x.createdAt)}</div>
               </td>
               <td style={{ textAlign: 'right', whiteSpace: 'nowrap' }}>
                 {x.username.toLowerCase() !== me.username.toLowerCase() && (
                   <>
+                    <select
+                      className="input"
+                      style={{ width: 'auto', display: 'inline-block', marginRight: 6 }}
+                      value={x.role}
+                      onChange={async (e) => {
+                        await wrap(`${x.username} → ${e.target.value.toUpperCase()}`, () => api.admin.setRole(x.username, e.target.value));
+                        load();
+                      }}
+                    >
+                      <option value="user">USER</option>
+                      <option value="admin">ADMIN</option>
+                    </select>
                     <button
                       className="btn ghost"
                       onClick={async () => {
@@ -608,17 +650,21 @@ function Users({ me, wrap }: { me: Me; wrap: Wrap }) {
           ))}
         </tbody>
       </table>
-      <div className="sep">Add an administrator (they will be asked to change the password)</div>
-      <div className="grid2">
+      <div className="sep">Add a user (they will be asked to change the password)</div>
+      <div className="grid3">
         <input className="input" placeholder="Username" value={u} onChange={(e) => setU(e.target.value)} />
         <input className="input" type="password" placeholder="Temporary password" value={p} onChange={(e) => setP(e.target.value)} />
+        <select className="input" value={role} onChange={(e) => setRoleNew(e.target.value as 'admin' | 'user')}>
+          <option value="user">USER</option>
+          <option value="admin">ADMIN</option>
+        </select>
       </div>
       <div className="row">
         <button
           className="btn"
           disabled={!u || !p}
           onClick={async () => {
-            await wrap(`Add ${u}`, () => api.admin.addUser(u, p));
+            await wrap(`Add ${u}`, () => api.admin.addUser(u, p, role));
             setU('');
             setP('');
             load();

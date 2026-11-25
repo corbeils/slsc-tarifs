@@ -226,13 +226,39 @@ function enrich(db: DB, j: ClassJ, c: { code: string; confidence: number; reason
 type Step = { calls: { id: string; name: string; input: Record<string, unknown> }[]; text: string };
 type Ai = ReturnType<typeof aiConfig>;
 
+/** Overloaded / rate-limited answers are retried (provider spikes are usually short). */
+const RETRY = new Set([429, 500, 502, 503, 504, 529]);
+export const retryDelays = [1500, 4000, 9000];
+
 async function post(url: string, headers: Record<string, string>, body: unknown, label: string) {
-  const res = await fetch(url, { method: 'POST', headers: { 'content-type': 'application/json', ...headers }, body: JSON.stringify(body) });
-  if (!res.ok) {
+  for (let attempt = 0; ; attempt++) {
+    let res: Response;
+    try {
+      res = await fetch(url, { method: 'POST', headers: { 'content-type': 'application/json', ...headers }, body: JSON.stringify(body) });
+    } catch (e) {
+      if (attempt < retryDelays.length) {
+        await new Promise((r) => setTimeout(r, retryDelays[attempt]));
+        continue;
+      }
+      throw Object.assign(new Error(`${label}: network error (${(e as Error).message})`), { status: 502 });
+    }
+    if (res.ok) return res.json();
     const txt = await res.text();
-    throw Object.assign(new Error(`${label} API ${res.status}: ${txt.slice(0, 300)}`), { status: 502 });
+    if (RETRY.has(res.status) && attempt < retryDelays.length) {
+      const ra = Number(res.headers.get('retry-after'));
+      await new Promise((r) => setTimeout(r, ra > 0 && ra <= 20 ? ra * 1000 : retryDelays[attempt]));
+      continue;
+    }
+    const busy = RETRY.has(res.status);
+    throw Object.assign(
+      new Error(
+        busy
+          ? `${label} is overloaded or rate-limited (HTTP ${res.status}) after ${retryDelays.length + 1} attempts. Try again in a few minutes, or pick another model / provider in Admin.`
+          : `${label} API ${res.status}: ${txt.slice(0, 300)}`,
+      ),
+      { status: 502 },
+    );
   }
-  return res.json();
 }
 
 /** One conversation driver per API family; both expose the same "step" (tool calls + text). */

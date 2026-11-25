@@ -60,7 +60,9 @@ export default function Classifier({ onCompare }: { onCompare: (hs6: string) => 
       setReply(r);
       if (r.type === 'questions') setAnswers(r.questions.map(() => ''));
     } catch (e) {
-      setErr(t((e as Error).message));
+      const m = (e as Error).message;
+      const busy = m.match(/^(.*) is overloaded or rate-limited \(HTTP (\d+)\)/);
+      setErr(busy ? t('{provider} is overloaded right now (HTTP {code}), even after several attempts. Try again in a few minutes, or choose another model or provider in Admin.', { provider: busy[1], code: busy[2] }) : t(m));
     } finally {
       setBusy(false);
     }

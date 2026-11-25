@@ -185,6 +185,8 @@ export const FR: Record<string, string> = {
 
   'AI classification is not configured: add an API key in Admin.': 'Le classement par IA n’est pas configuré : ajouter une clé API dans Admin.',
   'The classification did not converge; add details and try again.': 'Le classement n’a pas abouti ; ajoutez des détails et réessayez.',
+  '{provider} is overloaded right now (HTTP {code}), even after several attempts. Try again in a few minutes, or choose another model or provider in Admin.':
+    '{provider} est surchargé en ce moment (HTTP {code}), même après plusieurs essais. Réessayez dans quelques minutes, ou choisissez un autre modèle ou fournisseur dans Admin.',
   // HS code lookup
   'HS code lookup': 'Recherche de HS code',
   'Search a product by keywords (in English) or by code in the three tariffs at once. Click a result to compare the 6-digit HS subheading in the United States, Canada and the EU.':

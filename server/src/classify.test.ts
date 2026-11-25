@@ -4,7 +4,7 @@ import fs from 'node:fs';
 import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 import { openDb, type DB } from './db.js';
 import { ensureSeed } from './seed.js';
-import { classify, setAiConfig } from './classify.js';
+import { classify, retryDelays, setAiConfig } from './classify.js';
 
 describe('classification assistant (mocked API)', () => {
   let db: DB;
@@ -75,5 +75,19 @@ describe('classification assistant (mocked API)', () => {
     expect(bodies[0].max_completion_tokens).toBe(4096);
     expect(r).toMatchObject({ type: 'questions', questions: ['Material?'] });
     setAiConfig(db, { provider: 'anthropic' });
+  });
+
+  it('retries a 503 (provider overloaded) then succeeds', async () => {
+    retryDelays.splice(0, 3, 1, 1, 1);
+    let n = 0;
+    vi.stubGlobal('fetch', vi.fn(async () => (++n < 3 ? new Response('{"error":{"code":503}}', { status: 503 }) : reply([{ type: 'tool_use', id: 'q', name: 'ask_questions', input: { questions: ['?'] } }]))));
+    const r = await classify(db, 'US', [{ role: 'user', text: 'x' }], 'en');
+    expect(n).toBe(3);
+    expect(r.type).toBe('questions');
+  });
+
+  it('clear message when still overloaded', async () => {
+    vi.stubGlobal('fetch', vi.fn(async () => new Response('busy', { status: 503 })));
+    await expect(classify(db, 'US', [{ role: 'user', text: 'x' }], 'en')).rejects.toThrow(/overloaded/);
   });
 });

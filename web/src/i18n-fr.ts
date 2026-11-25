@@ -183,7 +183,7 @@ export const FR: Record<string, string> = {
   'Suggestion produced by AI: check it against the tariff and the notes. For certainty, request an advance ruling (CBP, CBSA or EU BTI).':
     'Suggestion produite par l’IA : la vérifier avec le tarif et les notes. Pour une certitude, demander une décision anticipée (CBP, ASFC ou RTC de l’UE).',
 
-  'AI classification is not configured: add an Anthropic API key in Admin.': 'Le classement par IA n’est pas configuré : ajouter une clé API Anthropic dans Admin.',
+  'AI classification is not configured: add an API key in Admin.': 'Le classement par IA n’est pas configuré : ajouter une clé API dans Admin.',
   'The classification did not converge; add details and try again.': 'Le classement n’a pas abouti ; ajoutez des détails et réessayez.',
   // HS code lookup
   'HS code lookup': 'Recherche de HS code',

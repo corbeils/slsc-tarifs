@@ -24,24 +24,90 @@ export interface Candidate {
 }
 export type ClassifyResult =
   | { type: 'questions'; questions: string[]; note?: string }
-  | { type: 'result'; summary: string; candidates: Candidate[]; warnings?: string[] };
+  | { type: 'result'; summary: string; candidates: Candidate[]; warnings?: string[]; model?: string };
 
-export const DEFAULT_MODEL = 'claude-sonnet-5-5';
-export const MODELS = ['claude-sonnet-5-5', 'claude-opus-5-5', 'claude-haiku-5-5'];
-
-export function aiConfig(db: DB): { key: string; model: string } {
-  const m = getMeta<{ key?: string; model?: string }>(db, 'ai:config') ?? {};
-  return { key: m.key || process.env.ANTHROPIC_API_KEY || '', model: m.model || process.env.ANTHROPIC_MODEL || DEFAULT_MODEL };
+export type Provider = 'anthropic' | 'openai' | 'qwen' | 'kimi' | 'deepseek' | 'gemini';
+interface ProviderDef {
+  label: string;
+  baseUrl: string;
+  model: string;
+  models: string[];
+  env: string;
+  vision: boolean;
+  /** OpenAI-compatible tool_choice value that forces a tool call ('auto' when 'required' is not supported). */
+  toolChoice: 'required' | 'auto';
 }
-export function setAiConfig(db: DB, v: { key?: string; model?: string }) {
-  const cur = getMeta<{ key?: string; model?: string }>(db, 'ai:config') ?? {};
-  const next = { key: v.key === undefined ? cur.key : v.key.trim(), model: v.model || cur.model || DEFAULT_MODEL };
-  setMeta(db, 'ai:config', next);
+/** Model names are suggestions: each provider renames its models often, the field stays editable in Admin. */
+export const PROVIDERS: Record<Provider, ProviderDef> = {
+  anthropic: { label: 'Anthropic (Claude)', baseUrl: 'https://api.anthropic.com', model: 'claude-sonnet-5-5', models: ['claude-sonnet-5-5', 'claude-opus-5-5', 'claude-haiku-5-5'], env: 'ANTHROPIC_API_KEY', vision: true, toolChoice: 'required' },
+  openai: { label: 'OpenAI (ChatGPT)', baseUrl: 'https://api.openai.com/v1', model: 'gpt-5', models: ['gpt-5', 'gpt-5-mini', 'gpt-4.1'], env: 'OPENAI_API_KEY', vision: true, toolChoice: 'required' },
+  qwen: { label: 'Qwen (Alibaba Cloud DashScope)', baseUrl: 'https://dashscope-intl.aliyuncs.com/compatible-mode/v1', model: 'qwen-vl-max', models: ['qwen-vl-max', 'qwen-max', 'qwen-plus'], env: 'DASHSCOPE_API_KEY', vision: true, toolChoice: 'auto' },
+  kimi: { label: 'Kimi (Moonshot AI)', baseUrl: 'https://api.moonshot.ai/v1', model: 'kimi-k2-0905-preview', models: ['kimi-k2-0905-preview', 'moonshot-v1-32k-vision-preview', 'kimi-latest'], env: 'MOONSHOT_API_KEY', vision: false, toolChoice: 'auto' },
+  deepseek: { label: 'DeepSeek', baseUrl: 'https://api.deepseek.com/v1', model: 'deepseek-chat', models: ['deepseek-chat', 'deepseek-reasoner'], env: 'DEEPSEEK_API_KEY', vision: false, toolChoice: 'auto' },
+  gemini: { label: 'Google Gemini', baseUrl: 'https://generativelanguage.googleapis.com/v1beta/openai', model: 'gemini-2.5-pro', models: ['gemini-2.5-pro', 'gemini-2.5-flash'], env: 'GEMINI_API_KEY', vision: true, toolChoice: 'auto' },
+};
+const isProvider = (p: unknown): p is Provider => typeof p === 'string' && p in PROVIDERS;
+
+interface StoredAi {
+  provider?: Provider;
+  providers?: Partial<Record<Provider, { key?: string; model?: string; baseUrl?: string; vision?: boolean }>>;
+  /** v1 (Anthropic only) */
+  key?: string;
+  model?: string;
+}
+function stored(db: DB): StoredAi {
+  const m = getMeta<StoredAi>(db, 'ai:config') ?? {};
+  if (m.key && !m.providers) m.providers = { anthropic: { key: m.key, model: m.model } };
+  return m;
+}
+export function aiConfig(db: DB, p?: Provider) {
+  const m = stored(db);
+  const provider: Provider = p ?? (isProvider(m.provider) ? m.provider : isProvider(process.env.AI_PROVIDER) ? process.env.AI_PROVIDER : 'anthropic');
+  const def = PROVIDERS[provider];
+  const own = m.providers?.[provider] ?? {};
+  return {
+    provider,
+    key: own.key || process.env[def.env] || '',
+    model: own.model || (provider === 'anthropic' ? process.env.ANTHROPIC_MODEL : undefined) || def.model,
+    baseUrl: (own.baseUrl || (provider === 'anthropic' ? process.env.ANTHROPIC_BASE_URL : undefined) || def.baseUrl).replace(/\/+$/, ''),
+    vision: own.vision ?? def.vision,
+    fromEnv: !own.key && !!process.env[def.env],
+  };
+}
+export function setAiConfig(db: DB, v: { provider?: string; key?: string; model?: string; baseUrl?: string; vision?: boolean; active?: boolean }) {
+  const m = stored(db);
+  const provider: Provider = isProvider(v.provider) ? v.provider : isProvider(m.provider) ? m.provider : 'anthropic';
+  const cur = m.providers?.[provider] ?? {};
+  const next = {
+    key: v.key === undefined ? cur.key : v.key.trim(),
+    model: v.model === undefined ? cur.model : v.model.trim(),
+    baseUrl: v.baseUrl === undefined ? cur.baseUrl : v.baseUrl.trim(),
+    vision: v.vision === undefined ? cur.vision : v.vision,
+  };
+  setMeta(db, 'ai:config', { provider: v.active === false ? m.provider : provider, providers: { ...(m.providers ?? {}), [provider]: next } });
   return publicAiConfig(db);
 }
 export function publicAiConfig(db: DB) {
-  const c = aiConfig(db);
-  return { configured: !!c.key, keyHint: c.key ? `${c.key.slice(0, 7)}…${c.key.slice(-4)}` : '', model: c.model, models: MODELS, fromEnv: !getMeta<{ key?: string }>(db, 'ai:config')?.key && !!process.env.ANTHROPIC_API_KEY };
+  const active = aiConfig(db).provider;
+  return {
+    active,
+    providers: (Object.keys(PROVIDERS) as Provider[]).map((p) => {
+      const c = aiConfig(db, p);
+      return {
+        id: p,
+        label: PROVIDERS[p].label,
+        configured: !!c.key,
+        keyHint: c.key ? `${c.key.slice(0, 6)}…${c.key.slice(-4)}` : '',
+        model: c.model,
+        models: PROVIDERS[p].models,
+        baseUrl: c.baseUrl,
+        defaultBaseUrl: PROVIDERS[p].baseUrl,
+        vision: c.vision,
+        fromEnv: c.fromEnv,
+        env: PROVIDERS[p].env,
+      };
+    }),
+  };
 }
 
 const NAMES: Record<ClassJ, string> = {
@@ -157,12 +223,20 @@ function enrich(db: DB, j: ClassJ, c: { code: string; confidence: number; reason
   };
 }
 
-export async function classify(db: DB, j: ClassJ, turns: ChatTurn[], lang: string): Promise<ClassifyResult> {
-  const { key, model } = aiConfig(db);
-  if (!key) throw Object.assign(new Error('AI classification is not configured: add an Anthropic API key in Admin.'), { status: 400 });
-  const count = (db.prepare('SELECT COUNT(*) n FROM lines WHERE j = ?').get(j) as { n: number }).n;
-  if (count < 50) throw Object.assign(new Error(`The ${j} tariff is not imported yet.`), { status: 400 });
+type Step = { calls: { id: string; name: string; input: Record<string, unknown> }[]; text: string };
+type Ai = ReturnType<typeof aiConfig>;
 
+async function post(url: string, headers: Record<string, string>, body: unknown, label: string) {
+  const res = await fetch(url, { method: 'POST', headers: { 'content-type': 'application/json', ...headers }, body: JSON.stringify(body) });
+  if (!res.ok) {
+    const txt = await res.text();
+    throw Object.assign(new Error(`${label} API ${res.status}: ${txt.slice(0, 300)}`), { status: 502 });
+  }
+  return res.json();
+}
+
+/** One conversation driver per API family; both expose the same "step" (tool calls + text). */
+function anthropicDriver(ai: Ai, system: string, turns: ChatTurn[]) {
   const messages: { role: 'user' | 'assistant'; content: unknown }[] = turns.map((t) => ({
     role: t.role,
     content: [
@@ -170,38 +244,93 @@ export async function classify(db: DB, j: ClassJ, turns: ChatTurn[], lang: strin
       { type: 'text', text: t.text || '(see photos)' },
     ],
   }));
+  let last: Block[] = [];
+  return {
+    async step(): Promise<Step> {
+      const out = (await post(`${ai.baseUrl}/v1/messages`, { 'x-api-key': ai.key, 'anthropic-version': '2023-06-01' }, { model: ai.model, max_tokens: 2048, system, tools: TOOLS, tool_choice: { type: 'any' }, messages }, 'Anthropic')) as {
+        content: Block[];
+      };
+      last = out.content;
+      return {
+        calls: out.content.filter((b) => b.type === 'tool_use').map((b) => ({ id: b.id!, name: b.name!, input: b.input ?? {} })),
+        text: out.content.filter((b) => b.type === 'text').map((b) => b.text).join('\n'),
+      };
+    },
+    results(r: { id: string; content: string }[]) {
+      messages.push({ role: 'assistant', content: last });
+      messages.push({ role: 'user', content: r.map((x) => ({ type: 'tool_result', tool_use_id: x.id, content: x.content })) });
+    },
+  };
+}
 
-  for (let step = 0; step < 10; step++) {
-    const res = await fetch(`${process.env.ANTHROPIC_BASE_URL ?? 'https://api.anthropic.com'}/v1/messages`, {
-      method: 'POST',
-      headers: { 'content-type': 'application/json', 'x-api-key': key, 'anthropic-version': '2023-06-01' },
-      body: JSON.stringify({ model, max_tokens: 2048, system: SYSTEM(j, lang), tools: TOOLS, tool_choice: { type: 'any' }, messages }),
-    });
-    if (!res.ok) {
-      const txt = await res.text();
-      throw Object.assign(new Error(`Anthropic API ${res.status}: ${txt.slice(0, 300)}`), { status: 502 });
-    }
-    const out = (await res.json()) as { content: Block[]; stop_reason: string };
-    const uses = out.content.filter((b) => b.type === 'tool_use');
-    const fin = uses.find((b) => b.name === 'final_answer');
+function openaiDriver(ai: Ai, system: string, turns: ChatTurn[]) {
+  const messages: Record<string, unknown>[] = [
+    { role: 'system', content: system },
+    ...turns.map((t) =>
+      t.role === 'user' && t.images?.length && ai.vision
+        ? {
+            role: 'user',
+            content: [{ type: 'text', text: t.text || '(see photos)' }, ...t.images.slice(0, 4).map((im) => ({ type: 'image_url', image_url: { url: `data:${im.media_type};base64,${im.data}` } }))],
+          }
+        : { role: t.role, content: t.text || '(see photos)' },
+    ),
+  ];
+  const tools = TOOLS.map((x) => ({ type: 'function', function: { name: x.name, description: x.description, parameters: x.input_schema } }));
+  let last: Record<string, unknown> = {};
+  return {
+    async step(): Promise<Step> {
+      const body: Record<string, unknown> = { model: ai.model, messages, tools, tool_choice: PROVIDERS[ai.provider].toolChoice };
+      body[ai.provider === 'openai' ? 'max_completion_tokens' : 'max_tokens'] = 4096;
+      const out = (await post(`${ai.baseUrl}/chat/completions`, { authorization: `Bearer ${ai.key}` }, body, PROVIDERS[ai.provider].label)) as {
+        choices: { message: { content?: string | null; tool_calls?: { id: string; function: { name: string; arguments: string } }[]; [k: string]: unknown } }[];
+      };
+      const msg = out.choices?.[0]?.message ?? {};
+      last = { role: 'assistant', content: msg.content ?? '', ...(msg.tool_calls?.length ? { tool_calls: msg.tool_calls } : {}) };
+      return {
+        calls: (msg.tool_calls ?? []).map((c) => {
+          let input: Record<string, unknown> = {};
+          try {
+            input = JSON.parse(c.function.arguments || '{}');
+          } catch {
+            /* malformed arguments: empty input */
+          }
+          return { id: c.id, name: c.function.name, input };
+        }),
+        text: msg.content ?? '',
+      };
+    },
+    results(r: { id: string; content: string }[]) {
+      messages.push(last);
+      for (const x of r) messages.push({ role: 'tool', tool_call_id: x.id, content: x.content });
+    },
+  };
+}
+
+export async function classify(db: DB, j: ClassJ, turns: ChatTurn[], lang: string): Promise<ClassifyResult> {
+  const ai = aiConfig(db);
+  if (!ai.key) throw Object.assign(new Error('AI classification is not configured: add an API key in Admin.'), { status: 400 });
+  const count = (db.prepare('SELECT COUNT(*) n FROM lines WHERE j = ?').get(j) as { n: number }).n;
+  if (count < 50) throw Object.assign(new Error(`The ${j} tariff is not imported yet.`), { status: 400 });
+  const hasImages = turns.some((t) => t.images?.length);
+  const noVision = hasImages && !ai.vision;
+  const system = SYSTEM(j, lang) + (noVision ? '\nNote: the user attached photos but this model cannot see images; rely on the text and ask about what the photos would show.' : '');
+  const drv = ai.provider === 'anthropic' ? anthropicDriver(ai, system, turns) : openaiDriver(ai, system, turns);
+  const warnVision = noVision ? [`${PROVIDERS[ai.provider].label} (${ai.model}): photos ignored (model without image input).`] : [];
+
+  for (let step = 0; step < 12; step++) {
+    const out = await drv.step();
+    const fin = out.calls.find((c) => c.name === 'final_answer');
     if (fin) {
       const i = fin.input as { summary: string; candidates: { code: string; confidence: number; reasoning: string }[]; warnings?: string[] };
-      return { type: 'result', summary: i.summary, candidates: (i.candidates ?? []).map((c) => enrich(db, j, c)), warnings: i.warnings };
+      return { type: 'result', summary: i.summary ?? '', candidates: (i.candidates ?? []).map((c) => enrich(db, j, c)), warnings: [...warnVision, ...(i.warnings ?? [])], model: `${PROVIDERS[ai.provider].label} · ${ai.model}` } as ClassifyResult;
     }
-    const ask = uses.find((b) => b.name === 'ask_questions');
+    const ask = out.calls.find((c) => c.name === 'ask_questions');
     if (ask) {
       const i = ask.input as { questions: string[]; note?: string };
-      return { type: 'questions', questions: i.questions ?? [], note: i.note };
+      return { type: 'questions', questions: i.questions ?? [], note: [i.note, ...warnVision].filter(Boolean).join(' ') || undefined };
     }
-    if (!uses.length) {
-      const text = out.content.filter((b) => b.type === 'text').map((b) => b.text).join('\n');
-      return { type: 'questions', questions: [text || 'Please describe the goods in more detail.'] };
-    }
-    messages.push({ role: 'assistant', content: out.content });
-    messages.push({
-      role: 'user',
-      content: uses.map((u) => ({ type: 'tool_result', tool_use_id: u.id, content: runTool(db, j, u.name!, u.input ?? {}) })),
-    });
+    if (!out.calls.length) return { type: 'questions', questions: [out.text || 'Please describe the goods in more detail.'], note: warnVision[0] };
+    drv.results(out.calls.map((c) => ({ id: c.id, content: runTool(db, j, c.name, c.input) })));
   }
   throw Object.assign(new Error('The classification did not converge; add details and try again.'), { status: 502 });
 }

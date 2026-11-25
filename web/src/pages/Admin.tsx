@@ -251,41 +251,81 @@ function summarize(r: any): string {
 
 function AiCard({ notify }: { notify: (ok: boolean, text: string) => void }) {
   const [cfg, setCfg] = useState<any>(null);
+  const [sel, setSel] = useState('anthropic');
   const [key, setKey] = useState('');
   const [model, setModel] = useState('');
+  const [baseUrl, setBaseUrl] = useState('');
+  const [vision, setVision] = useState(true);
+  const load = (c: any, p?: string) => {
+    setCfg(c);
+    const id = p ?? c.active;
+    setSel(id);
+    const x = c.providers.find((y: any) => y.id === id);
+    setModel(x?.model ?? '');
+    setBaseUrl(x?.baseUrl ?? '');
+    setVision(!!x?.vision);
+    setKey('');
+  };
   useEffect(() => {
-    api.admin.aiGet().then((c) => {
-      setCfg(c);
-      setModel(c.model);
-    }).catch(() => {});
+    api.admin.aiGet().then((c) => load(c)).catch(() => {});
   }, []);
-  const save = async (v: { key?: string; model?: string }) => {
+  const cur = cfg?.providers.find((y: any) => y.id === sel);
+  const save = async (active: boolean, extra: Record<string, unknown> = {}) => {
     try {
-      const c = await api.admin.aiSet(v);
-      setCfg(c);
-      setKey('');
-      notify(true, 'AI settings saved');
+      const c = await api.admin.aiSet({ provider: sel, model, baseUrl, vision, active, ...(key ? { key } : {}), ...extra } as never);
+      load(c, sel);
+      notify(true, active ? `AI provider: ${cur?.label}` : 'AI settings saved');
     } catch (e) {
       notify(false, (e as Error).message);
     }
   };
+  if (!cfg) return null;
   return (
     <div className="card">
       <h3>AI classification assistant (HS code lookup)</h3>
       <p className="small muted">
-        Uses the Anthropic API (Claude) to classify a description or photos. The key stays on this server and is never sent to the browser.{' '}
-        {cfg?.configured ? <b>Configured ({cfg.keyHint}{cfg.fromEnv ? ', from ANTHROPIC_API_KEY' : ''}).</b> : <b>Not configured.</b>}
+        Provider used now: <b>{cfg.providers.find((y: any) => y.id === cfg.active)?.label}</b>. Keys stay on this server and are never sent to the browser. Anthropic uses its own API; the others use their
+        OpenAI-compatible endpoint (function calling). Model names change often: pick a suggestion or type the exact name from the provider's console.
       </p>
+      <div className="chips" style={{ marginBottom: 8 }}>
+        {cfg.providers.map((x: any) => (
+          <button key={x.id} className={`chip ${sel === x.id ? 'on' : ''}`} onClick={() => load(cfg, x.id)}>
+            {x.label}
+            {x.id === cfg.active ? ' ★' : ''}
+            {x.configured ? ' ✓' : ''}
+          </button>
+        ))}
+      </div>
+      <div className="grid2">
+        <div>
+          <label className="lbl">API key {cur?.configured ? `(saved: ${cur.keyHint}${cur.fromEnv ? `, from ${cur.env}` : ''})` : `(or env ${cur?.env})`}</label>
+          <input className="input mono" type="password" autoComplete="off" placeholder={cur?.configured ? 'leave empty to keep' : 'paste the key'} value={key} onChange={(e) => setKey(e.target.value)} />
+        </div>
+        <div>
+          <label className="lbl">Model</label>
+          <input className="input mono" list={`models-${sel}`} value={model} onChange={(e) => setModel(e.target.value)} />
+          <datalist id={`models-${sel}`}>
+            {cur?.models.map((m: string) => (
+              <option key={m} value={m} />
+            ))}
+          </datalist>
+        </div>
+      </div>
+      <div className="grid2">
+        <div>
+          <label className="lbl">API base URL</label>
+          <input className="input mono" value={baseUrl} placeholder={cur?.defaultBaseUrl} onChange={(e) => setBaseUrl(e.target.value)} />
+        </div>
+        <label className="check" style={{ alignSelf: 'end' }}>
+          <input type="checkbox" checked={vision} onChange={(e) => setVision(e.target.checked)} />
+          <span>Model accepts photos (vision)</span>
+        </label>
+      </div>
       <div className="row">
-        <input className="input mono" type="password" style={{ maxWidth: 380 }} placeholder="sk-ant-…" value={key} onChange={(e) => setKey(e.target.value)} autoComplete="off" />
-        <select className="input" style={{ maxWidth: 220 }} value={model} onChange={(e) => setModel(e.target.value)}>
-          {(cfg?.models ?? []).map((m: string) => (
-            <option key={m}>{m}</option>
-          ))}
-        </select>
-        <button className="btn" onClick={() => save({ ...(key ? { key } : {}), model })}>Save</button>
-        {cfg?.configured && !cfg.fromEnv && (
-          <button className="btn ghost" onClick={() => save({ key: '' })}>Remove key</button>
+        <button className="btn" onClick={() => save(true)}>Save and use this provider</button>
+        <button className="btn ghost" onClick={() => save(false)}>Save only</button>
+        {cur?.configured && !cur.fromEnv && (
+          <button className="btn ghost" onClick={() => save(false, { key: '' })}>Remove key</button>
         )}
       </div>
     </div>

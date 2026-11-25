@@ -172,7 +172,7 @@ export const api = {
     },
     taricUrls: (urls: string[]) => req<any>('/api/admin/taric-urls', { method: 'POST', body: JSON.stringify({ urls }) }, true),
     aiGet: () => req<any>('/api/admin/ai', {}, true),
-    aiSet: (v: { key?: string; model?: string }) => req<any>('/api/admin/ai', { method: 'POST', body: JSON.stringify(v) }, true),
+    aiSet: (v: { provider?: string; key?: string; model?: string; baseUrl?: string; vision?: boolean; active?: boolean }) => req<any>('/api/admin/ai', { method: 'POST', body: JSON.stringify(v) }, true),
     taricSync: () => req<{ job: string }>('/api/admin/sync/taric', { method: 'POST' }, true),
     fxManual: (rate: number) => req<any>('/api/admin/fx', { method: 'POST', body: JSON.stringify({ rate }) }, true),
     codes: (body: Record<string, unknown>, file?: File | null) => {

@@ -23,7 +23,7 @@ interface Candidate {
   rate?: string | null;
   valid: boolean;
 }
-type Reply = { type: 'questions'; questions: string[]; note?: string } | { type: 'result'; summary: string; candidates: Candidate[]; warnings?: string[] };
+type Reply = { type: 'questions'; questions: string[]; note?: string } | { type: 'result'; summary: string; candidates: Candidate[]; warnings?: string[]; model?: string };
 
 const NAME: Record<J, string> = { US: 'INBOUND USA (HTSUS)', CA: 'INBOUND CANADA', EU: 'INBOUND EU (TARIC)' };
 const DIR: Record<J, string> = { US: 'CA-US', CA: 'US-CA', EU: 'IN-EU' };
@@ -209,7 +209,10 @@ export default function Classifier({ onCompare }: { onCompare: (hs6: string) => 
               ))}
             </ul>
           ) : null}
-          <p className="small muted">{t('Suggestion produced by AI: check it against the tariff and the notes. For certainty, request an advance ruling (CBP, CBSA or EU BTI).')}</p>
+          <p className="small muted">
+            {t('Suggestion produced by AI: check it against the tariff and the notes. For certainty, request an advance ruling (CBP, CBSA or EU BTI).')}
+            {reply.model && ` (${reply.model})`}
+          </p>
         </div>
       )}
     </div>

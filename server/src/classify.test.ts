@@ -45,4 +45,35 @@ describe('classification assistant (mocked API)', () => {
     const r = await classify(db, 'US', [{ role: 'user', text: 'x' }], 'en');
     expect(r.type === 'result' && r.candidates[0].valid).toBe(false);
   });
+
+  it('OpenAI-compatible providers (DeepSeek): function calling, photos dropped without vision', async () => {
+    setAiConfig(db, { provider: 'deepseek', key: 'sk-ds', model: 'deepseek-chat' });
+    const bodies: any[] = [];
+    const urls: string[] = [];
+    const answers = [
+      { choices: [{ message: { content: null, tool_calls: [{ id: 'c1', type: 'function', function: { name: 'search_tariff', arguments: '{"query":"steel"}' } }] } }] },
+      { choices: [{ message: { content: null, tool_calls: [{ id: 'c2', type: 'function', function: { name: 'final_answer', arguments: JSON.stringify({ summary: 'S', candidates: [{ code: '7326908688', confidence: 70, reasoning: 'r' }] }) } }] } }] },
+    ];
+    vi.stubGlobal('fetch', vi.fn(async (u: string, init: RequestInit) => (urls.push(u), bodies.push(JSON.parse(String(init.body))), new Response(JSON.stringify(answers.shift()), { status: 200 }))));
+    const r = await classify(db, 'US', [{ role: 'user', text: 'steel part', images: [{ media_type: 'image/jpeg', data: 'AAAA' }] }], 'en');
+    expect(urls[0]).toBe('https://api.deepseek.com/v1/chat/completions');
+    expect(bodies[0].messages[0].role).toBe('system');
+    expect(typeof bodies[0].messages[1].content).toBe('string');
+    expect(bodies[1].messages.at(-1)).toMatchObject({ role: 'tool', tool_call_id: 'c1' });
+    expect(r.type === 'result' && r.candidates[0].valid).toBe(true);
+    expect(r.type === 'result' && r.warnings?.[0]).toContain('photos ignored');
+    setAiConfig(db, { provider: 'anthropic' });
+  });
+
+  it('OpenAI sends images as data URLs', async () => {
+    setAiConfig(db, { provider: 'openai', key: 'sk-oa', model: 'gpt-5' });
+    const bodies: any[] = [];
+    vi.stubGlobal('fetch', vi.fn(async (_u: string, init: RequestInit) => (bodies.push(JSON.parse(String(init.body))), new Response(JSON.stringify({ choices: [{ message: { tool_calls: [{ id: 'q', function: { name: 'ask_questions', arguments: '{"questions":["Material?"]}' } }] } }] }), { status: 200 }))));
+    const r = await classify(db, 'US', [{ role: 'user', text: 'part', images: [{ media_type: 'image/jpeg', data: 'BBBB' }] }], 'en');
+    expect(bodies[0].messages[1].content[1].image_url.url).toBe('data:image/jpeg;base64,BBBB');
+    expect(bodies[0].tool_choice).toBe('required');
+    expect(bodies[0].max_completion_tokens).toBe(4096);
+    expect(r).toMatchObject({ type: 'questions', questions: ['Material?'] });
+    setAiConfig(db, { provider: 'anthropic' });
+  });
 });

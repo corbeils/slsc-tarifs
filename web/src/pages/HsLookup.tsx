@@ -41,29 +41,9 @@ function simulate(h: Hit) {
 
 export default function HsLookup() {
   const { t } = useI18n();
-  const [q, setQ] = useState('');
-  const [js, setJs] = useState<J[]>(['US', 'CA', 'EU']);
-  const [hits, setHits] = useState<Hit[] | null>(null);
   const [err, setErr] = useState('');
   const [hs6, setHs6] = useState('');
   const [detail, setDetail] = useState<{ hs6: string; heading: string | null; lines: HsLine[] } | null>(null);
-
-  useEffect(() => {
-    if (q.trim().length < 2) {
-      setHits(null);
-      return;
-    }
-    const tm = setTimeout(() => {
-      api
-        .lookup(q, js.join(','))
-        .then((r) => {
-          setHits(r);
-          setErr('');
-        })
-        .catch((e) => setErr(e.status === 401 ? t('Your session has expired: sign in again in Admin.') : e.message));
-    }, 300);
-    return () => clearTimeout(tm);
-  }, [q, js.join(',')]);
 
   useEffect(() => {
     if (!hs6) return;
@@ -71,52 +51,10 @@ export default function HsLookup() {
     api.lookupHs(hs6).then(setDetail).catch((e) => setErr(e.message));
   }, [hs6]);
 
-  const toggle = (j: J) => setJs((x) => (x.includes(j) ? (x.length > 1 ? x.filter((y) => y !== j) : x) : [...x, j]));
-  const groups = (['US', 'CA', 'EU'] as J[]).filter((j) => js.includes(j)).map((j) => [j, (hits ?? []).filter((h) => h.j === j)] as const);
-
   return (
     <div className="lookup">
+      {err && <div className="alert danger">{err}</div>}
       <Classifier onCompare={(h) => { setHs6(h); setTimeout(() => document.getElementById('hs-detail')?.scrollIntoView({ behavior: 'smooth' }), 300); }} />
-      <div className="card">
-        <h2 style={{ marginTop: 0 }}>{t('HS code lookup')}</h2>
-        <p className="small muted">{t('Search a product by keywords (in English) or by code in the three tariffs at once. Click a result to compare the 6-digit HS subheading in the United States, Canada and the EU.')}</p>
-        <div className="row" style={{ marginTop: 0 }}>
-          <input className="input" style={{ flex: 1, minWidth: 260 }} autoFocus placeholder={t('e.g. forging press, gear box, 8462.11')} value={q} onChange={(e) => setQ(e.target.value)} />
-          <div className="chips">
-            {(['US', 'CA', 'EU'] as J[]).map((j) => (
-              <button key={j} className={`chip ${js.includes(j) ? 'on' : ''}`} onClick={() => toggle(j)}>
-                {NAME[j]}
-              </button>
-            ))}
-          </div>
-        </div>
-        {err && <div className="alert danger">{err}</div>}
-      </div>
-
-      {hits && (
-        <div className="lookup-grid" style={{ gridTemplateColumns: `repeat(${groups.length}, 1fr)` }}>
-          {groups.map(([j, list]) => (
-            <div key={j} className="card">
-              <h3>
-                {NAME[j]} <span className="muted small">({list.length})</span>
-              </h3>
-              {list.length === 0 && <div className="muted small">{t(j === 'EU' ? 'No result (is the TARIC imported?)' : 'No result.')}</div>}
-              <ul className="lookup-list">
-                {list.map((h) => (
-                  <li key={h.code} className={hs6 === hs6Of(h.code) ? 'on' : ''} onClick={() => setHs6(hs6Of(h.code))}>
-                    <span className="mono">{h.display}</span>
-                    <span>
-                      {h.description}
-                      {h.path && <small className="muted">{h.path}</small>}
-                    </span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          ))}
-        </div>
-      )}
-
       {hs6 && (
         <div className="card" id="hs-detail">
           <h3>

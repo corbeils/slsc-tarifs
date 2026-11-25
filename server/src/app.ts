@@ -310,7 +310,7 @@ export async function buildApp(db: DB) {
       }
     });
     a.get('/api/admin/ai', async () => publicAiConfig(db));
-    a.post('/api/admin/ai', async (req) => setAiConfig(db, (req.body ?? {}) as { key?: string; model?: string }));
+    a.post('/api/admin/ai', async (req) => setAiConfig(db, (req.body ?? {}) as Parameters<typeof setAiConfig>[1]));
     a.get('/api/lookup/hs/:hs6', async (req) => {
       const hs6 = digits((req.params as { hs6: string }).hs6).slice(0, 6);
       if (hs6.length < 4) return { hs6, heading: null, lines: [] };

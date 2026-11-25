@@ -82,9 +82,9 @@ Tant qu'une liste n'est pas importée, la mesure s'applique par **préfixe indic
 
 ## Assistant de classement (onglet Recherche de HS code)
 
-Réservé aux utilisateurs connectés. Une description et/ou jusqu'à 4 photos → l'assistant (API Anthropic, Claude) applique les RGI, pose au besoin jusqu'à 4 questions, et propose 1 à 3 lignes du pays choisi. Il cherche dans les tarifs importés dans la base (outils `search_tariff` / `list_lines`) : un code qui n'existe pas dans le tarif est signalé.
+Réservé aux utilisateurs connectés. Une description et/ou jusqu'à 4 photos → l'assistant (Anthropic, OpenAI, Qwen, Kimi, DeepSeek ou Gemini, au choix) applique les RGI, pose au besoin jusqu'à 4 questions, et propose 1 à 3 lignes du pays choisi. Il cherche dans les tarifs importés dans la base (outils `search_tariff` / `list_lines`) : un code qui n'existe pas dans le tarif est signalé.
 
-Configuration : Admin → *AI classification assistant* (clé API et modèle), ou les variables `ANTHROPIC_API_KEY` / `ANTHROPIC_MODEL` (défaut `claude-sonnet-5-5`). La clé reste sur le serveur.
+Configuration : Admin → *AI classification assistant* (fournisseur, clé API, modèle, URL), ou les variables `AI_PROVIDER` et `ANTHROPIC_API_KEY`, `OPENAI_API_KEY`, `DASHSCOPE_API_KEY`, `MOONSHOT_API_KEY`, `DEEPSEEK_API_KEY`, `GEMINI_API_KEY`. Les clés restent sur le serveur. DeepSeek et Kimi K2 ne lisent pas les photos (elles sont ignorées, le résultat le signale).
 
 ## Fonctionnement du moteur
 

@@ -266,6 +266,65 @@ export async function buildApp(db: DB) {
     a.addHook('preHandler', admin);
 
     a.get('/api/admin/me', async (req) => userOf(req));
+
+    // ---- HS code lookup (signed-in users): one search across HTSUS, Canadian tariff and TARIC ----
+    a.get('/api/lookup/search', async (req) => {
+      const q = (req.query as { q?: string; j?: string }) ?? {};
+      const term = (q.q ?? '').trim();
+      const js = (q.j ?? 'US,CA,EU').split(',').filter((x) => ['US', 'CA', 'EU'].includes(x));
+      if (!term) return [];
+      const d = digits(term);
+      const out: unknown[] = [];
+      for (const j of js) {
+        if (d.length >= 2 && /^[\d.\s]+$/.test(term)) {
+          out.push(
+            ...db
+              .prepare(`SELECT ? j, code, display, description, path, is_leaf FROM lines WHERE j = ? AND code LIKE ? AND code NOT LIKE '99%' ORDER BY code LIMIT 40`)
+              .all(j, j, d + '%'),
+          );
+          continue;
+        }
+        const fts = term.replace(/["*()]/g, ' ').split(/\s+/).filter((w) => w.length > 1).map((w) => `"${w}"*`).join(' ');
+        if (!fts) continue;
+        out.push(
+          ...db
+            .prepare(
+              `SELECT f.j j, l.code, l.display, l.description, l.path, l.is_leaf FROM lines_fts f JOIN lines l ON l.j = f.j AND l.code = f.code
+               WHERE lines_fts MATCH ? AND f.j = ? AND l.code NOT LIKE '99%' ORDER BY l.is_leaf DESC, rank LIMIT 30`,
+            )
+            .all(fts, j),
+        );
+      }
+      return out;
+    });
+    a.get('/api/lookup/hs/:hs6', async (req) => {
+      const hs6 = digits((req.params as { hs6: string }).hs6).slice(0, 6);
+      if (hs6.length < 4) return { hs6, heading: null, lines: [] };
+      const today = new Date().toISOString().slice(0, 10);
+      const head = db.prepare("SELECT description FROM lines WHERE code LIKE ? AND length(replace(display, '.', '')) <= 4 ORDER BY j LIMIT 1").get(hs6.slice(0, 4) + '%') as { description: string } | undefined;
+      const rows = db
+        .prepare(`SELECT j, code, display, description, path, is_leaf, general, special, pref_json, other FROM lines WHERE code LIKE ? AND code NOT LIKE '99%' ORDER BY j DESC, code`)
+        .all(hs6 + '%') as { j: string; code: string; general: string | null; pref_json: string | null }[];
+      const euDuty = db.prepare(
+        `SELECT duty, code FROM eu_measures WHERE type = '103' AND origin = '1011' AND code IN (?,?,?,?,?) AND (end = '' OR end >= ?) ORDER BY length(rtrim(code, '0')) DESC LIMIT 1`,
+      );
+      const lines = rows.map((r) => {
+        let rate: string | null = r.general;
+        if (r.j === 'EU') {
+          const c = r.code;
+          const m = euDuty.get(c.slice(0, 2).padEnd(10, '0'), c.slice(0, 4).padEnd(10, '0'), c.slice(0, 6).padEnd(10, '0'), c.slice(0, 8).padEnd(10, '0'), c, today) as { duty: string } | undefined;
+          rate = m?.duty ?? null;
+        }
+        let pref: Record<string, string> = {};
+        try {
+          pref = r.pref_json ? JSON.parse(r.pref_json) : {};
+        } catch {
+          /* ignore */
+        }
+        return { ...r, rate, ust: pref.UST ?? null, pref_json: undefined };
+      });
+      return { hs6, heading: head?.description ?? null, lines };
+    });
     a.post('/api/admin/password', async (req, reply) => {
       const b = req.body as { current: string; next: string };
       try {

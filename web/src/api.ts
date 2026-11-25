@@ -91,8 +91,14 @@ export interface Country {
 const tokenKey = 'slsc-tariff-session';
 export const session = {
   get: () => localStorage.getItem(tokenKey) ?? '',
-  set: (t: string) => localStorage.setItem(tokenKey, t),
-  clear: () => localStorage.removeItem(tokenKey),
+  set: (t: string) => {
+    localStorage.setItem(tokenKey, t);
+    window.dispatchEvent(new Event('slsc-session'));
+  },
+  clear: () => {
+    localStorage.removeItem(tokenKey);
+    window.dispatchEvent(new Event('slsc-session'));
+  },
 };
 
 async function req<T>(url: string, init: RequestInit = {}, admin = false): Promise<T> {
@@ -131,6 +137,8 @@ export const api = {
     }
   },
   measures: () => req<any>(`/api/measures?lang=${getLang()}`),
+  lookup: (q: string, j: string) => req<any[]>(`/api/lookup/search?q=${encodeURIComponent(q)}&j=${j}`, {}, true),
+  lookupHs: (hs6: string) => req<any>(`/api/lookup/hs/${hs6}`, {}, true),
   measuresEu: (origin: string) => req<any>(`/api/measures/eu?lang=${getLang()}&origin=${encodeURIComponent(origin)}`),
   login: (username: string, password: string) =>
     req<{ token: string; username: string; mustChange: boolean }>('/api/auth/login', { method: 'POST', body: JSON.stringify({ username, password }) }),

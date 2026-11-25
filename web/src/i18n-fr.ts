@@ -163,6 +163,24 @@ export const FR: Record<string, string> = {
   'History not available yet: it is filled by the first Bank of Canada import.': 'Historique pas encore disponible : il se remplit au premier import de la Banque du Canada.',
   Date: 'Date',
 
+  // HS code lookup
+  'HS code lookup': 'Recherche de HS code',
+  'Search a product by keywords (in English) or by code in the three tariffs at once. Click a result to compare the 6-digit HS subheading in the United States, Canada and the EU.':
+    'Cherchez un produit par mots-clés (en anglais) ou par code dans les trois tarifs à la fois. Cliquez un résultat pour comparer la sous-position SH à 6 chiffres aux États-Unis, au Canada et dans l’UE.',
+  'e.g. forging press, gear box, 8462.11': 'ex. forging press, gear box, 8462.11',
+  'Your session has expired: sign in again in Admin.': 'Votre session a expiré : reconnectez-vous dans Admin.',
+  'No result (is the TARIC imported?)': 'Aucun résultat (le TARIC est-il importé ?)',
+  'No result.': 'Aucun résultat.',
+  'HS subheading': 'Sous-position SH',
+  'No line under this subheading.': 'Aucune ligne sous cette sous-position.',
+  General: 'Général',
+  'Third country duty': 'Droit tiers pays',
+  Simulate: 'Simuler',
+  'The first 6 digits (HS) are common to all three countries; the following digits are national and differ.':
+    'Les 6 premiers chiffres (SH) sont communs aux trois pays ; les chiffres suivants sont nationaux et diffèrent.',
+  'This tab is reserved for signed-in users.': 'Cet onglet est réservé aux utilisateurs connectés.',
+  'Sign in': 'Se connecter',
+
   // INBOUND EU
   'TARIC LAST UPDATE': 'DERNIÈRE MISE À JOUR TARIC',
   'TARIC code or keywords (e.g. 8462.11, press)': 'Code TARIC ou mots-clés en anglais (ex. 8462.11, press)',

@@ -3,9 +3,10 @@ import Simulator from './pages/Simulator';
 import Batch from './pages/Batch';
 import Measures from './pages/Measures';
 import Fiscal from './pages/Fiscal';
+import HsLookup from './pages/HsLookup';
 import Admin from './pages/Admin';
 import ThemeToggle from './components/ThemeToggle';
-import { api, fmtDate } from './api';
+import { api, fmtDate, session } from './api';
 import { LangToggle, useI18n } from './i18n';
 import { CurrencyToggle } from './currency';
 
@@ -14,6 +15,7 @@ const PAGES = [
   { id: 'lot', label: 'Batch simulator' },
   { id: 'mesures', label: 'Measures in force' },
   { id: 'fiscal', label: 'Currency converter' },
+  { id: 'hscode', label: 'HS code lookup', signedIn: true },
   { id: 'admin', label: 'Admin' },
 ] as const;
 type PageId = (typeof PAGES)[number]['id'];
@@ -33,6 +35,16 @@ export default function App() {
   const [page, go] = usePage();
   const { t, lang } = useI18n();
   const [meta, setMeta] = useState<any>(null);
+  const [signedIn, setSignedIn] = useState(() => !!session.get());
+  useEffect(() => {
+    const on = () => setSignedIn(!!session.get());
+    window.addEventListener('slsc-session', on);
+    window.addEventListener('storage', on);
+    return () => {
+      window.removeEventListener('slsc-session', on);
+      window.removeEventListener('storage', on);
+    };
+  }, []);
   useEffect(() => {
     api.meta().then(setMeta).catch(() => {});
   }, [page, lang]);
@@ -62,7 +74,7 @@ export default function App() {
         </div>
         <div className="topbar-right">
           <nav>
-            {PAGES.map((p) => (
+            {PAGES.filter((p) => !('signedIn' in p) || signedIn).map((p) => (
               <a key={p.id} className={page === p.id ? 'active' : ''} href={`#/${p.id}`}>
                 {t(p.label)}
               </a>
@@ -78,6 +90,14 @@ export default function App() {
         {page === 'lot' && <Batch />}
         {page === 'mesures' && <Measures />}
         {page === 'fiscal' && <Fiscal />}
+        {page === 'hscode' &&
+          (signedIn ? (
+            <HsLookup />
+          ) : (
+            <div className="card">
+              {t('This tab is reserved for signed-in users.')} <a href="#/admin">{t('Sign in')}</a>
+            </div>
+          ))}
         {page === 'admin' && <Admin />}
       </main>
       <footer className="notice">

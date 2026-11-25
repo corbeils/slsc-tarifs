@@ -44,3 +44,26 @@ describe('codes saisis dans Excel', () => {
     expect(cellToCode(' 8462.11.00.35 ')).toBe('8462.11.00.35');
   });
 });
+
+describe('Steel derivatives (SOR/2025-267)', () => {
+  it('reads only the schedule, not the codes cited in the exceptions', () => {
+    const page = `Table of Contents
+SCHEDULE - Tariff Items of Goods Subject to the Surtax
+2 The following goods are not subject to the surtax:
+(f) utility wind towers, and sections of those towers, that are classified under tariff item 7308.20.00 and imported...
+SCHEDULE(Section 1 and paragraph 2(c))Tariff Items of Goods Subject to the Surtax
+3925.20.00
+7216.91.00
+7308.10.00
+9406.90.90
+Page Details
+Date modified:
+2026-11-16`;
+    expect(extractCodes(section(page, 'Section 1 and paragraph 2(c)', 'Page Details'), false, { headings: false }).map((c) => c.code)).toEqual([
+      '39252000',
+      '72169100',
+      '73081000',
+      '94069090',
+    ]);
+  });
+});

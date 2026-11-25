@@ -173,17 +173,23 @@ measures:
   - id: CA-STEEL-DERIV
     name: "Global surtax — steel derivative goods (25%)"
     program: "Steel protection measures"
-    legal: "Steel Derivative Goods Surtax Order, SOR/2025-267 (Dec. 26, 2025); Customs Notice 25-33"
+    legal: "Steel Derivative Goods Surtax Order, SOR/2025-267 (Dec. 26, 2025), as amended by SOR/2026-155 and SOR/2026-186; Customs Notice 25-33"
     rate: 25
     scope:
       codeList: true
+    sources:
+      - url: "https://laws-lois.justice.gc.ca/eng/regulations/SOR-2025-267/FullText.html"
+        from: "Section 1 and paragraph 2(c)"
+        until: "Page Details"
+        headings: false
     group: ca-steel
     priority: 1
     status: verified
-    note: "U.S.-origin goods already subject to the U.S. surtax: only the U.S. surtax applies."
+    note: "Schedule of SOR/2025-267 as amended (SOR/2026-155, SOR/2026-186), imported automatically from the Justice Laws consolidation. U.S.-origin goods already subject to the U.S. surtax: only the U.S. surtax applies."
     exemptIf:
       - { families: [CA-US-SURTAX], label: "U.S. good already subject to the U.S. surtax (only the U.S. surtax applies)" }
       - { option: derivRelief, label: "Relief — manufacturing of motor vehicles, aerospace goods and parts (until June 30, 2027)" }
+      - { option: windTowers, label: "Utility wind towers (7308.20.00) for energy projects west of the Ontario–Manitoba border" }
 
   - id: CA-CN-MELT
     name: "Surtax — steel melted and poured in China (25%)"

@@ -467,6 +467,10 @@ export const FR: Record<string, string> = {
     'Produit américain déjà visé par la surtaxe sur les produits américains (seule cette surtaxe s’applique)',
   'Relief — manufacturing of motor vehicles, aerospace goods and parts (until June 30, 2027)':
     'Allègement — fabrication de véhicules automobiles, de produits aérospatiaux et de pièces (jusqu’au 30 juin 2027)',
+  'Schedule of SOR/2025-267 as amended (SOR/2026-155, SOR/2026-186), imported automatically from the Justice Laws consolidation. U.S.-origin goods already subject to the U.S. surtax: only the U.S. surtax applies.':
+    'Annexe du DORS/2025-267 modifié (DORS/2026-155, DORS/2026-186), importée automatiquement de la codification de Justice Canada. Marchandises d’origine américaine déjà visées par la surtaxe sur les produits américains : seule cette surtaxe s’applique.',
+  'Utility wind towers (7308.20.00) for energy projects west of the Ontario–Manitoba border':
+    'Tours d’éoliennes (7308.20.00) destinées à des projets énergétiques à l’ouest de la frontière Ontario–Manitoba',
   'Surtax — steel melted and poured in China (25%)': 'Surtaxe — acier fondu et coulé en Chine (25 %)',
   'Canadian goods returned (not advanced in value)': 'Marchandises canadiennes retournées (sans augmentation de valeur)',
   'Goods produced in Canada, re-imported without having been improved or processed.':

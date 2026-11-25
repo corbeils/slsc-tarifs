@@ -72,7 +72,7 @@ Côté Canada, les surtaxes sont définies par **décrets avec des annexes de nu
 | `CA-US-AUTO` (véhicules É.-U.) | Décret de surtaxe (véhicules automobiles 2025) |
 | `CA-CN-EV`, `CA-CN-SA` | Décret de surtaxe (Chine) 2024 |
 | `CA-STEEL-TRQ`, `CA-CN-MELT` | DORS/2025-148 (mod. DORS/2026-119), DORS/2025-154 |
-| `CA-STEEL-DERIV` | DORS/2025-267 ; Avis des douanes 25-33 |
+| `CA-STEEL-DERIV` (dérivés de l'acier, 25 %) | **Automatique** : annexe du DORS/2025-267 codifié (Justice Canada), chaque lundi |
 | `US-338-BAN` (alcool, produits laitiers) | Annexes des proclamations du 8 sept. 2026 |
 | Section 232 métaux (Annexes I-A, I-B, I-C, II, III) | **Automatique** : PDF des proclamations 11021 et 11032 |
 

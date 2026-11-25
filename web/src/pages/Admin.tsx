@@ -25,6 +25,7 @@ export default function Admin() {
         setMe(null);
       }}
       onPasswordChanged={() => setMe({ ...me, mustChange: false })}
+      onRenamed={(u) => setMe({ ...me, username: u })}
     />
   );
 }
@@ -68,7 +69,23 @@ function Login({ onLogin }: { onLogin: (m: Me) => void }) {
   );
 }
 
-function AdminPanel({ me, onLogout, onPasswordChanged }: { me: Me; onLogout: () => void; onPasswordChanged: () => void }) {
+const ADMIN_TABS = [
+  { id: 'home', label: 'HOME' },
+  { id: 'ai', label: 'AI LOOKUP' },
+  { id: 'version', label: 'CHANGELOG & VERSIONING' },
+  { id: 'database', label: 'DATABASE' },
+  { id: 'rules', label: 'RULES' },
+  { id: 'users', label: 'USERS' },
+  { id: 'account', label: 'MY ACCOUNT' },
+] as const;
+type AdminTab = (typeof ADMIN_TABS)[number]['id'];
+
+function AdminPanel({ me, onLogout, onPasswordChanged, onRenamed }: { me: Me; onLogout: () => void; onPasswordChanged: () => void; onRenamed: (u: string) => void }) {
+  const [tab, setTabState] = useState<AdminTab>(() => (ADMIN_TABS.some((x) => x.id === localStorage.getItem('slsc-admin-tab')) ? (localStorage.getItem('slsc-admin-tab') as AdminTab) : 'home'));
+  const setTab = (x: AdminTab) => {
+    localStorage.setItem('slsc-admin-tab', x);
+    setTabState(x);
+  };
   const [meta, setMeta] = useState<any>(null);
   const [measures, setMeasures] = useState<any>(null);
   const [log, setLog] = useState<string[]>([]);
@@ -134,10 +151,20 @@ function AdminPanel({ me, onLogout, onPasswordChanged }: { me: Me; onLogout: () 
       </div>
       {me.mustChange && (
         <div className="alert warning">
-          <b>You are using the default password.</b> Change it below in <i>My account</i> before using the site in production.
+          <b>You are using the default password.</b> Change it in <a href="#/admin" onClick={() => setTab('account')}>MY ACCOUNT</a> before using the site in production.
         </div>
       )}
 
+      <div className="subnav">
+        {ADMIN_TABS.map((x) => (
+          <button key={x.id} className={tab === x.id ? 'on' : ''} onClick={() => setTab(x.id)}>
+            {x.label}
+          </button>
+        ))}
+      </div>
+
+      {tab === 'home' && (
+        <>
       <div className="card">
         <h3>Data status</h3>
         <table className="simple">
@@ -152,10 +179,18 @@ function AdminPanel({ me, onLogout, onPasswordChanged }: { me: Me; onLogout: () 
         </table>
       </div>
 
-      <AiCard notify={notify} />
+        </>
+      )}
+      {tab === 'ai' && <AiCard notify={notify} />}
+      {tab === 'version' && (
+        <>
+      <SiteVersion current={meta?.site} onSave={async (v, b, n) => { await wrap('Site version', () => api.admin.siteVersion(v, b, n)); window.dispatchEvent(new Event('slsc-meta')); }} />
 
-      <SiteVersion current={meta?.site} onSave={async (v, b) => { await wrap('Site version', () => api.admin.siteVersion(v, b)); window.dispatchEvent(new Event('slsc-meta')); }} />
-
+          <Changelog />
+        </>
+      )}
+      {tab === 'database' && (
+        <>
       <div className="grid2 gap">
         <div className="card">
           <h3>U.S. tariff (USITC)</h3>
@@ -221,17 +256,15 @@ function AdminPanel({ me, onLogout, onPasswordChanged }: { me: Me; onLogout: () 
       </div>
 
       <CodeLists measures={listMeasures} lists={meta?.codeLists ?? []} wrap={wrap} />
-      <RulesEditor wrap={wrap} />
-
-      <div className="grid2 gap">
-        <MyAccount me={me} wrap={wrap} onChanged={onPasswordChanged} />
-        <Users me={me} wrap={wrap} />
-      </div>
-
       <div className="card">
         <h3>Log</h3>
         <pre className="log">{log.join('\n') || '—'}</pre>
       </div>
+        </>
+      )}
+      {tab === 'rules' && <RulesEditor wrap={wrap} />}
+      {tab === 'users' && <Users me={me} wrap={wrap} />}
+      {tab === 'account' && <MyAccount me={me} wrap={wrap} onChanged={onPasswordChanged} onRenamed={onRenamed} />}
     </div>
   );
 }
@@ -394,9 +427,10 @@ function UrlImport({ onRun }: { onRun: (u: string) => void }) {
 }
 
 const VERSION_RE = /^\d+\.\d+\.\d+(R\d+)?$/i;
-function SiteVersion({ current, onSave }: { current?: { version: string; beta: boolean; at?: string }; onSave: (v: string, beta: boolean) => void }) {
+function SiteVersion({ current, onSave }: { current?: { version: string; beta: boolean; at?: string }; onSave: (v: string, beta: boolean, notes: string) => Promise<void> | void }) {
   const [v, setV] = useState('');
   const [beta, setBeta] = useState(true);
+  const [notes, setNotes] = useState('');
   useEffect(() => {
     if (current) {
       setV(current.version);
@@ -411,13 +445,15 @@ function SiteVersion({ current, onSave }: { current?: { version: string; beta: b
         Shown in the footer as <b>SITE VERSION : {beta ? 'BETA VERSION' : 'VERSION'} {v.trim().toUpperCase() || '…'}</b>. Format: 3 numbers (1.3.0), with an optional revision of
         the day (1.1.4R2).
       </p>
+      <label className="lbl">Changes in this version (changelog, optional)</label>
+      <textarea className="input" rows={3} style={{ width: '100%' }} placeholder="- Added INBOUND EU&#10;- Fixed …" value={notes} onChange={(e) => setNotes(e.target.value)} />
       <div className="row">
         <input className="input mono" style={{ maxWidth: 160 }} placeholder="1.3.0" value={v} onChange={(e) => setV(e.target.value)} />
         <label className="check">
           <input type="checkbox" checked={beta} onChange={(e) => setBeta(e.target.checked)} />
           <span>Beta</span>
         </label>
-        <button className="btn" disabled={!ok} onClick={() => onSave(v.trim().toUpperCase(), beta)}>Save</button>
+        <button className="btn" disabled={!ok} onClick={async () => { await onSave(v.trim().toUpperCase(), beta, notes); setNotes(''); window.dispatchEvent(new Event('slsc-changelog')); }}>Save</button>
         {!ok && v.trim() && <span className="small" style={{ color: 'var(--danger, #c0392b)' }}>Invalid format</span>}
         {current?.at && <span className="small muted">Last change {fmtDate(current.at)}</span>}
       </div>
@@ -425,7 +461,55 @@ function SiteVersion({ current, onSave }: { current?: { version: string; beta: b
   );
 }
 
-function MyAccount({ me, wrap, onChanged }: { me: Me; wrap: Wrap; onChanged: () => void }) {
+function Changelog() {
+  const [log, setLog] = useState<{ version: string; beta: boolean; at: string; notes: string; by: string }[]>([]);
+  useEffect(() => {
+    const load = () => api.admin.changelog().then(setLog).catch(() => {});
+    load();
+    window.addEventListener('slsc-changelog', load);
+    return () => window.removeEventListener('slsc-changelog', load);
+  }, []);
+  return (
+    <div className="card">
+      <h3>Changelog</h3>
+      {log.length === 0 ? (
+        <div className="small muted">No version saved yet. Each time you save a version above, it is added here with its notes.</div>
+      ) : (
+        <table className="simple">
+          <tbody>
+            {log.map((x, i) => (
+              <tr key={i}>
+                <td className="mono" style={{ whiteSpace: 'nowrap', width: 110 }}>
+                  {x.beta ? 'BETA ' : ''}
+                  {x.version}
+                </td>
+                <td className="small muted" style={{ whiteSpace: 'nowrap', width: 220 }}>
+                  {fmtDate(x.at)} · {x.by}
+                </td>
+                <td style={{ whiteSpace: 'pre-wrap', width: '100%' }}>{x.notes || <span className="muted">—</span>}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      )}
+    </div>
+  );
+}
+
+function MyAccount({ me, wrap, onChanged, onRenamed }: { me: Me; wrap: Wrap; onChanged: () => void; onRenamed: (u: string) => void }) {
+  const [name, setName] = useState(me.username);
+  const [namePw, setNamePw] = useState('');
+  const [nameMsg, setNameMsg] = useState<{ ok: boolean; text: string } | null>(null);
+  const rename = async () => {
+    try {
+      const r = await api.admin.rename(name, namePw);
+      setNamePw('');
+      setNameMsg({ ok: true, text: `User name changed to ${r.username}.` });
+      onRenamed(r.username);
+    } catch (e) {
+      setNameMsg({ ok: false, text: (e as Error).message });
+    }
+  };
   const [current, setCurrent] = useState('');
   const [next, setNext] = useState('');
   const [confirm, setConfirm] = useState('');
@@ -447,6 +531,21 @@ function MyAccount({ me, wrap, onChanged }: { me: Me; wrap: Wrap; onChanged: () 
   return (
     <div className="card">
       <h3>My account — {me.username}</h3>
+      <div className="grid2">
+        <div>
+          <label className="lbl">User name</label>
+          <input className="input" value={name} onChange={(e) => setName(e.target.value)} autoComplete="username" />
+        </div>
+        <div>
+          <label className="lbl">Password (to confirm)</label>
+          <input className="input" type="password" value={namePw} onChange={(e) => setNamePw(e.target.value)} autoComplete="current-password" />
+        </div>
+      </div>
+      <div className="row">
+        <button className="btn" disabled={!name.trim() || name.trim() === me.username || !namePw} onClick={rename}>Change user name</button>
+      </div>
+      {nameMsg && <div className={`alert ${nameMsg.ok ? 'info' : 'danger'}`} style={{ marginTop: 10 }}>{nameMsg.text}</div>}
+      <div className="sep">Password</div>
       <label className="lbl">Current password</label>
       <input className="input" type="password" autoComplete="current-password" value={current} onChange={(e) => setCurrent(e.target.value)} />
       <label className="lbl">New password</label>

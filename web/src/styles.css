@@ -384,3 +384,9 @@ tr.dim td { opacity: .6; }
 .cls-head { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 4px; }
 .cls-code { font-size: 20px; font-weight: 700; color: var(--heading); }
 .badge.danger { background: #fde8e6; color: #b42318; }
+
+/* Admin sub-navigation */
+.subnav { display: flex; flex-wrap: wrap; gap: 4px; background: var(--surface-3); border-radius: 10px; padding: 4px; margin-bottom: 14px; }
+.subnav button { border: 0; background: transparent; padding: 8px 14px; border-radius: 8px; font: inherit; font-size: 12.5px; font-weight: 700; letter-spacing: .04em; color: var(--ink-2); cursor: pointer; }
+.subnav button:hover { color: var(--heading); }
+.subnav button.on { background: var(--surface); color: var(--heading); box-shadow: inset 0 -2px 0 var(--accent), 0 1px 3px rgba(16,24,40,.12); }

@@ -164,13 +164,15 @@ export const api = {
     syncLists: () => req<{ job: string }>('/api/admin/sync/official-lists', { method: 'POST' }, true),
     syncCbsa: (force = false) => req<{ job: string }>('/api/admin/sync/cbsa', { method: 'POST', body: JSON.stringify({ force }) }, true),
     fxOnline: () => req<any>('/api/admin/import/fx', { method: 'POST' }, true),
-    siteVersion: (version: string, beta: boolean) => req<any>('/api/admin/site-version', { method: 'POST', body: JSON.stringify({ version, beta }) }, true),
+    siteVersion: (version: string, beta: boolean, notes = '') => req<any>('/api/admin/site-version', { method: 'POST', body: JSON.stringify({ version, beta, notes }) }, true),
     taricUpload: (files: File[]) => {
       const fd = new FormData();
       files.forEach((f) => fd.append('file', f, f.name));
       return req<{ job: string }>('/api/admin/import/taric', { method: 'POST', body: fd }, true);
     },
     taricUrls: (urls: string[]) => req<any>('/api/admin/taric-urls', { method: 'POST', body: JSON.stringify({ urls }) }, true),
+    changelog: () => req<any[]>('/api/admin/changelog', {}, true),
+    rename: (username: string, password: string) => req<{ username: string }>('/api/admin/username', { method: 'POST', body: JSON.stringify({ username, password }) }, true),
     aiGet: () => req<any>('/api/admin/ai', {}, true),
     aiSet: (v: { provider?: string; key?: string; model?: string; baseUrl?: string; vision?: boolean; active?: boolean }) => req<any>('/api/admin/ai', { method: 'POST', body: JSON.stringify(v) }, true),
     taricSync: () => req<{ job: string }>('/api/admin/sync/taric', { method: 'POST' }, true),

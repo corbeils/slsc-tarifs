@@ -82,6 +82,22 @@ export function changePassword(db: DB, userId: string, current: string, next: st
   db.prepare('UPDATE users SET salt = ?, hash = ?, must_change = 0 WHERE id = ?').run(salt, hash, userId);
 }
 
+/** Change one's own user name (password confirmation required). Sessions follow the account. */
+export function renameUser(db: DB, userId: string, newName: string, password: string) {
+  const name = newName.trim();
+  if (!/^[\w.@-]{2,40}$/.test(name)) throw new Error('User name: 2 to 40 characters (letters, digits, . _ - @)');
+  const u = db.prepare('SELECT * FROM users WHERE id = ?').get(userId) as UserRow | undefined;
+  if (!u) throw new Error('Unknown user');
+  if (hashPassword(password, u.salt).hash !== u.hash) throw new Error('Password is incorrect');
+  const id = name.toLowerCase();
+  if (id !== userId && db.prepare('SELECT 1 FROM users WHERE id = ?').get(id)) throw new Error('This user name is already taken');
+  db.transaction(() => {
+    db.prepare('UPDATE users SET id = ?, username = ? WHERE id = ?').run(id, name, userId);
+    db.prepare('UPDATE sessions SET user_id = ? WHERE user_id = ?').run(id, userId);
+  })();
+  return { username: name };
+}
+
 export function resetPassword(db: DB, username: string, next: string) {
   if (next.length < 4) throw new Error('Password too short (min. 4 characters)');
   const { salt, hash } = hashPassword(next);

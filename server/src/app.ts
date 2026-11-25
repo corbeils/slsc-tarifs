@@ -21,7 +21,7 @@ import { syncOfficialLists } from './importers/official-lists.js';
 import { importTaric, syncTaricUrls, type TaricFile } from './importers/taric.js';
 import { classify, publicAiConfig, setAiConfig, type ChatTurn, type ClassJ } from './classify.js';
 import { clearListCache } from './engine/common.js';
-import { changePassword, createUser, deleteUser, listUsers, login, logout, resetPassword, sessionUser } from './auth.js';
+import { changePassword, createUser, deleteUser, listUsers, login, logout, resetPassword, sessionUser, renameUser } from './auth.js';
 
 type Job = { id: string; kind: string; status: 'running' | 'done' | 'error'; log: string[]; result?: unknown; error?: string; started: string };
 const jobs = new Map<string, Job>();
@@ -267,6 +267,15 @@ export async function buildApp(db: DB) {
     a.addHook('preHandler', admin);
 
     a.get('/api/admin/me', async (req) => userOf(req));
+    a.get('/api/admin/changelog', async () => getMeta(db, 'site:changelog') ?? []);
+    a.post('/api/admin/username', async (req, reply) => {
+      const b = (req.body ?? {}) as { username?: string; password?: string };
+      try {
+        return renameUser(db, userOf(req).id, b.username ?? '', b.password ?? '');
+      } catch (e) {
+        return reply.code(400).send({ error: (e as Error).message });
+      }
+    });
 
     // ---- HS code lookup (signed-in users): one search across HTSUS, Canadian tariff and TARIC ----
     a.get('/api/lookup/search', async (req) => {
@@ -443,6 +452,10 @@ export async function buildApp(db: DB) {
         return reply.code(400).send({ error: 'Invalid version: use 3 numbers, optionally followed by a revision (e.g. 1.3.0 or 1.1.4R2)' });
       const v = { version, beta: b.beta !== false, at: new Date().toISOString() };
       setMeta(db, 'site:version', v);
+      const notes = String((req.body as { notes?: string }).notes ?? '').trim();
+      const log = getMeta<{ version: string; beta: boolean; at: string; notes: string; by: string }[]>(db, 'site:changelog') ?? [];
+      log.unshift({ ...v, notes, by: userOf(req).username });
+      setMeta(db, 'site:changelog', log.slice(0, 200));
       return { ok: true, ...v };
     });
 

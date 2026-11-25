@@ -13,6 +13,9 @@ us:
   - { agency: "FDA", label: "Drugs (FD3/FD4)", level: required, prefixes: ["3001", "3002", "3003", "3004", "3005", "3006"] }
   - { agency: "FDA", label: "Cosmetics (MoCRA registration)", level: "may be required", prefixes: ["3303", "3304", "3305", "3307"] }
   - { agency: "FDA / CDRH", label: "Medical devices and radiation-emitting products (FDA Form 2877)", level: "may be required", prefixes: ["9018", "9019", "9020", "9021", "9022", "8528", "9013.20", "8539.5"] }
+  # Laser products (21 CFR 1040.10 / 1040.11): Form FDA 2877 declarations transmitted in ACE (21 CFR 1.77).
+  # No official HTS list exists: the requirement follows the product (FDA product code), these headings are where lasers are common.
+  - { agency: "FDA / CDRH", label: "Laser products: Form FDA 2877 declaration (21 CFR 1040.10) — FDA product code, manufacturer accession number, model, declaration A/B/C/D", level: "may be required", prefixes: ["9031.4", "9031.80", "9015", "9013.20", "9027", "8456.11", "8515.80", "8443.32", "8471.70"], url: "https://www.fda.gov/radiation-emitting-products/performance-standards-radiological-health-program/product-codes-radiation-emitting-electronic-products" }
   - { agency: "USDA APHIS", label: "Animals, plants, seeds, agricultural products (PPQ/VS permits)", level: "may be required", prefixes: ["01", "05", "06", "07", "08", "10", "12", "14", "4401", "4403"] }
   - { agency: "USDA FSIS", label: "Meat, poultry, egg products — foreign inspection certificate", level: required, prefixes: ["0201", "0202", "0203", "0204", "0206", "0207", "0209", "0210", "1601", "1602", "0408"] }
   - { agency: "USDA FAS", label: "Dairy import license (cheese under quota)", level: "may be required", prefixes: ["0401", "0402", "0403", "0404", "0405", "0406"] }

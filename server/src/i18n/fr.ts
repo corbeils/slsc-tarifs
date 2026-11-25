@@ -563,6 +563,7 @@ export const FR: Record<string, string> = {
   'Food: facility registration + Prior Notice (FD1/FD2)': 'Aliments : enregistrement de l’installation + préavis (FD1/FD2)',
   'Drugs (FD3/FD4)': 'Médicaments (FD3/FD4)',
   'Cosmetics (MoCRA registration)': 'Cosmétiques (enregistrement MoCRA)',
+  'Laser products: Form FDA 2877 declaration (21 CFR 1040.10) — FDA product code, manufacturer accession number, model, declaration A/B/C/D': 'Produits laser : déclaration formulaire FDA 2877 (21 CFR 1040.10) — code produit FDA, numéro d’accession du fabricant, modèle, déclaration A/B/C/D',
   'Medical devices and radiation-emitting products (FDA Form 2877)': 'Instruments médicaux et produits émettant des radiations (formulaire FDA 2877)',
   'Animals, plants, seeds, agricultural products (PPQ/VS permits)': 'Animaux, plantes, semences, produits agricoles (permis PPQ/VS)',
   'Meat, poultry, egg products — foreign inspection certificate': 'Viande, volaille, ovoproduits — certificat d’inspection étranger',

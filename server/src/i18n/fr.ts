@@ -232,6 +232,8 @@ export const FR: Record<string, string> = {
   'EU-Tunisia': 'UE–Tunisie',
   'EU-Egypt Association Agreement': 'Accord d’association UE–Égypte',
   'EU-Egypt': 'UE–Égypte',
+  'EU-US Joint Statement of 21 August 2025 (EU tariff commitments, Council regulations of 25 June 2026)': 'Déclaration commune UE–États-Unis du 21 août 2025 (engagements tarifaires de l’UE, règlements du Conseil du 25 juin 2026)',
+  'EU-US Joint Statement': 'Déclaration commune UE–É.-U.',
   'EU-SADC Economic Partnership Agreement': 'Accord de partenariat économique UE–SADC',
   'TARIC measure {type}': 'Mesure TARIC {type}',
   'All third countries (ERGA OMNES)': 'Tous les pays tiers (ERGA OMNES)',

@@ -77,4 +77,5 @@ agreements:
   MA: { name: "EU-Morocco Association Agreement", short: "EU-Morocco", url: "https://policy.trade.ec.europa.eu/eu-trade-relationships-country-and-region/negotiations-and-agreements_en" }
   TN: { name: "EU-Tunisia Association Agreement", short: "EU-Tunisia", url: "https://policy.trade.ec.europa.eu/eu-trade-relationships-country-and-region/negotiations-and-agreements_en" }
   EG: { name: "EU-Egypt Association Agreement", short: "EU-Egypt", url: "https://policy.trade.ec.europa.eu/eu-trade-relationships-country-and-region/negotiations-and-agreements_en" }
+  US: { name: "EU-US Joint Statement of 21 August 2025 (EU tariff commitments, Council regulations of 25 June 2026)", short: "EU-US Joint Statement", url: "https://policy.trade.ec.europa.eu/eu-trade-relationships-country-and-region/negotiations-and-agreements_en" }
   ZA: { name: "EU-SADC Economic Partnership Agreement", short: "EU-SADC EPA", url: "https://policy.trade.ec.europa.eu/eu-trade-relationships-country-and-region/negotiations-and-agreements_en" }

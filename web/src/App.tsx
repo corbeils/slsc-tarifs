@@ -36,6 +36,7 @@ export default function App() {
   const { t, lang } = useI18n();
   const [meta, setMeta] = useState<any>(null);
   const { user, ready } = useAuth();
+  const [showLog, setShowLog] = useState(false);
   const can = (a: Access) => a === 'public' || (a === 'user' && !!user) || (a === 'admin' && user?.role === 'admin');
   useEffect(() => {
     api.meta().then(setMeta).catch(() => {});
@@ -111,10 +112,18 @@ export default function App() {
             <b>{t('TARIC LAST UPDATE')}</b> : {upd(meta?.eu)}
           </span>
           <span>
-            <b>{t('SITE VERSION')}</b> : {meta?.site ? t(meta.site.beta ? 'BETA VERSION {v}' : 'VERSION {v}', { v: meta.site.version }) : '—'}
+            <b>{t('SITE VERSION')}</b> :{' '}
+            {meta?.site ? (
+              <button className="linklike" title={t('View the changelog')} onClick={() => setShowLog(true)}>
+                {t(meta.site.beta ? 'BETA VERSION {v}' : 'VERSION {v}', { v: meta.site.version })}
+              </button>
+            ) : (
+              '—'
+            )}
           </span>
         </div>
       </footer>
+      {showLog && <ChangelogPopup onClose={() => setShowLog(false)} />}
     </div>
   );
 }
@@ -124,6 +133,47 @@ function SignInFirst() {
   return (
     <div className="card">
       {t('This tab is reserved for signed-in users.')} <a href="#/admin">{t('Sign in')}</a>
+    </div>
+  );
+}
+
+function ChangelogPopup({ onClose }: { onClose: () => void }) {
+  const { t } = useI18n();
+  const [log, setLog] = useState<{ version: string; beta: boolean; at: string; notes: string }[] | null>(null);
+  useEffect(() => {
+    api.changelog().then(setLog).catch(() => setLog([]));
+    const esc = (e: KeyboardEvent) => e.key === 'Escape' && onClose();
+    window.addEventListener('keydown', esc);
+    return () => window.removeEventListener('keydown', esc);
+  }, []);
+  return (
+    <div className="modal-backdrop" onClick={onClose}>
+      <div className="modal" role="dialog" aria-modal="true" aria-label={t('Changelog')} onClick={(e) => e.stopPropagation()}>
+        <div className="modal-head">
+          <h3>{t('Changelog')}</h3>
+          <button className="btn ghost" aria-label={t('Close')} onClick={onClose}>
+            ✕
+          </button>
+        </div>
+        <div className="modal-body">
+          {log === null ? (
+            <div className="muted small">{t('Loading…')}</div>
+          ) : log.length === 0 ? (
+            <div className="muted small">{t('No version notes yet.')}</div>
+          ) : (
+            log.map((x, i) => (
+              <div key={i} className="log-entry">
+                <div className="log-head">
+                  <b className="mono">{t(x.beta ? 'BETA VERSION {v}' : 'VERSION {v}', { v: x.version })}</b>
+                  {i === 0 && <span className="badge ok">{t('Current')}</span>}
+                  <span className="muted small">{fmtDate(x.at)}</span>
+                </div>
+                <div className="log-notes">{x.notes || <span className="muted">—</span>}</div>
+              </div>
+            ))
+          )}
+        </div>
+      </div>
     </div>
   );
 }

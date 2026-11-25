@@ -84,6 +84,10 @@ export async function buildApp(db: DB) {
   const DEFAULT_SITE = { version: '1.3.0', beta: true };
   const siteVersion = () => ({ ...DEFAULT_SITE, ...(getMeta<{ version: string; beta: boolean }>(db, 'site:version') ?? {}) });
 
+  // Public changelog (footer popup): version, date and notes only
+  app.get('/api/changelog', async () =>
+    (getMeta<{ version: string; beta: boolean; at: string; notes: string }[]>(db, 'site:changelog') ?? []).map(({ version, beta, at, notes }) => ({ version, beta, at, notes })),
+  );
   app.get('/api/meta', async () => {
     const count = (j: string) => (db.prepare('SELECT COUNT(*) n FROM lines WHERE j = ?').get(j) as { n: number }).n;
     const lists = db.prepare('SELECT measure_id, COUNT(*) n, MAX(added_at) at FROM code_lists GROUP BY measure_id').all();

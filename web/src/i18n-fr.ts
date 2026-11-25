@@ -318,4 +318,9 @@ export const FR: Record<string, string> = {
   except: 'sauf',
   'All goods': 'Toutes les marchandises',
   'Special regimes offered': 'Régimes particuliers offerts',
+  'View the changelog': "Voir l'historique des versions",
+  'Changelog': 'Historique des versions',
+  'Close': 'Fermer',
+  'No version notes yet.': 'Aucune note de version pour le moment.',
+  'Current': 'Actuelle',
 };

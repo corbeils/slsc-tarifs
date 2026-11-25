@@ -136,6 +136,7 @@ export const api = {
       }
     }
   },
+  changelog: () => req<{ version: string; beta: boolean; at: string; notes: string }[]>('/api/changelog'),
   measures: () => req<any>(`/api/measures?lang=${getLang()}`, {}, true),
   lookup: (q: string, j: string) => req<any[]>(`/api/lookup/search?q=${encodeURIComponent(q)}&j=${j}`, {}, true),
   classify: (j: string, turns: unknown[]) => req<any>('/api/lookup/classify', { method: 'POST', body: JSON.stringify({ j, turns, lang: getLang() }) }, true),

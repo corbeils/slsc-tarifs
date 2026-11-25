@@ -85,6 +85,7 @@ const initial = (): Form => {
 
 export default function Simulator() {
   const { t, lang } = useI18n();
+  const t_ = t;
   const [f, setF] = useState<Form>(initial);
   const [countries, setCountries] = useState<Country[]>([]);
   const [res, setRes] = useState<CalcResult | null>(null);
@@ -153,17 +154,26 @@ export default function Simulator() {
       return;
     }
     setLoading(true);
+    const ctl = new AbortController();
     const t = setTimeout(() => {
       api
-        .calc(body)
+        .calc(body, ctl.signal)
         .then((r) => {
           setRes(r);
           setErr('');
         })
-        .catch((e) => setErr(e.message))
-        .finally(() => setLoading(false));
+        .catch((e) => {
+          if (ctl.signal.aborted) return; // superseded by a newer request
+          setErr(e instanceof TypeError ? t_('The server could not be reached. Check your connection and try again.') : e.message);
+        })
+        .finally(() => {
+          if (!ctl.signal.aborted) setLoading(false);
+        });
     }, 250);
-    return () => clearTimeout(t);
+    return () => {
+      clearTimeout(t);
+      ctl.abort();
+    };
   }, [JSON.stringify(body), lang]);
 
   const optionsByContext = useMemo(() => {

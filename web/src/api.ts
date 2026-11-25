@@ -118,7 +118,18 @@ export const api = {
   meta: () => req<any>('/api/meta'),
   countries: () => req<Country[]>('/api/countries'),
   search: (j: 'US' | 'CA' | 'EU', q: string) => req<SearchHit[]>(`/api/search?j=${j}&q=${encodeURIComponent(q)}`),
-  calc: (body: object) => req<CalcResult>('/api/calc', { method: 'POST', body: JSON.stringify({ ...body, lang: getLang() }) }),
+  /** Retries network failures ("Failed to fetch": connection dropped by a proxy / container restart). */
+  calc: async (body: object, signal?: AbortSignal) => {
+    for (let attempt = 0; ; attempt++) {
+      try {
+        return await req<CalcResult>('/api/calc', { method: 'POST', body: JSON.stringify({ ...body, lang: getLang() }), signal });
+      } catch (e) {
+        const network = e instanceof TypeError || (e as { status?: number }).status === 502 || (e as { status?: number }).status === 504;
+        if (!network || signal?.aborted || attempt >= 3) throw e;
+        await new Promise((r) => setTimeout(r, 400 * (attempt + 1)));
+      }
+    }
+  },
   measures: () => req<any>(`/api/measures?lang=${getLang()}`),
   measuresEu: (origin: string) => req<any>(`/api/measures/eu?lang=${getLang()}&origin=${encodeURIComponent(origin)}`),
   login: (username: string, password: string) =>

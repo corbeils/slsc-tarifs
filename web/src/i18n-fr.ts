@@ -142,6 +142,7 @@ export const FR: Record<string, string> = {
   'View this line on the official tariff': 'Voir cette ligne dans le tarif officiel',
   USMCA: 'ACEUM',
 
+  'The server could not be reached. Check your connection and try again.': 'Le serveur n’a pas pu être joint. Vérifiez la connexion et réessayez.',
   // INBOUND EU
   'TARIC LAST UPDATE': 'DERNIÈRE MISE À JOUR TARIC',
   'TARIC code or keywords (e.g. 8462.11, press)': 'Code TARIC ou mots-clés en anglais (ex. 8462.11, press)',

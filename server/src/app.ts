@@ -41,7 +41,8 @@ export function startJob(kind: string, fn: (log: (m: string) => void) => Promise
 }
 
 export async function buildApp(db: DB) {
-  const app = Fastify({ logger: { level: process.env.LOG_LEVEL ?? 'info' }, bodyLimit: 20 * 1024 * 1024 });
+  // keepAliveTimeout longer than the reverse proxy's upstream keep-alive, so the proxy never reuses a socket Node just closed
+  const app = Fastify({ logger: { level: process.env.LOG_LEVEL ?? 'info' }, bodyLimit: 20 * 1024 * 1024, keepAliveTimeout: 120_000 });
   await app.register(multipart, { limits: { fileSize: 600 * 1024 * 1024, files: 20 } });
 
   const bearer = (req: FastifyRequest) => (req.headers.authorization ?? '').replace(/^Bearer\s+/i, '').trim();

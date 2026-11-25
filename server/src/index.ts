@@ -17,6 +17,9 @@ loadRules();
 await ensureSeed(db);
 const app = await buildApp(db);
 
+// A failed background task must never bring the site down
+process.on('unhandledRejection', (e) => app.log.error({ err: e }, 'unhandledRejection'));
+
 function schedule(expr: string, name: string, fn: () => Promise<unknown>) {
   if (!expr) return;
   if (!cron.validate(expr)) {

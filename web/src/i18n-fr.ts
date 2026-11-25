@@ -144,13 +144,12 @@ export const FR: Record<string, string> = {
 
   'The server could not be reached. Check your connection and try again.': 'Le serveur n’a pas pu être joint. Vérifiez la connexion et réessayez.',
   // Fiscal (exchange rates)
-  Fiscal: 'Fiscal',
   'Exchange rates used by the simulator': 'Taux de change utilisés par le simulateur',
   'Source: {source}': 'Source : {source}',
   'rate of {date}': 'taux du {date}',
   'updated automatically every business day': 'mis à jour automatiquement chaque jour ouvrable',
   'cross rate': 'taux croisé',
-  'Currency converter': 'Convertisseur de devises',
+  'Currency converter': 'Convertisseur de devise',
   'Which rate does customs use?': 'Quel taux la douane utilise-t-elle ?',
   'CBSA: Bank of Canada rates (the ones used here).': 'ASFC : taux de la Banque du Canada (ceux utilisés ici).',
   'CBP: rates certified by the Federal Reserve Bank of New York for the date of exportation.':

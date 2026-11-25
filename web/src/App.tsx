@@ -13,7 +13,7 @@ const PAGES = [
   { id: 'simulateur', label: 'Simulator' },
   { id: 'lot', label: 'Batch simulator' },
   { id: 'mesures', label: 'Measures in force' },
-  { id: 'fiscal', label: 'Fiscal' },
+  { id: 'fiscal', label: 'Currency converter' },
   { id: 'admin', label: 'Admin' },
 ] as const;
 type PageId = (typeof PAGES)[number]['id'];

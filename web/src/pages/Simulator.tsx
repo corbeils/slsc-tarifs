@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState, type Dispatch, type SetStateAction } from
 import CodeSearch from '../components/CodeSearch';
 import CountrySelect from '../components/CountrySelect';
 import { useI18n } from '../i18n';
+import { convert, useDisplayCurrency } from '../currency';
 import { api, fmtDate, money, pct, type AgreementInfo, type CalcLine, type CalcResult, type Country, type Direction, type Flag, type SearchHit } from '../api';
 
 const UNIT_LABELS: Record<string, string> = {
@@ -499,6 +500,13 @@ function Empty({ j }: { j: 'US' | 'CA' | 'EU' }) {
 function Result({ r, loading, f, setChoice }: { r: CalcResult; loading: boolean; f: Form; setChoice: (p: string, c: string) => void }) {
   const { t } = useI18n();
   const cur = r.currency;
+  const { cur: shown } = useDisplayCurrency();
+  /** Same amount in the currency chosen at the top (only when it differs from the local currency). */
+  const alt = (n: number) => {
+    if (shown === r.currency) return null;
+    const v = convert(n, r.currency, shown, r.fx);
+    return v === null ? null : money(v, shown);
+  };
   const copy = () => {
     const txt = [
       `${r.line!.display} — ${r.line!.description}`,
@@ -565,11 +573,11 @@ function Result({ r, loading, f, setChoice }: { r: CalcResult; loading: boolean;
       </div>
 
       <div className="totals">
-        <Tot label={t('Duties and surtaxes')} v={money(r.totals.duties, cur)} />
-        {r.totals.adcvd > 0 && <Tot label="AD/CVD" v={money(r.totals.adcvd, cur)} />}
-        <Tot label={t('Fees')} v={money(r.totals.fees, cur)} />
-        <Tot label={t('Taxes')} v={money(r.totals.taxes, cur)} />
-        <Tot label={t('Total payable')} v={money(r.totals.total, cur)} strong />
+        <Tot label={t('Duties and surtaxes')} v={money(r.totals.duties, cur)} alt={alt(r.totals.duties)} />
+        {r.totals.adcvd > 0 && <Tot label="AD/CVD" v={money(r.totals.adcvd, cur)} alt={alt(r.totals.adcvd)} />}
+        <Tot label={t('Fees')} v={money(r.totals.fees, cur)} alt={alt(r.totals.fees)} />
+        <Tot label={t('Taxes')} v={money(r.totals.taxes, cur)} alt={alt(r.totals.taxes)} />
+        <Tot label={t('Total payable')} v={money(r.totals.total, cur)} alt={alt(r.totals.total)} strong />
         <Tot label={t('Effective duty rate')} v={pct(r.totals.dutyPct)} strong />
       </div>
       {r.deferred && (
@@ -638,7 +646,10 @@ function Result({ r, loading, f, setChoice }: { r: CalcResult; loading: boolean;
           <tfoot>
             <tr>
               <td colSpan={4}>{t('Estimated landed cost (value + duties + fees + taxes)')}</td>
-              <td className="r b">{money(r.totals.landed, cur)}</td>
+              <td className="r b">
+                {money(r.totals.landed, cur)}
+                {alt(r.totals.landed) && <div className="alt-cur">≈ {alt(r.totals.landed)}</div>}
+              </td>
             </tr>
           </tfoot>
         </table>
@@ -666,11 +677,12 @@ function Rate({ label, v }: { label: string; v?: string | null }) {
     </div>
   );
 }
-function Tot({ label, v, strong }: { label: string; v: string; strong?: boolean }) {
+function Tot({ label, v, strong, alt }: { label: string; v: string; strong?: boolean; alt?: string | null }) {
   return (
     <div className={`tot ${strong ? 'strong' : ''}`}>
       <span>{label}</span>
       <b>{v}</b>
+      {alt && <small className="alt-cur">≈ {alt}</small>}
     </div>
   );
 }

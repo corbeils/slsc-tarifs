@@ -7,6 +7,7 @@ import Admin from './pages/Admin';
 import ThemeToggle from './components/ThemeToggle';
 import { api, fmtDate } from './api';
 import { LangToggle, useI18n } from './i18n';
+import { CurrencyToggle } from './currency';
 
 const PAGES = [
   { id: 'simulateur', label: 'Simulator' },
@@ -68,6 +69,7 @@ export default function App() {
             ))}
           </nav>
           <LangToggle />
+          <CurrencyToggle />
           <ThemeToggle />
         </div>
       </header>

@@ -344,3 +344,13 @@ a.btn:hover { text-decoration: none; }
 nav a { white-space: nowrap; }
 .brand-sub { white-space: nowrap; }
 .fx-chart .fx-axis { font-size: 13px; }
+
+.alt-cur { display: block; font-size: 12px; font-weight: 600; color: var(--muted); margin-top: 2px; }
+.tot.strong .alt-cur { color: #9ca3af; }
+/* Header: theme buttons become icon-only when space is short */
+.theme { margin-left: 8px; }
+@media (max-width: 1600px) {
+  .theme-label { display: none; }
+  .theme:not(.lang) button { padding: 6px 8px; }
+  nav a { padding-left: 10px; padding-right: 10px; }
+}

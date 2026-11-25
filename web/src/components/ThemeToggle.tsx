@@ -48,7 +48,7 @@ export default function ThemeToggle() {
       {opts.map(([k, label, Icon]) => (
         <button key={k} role="radio" aria-checked={t === k} className={t === k ? 'on' : ''} title={k === 'system' ? tr('Follow the browser / OS setting') : tr(`${label} mode`)} onClick={() => setT(k)}>
           <Icon />
-          {tr(label)}
+          <span className="theme-label">{tr(label)}</span>
         </button>
       ))}
     </div>

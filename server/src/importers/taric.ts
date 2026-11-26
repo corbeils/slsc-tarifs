@@ -10,6 +10,7 @@
  * with the documented column order as fallback.
  */
 import ExcelJS from 'exceljs';
+import JSZip from 'jszip';
 import { Readable } from 'node:stream';
 import type { DB } from '../db.js';
 import { digits, setMeta } from '../db.js';
@@ -35,7 +36,38 @@ const KIND_LABEL: Record<TaricKind, string> = {
 };
 
 /** Rows of every worksheet of an .xlsx, streamed (the duties file has several hundred thousand rows). */
-async function* xlsxRows(buf: Buffer): AsyncGenerator<unknown[]> {
+const cellValues = (row: ExcelJS.Row) =>
+  (row.values as unknown[]).slice(1).map((v) => {
+    if (v && typeof v === 'object' && !(v instanceof Date)) {
+      const o = v as { text?: string; result?: unknown; richText?: { text: string }[] };
+      return o.richText ? o.richText.map((x) => x.text).join('') : o.text ?? o.result ?? '';
+    }
+    return v;
+  });
+
+/**
+ * The streaming reader needs workbook.xml, its relations and sharedStrings.xml before the worksheets.
+ * Some exporters write the zip in another order: the reader then crashes or returns empty cells.
+ * Entries are put back in that order (JSZip reuses the compressed data, nothing is decompressed).
+ */
+async function orderXlsx(buf: Buffer): Promise<Buffer> {
+  const zip = await JSZip.loadAsync(buf);
+  const names = Object.keys(zip.files).filter((n) => !zip.files[n].dir);
+  const rank = (n: string) => (n.includes('worksheets/') ? 2 : /workbook\.xml|sharedStrings|_rels|Content_Types|styles/.test(n) ? 0 : 1);
+  const firstSheet = names.findIndex((n) => rank(n) === 2);
+  const lastMeta = names.reduce((m, n, i) => (rank(n) === 0 ? i : m), -1);
+  if (firstSheet < 0 || lastMeta < firstSheet) return buf;
+  // Re-insert the entries in the right order (generate() follows insertion order and keeps the deflated data as is)
+  for (const n of [...names].sort((x, y) => rank(x) - rank(y))) {
+    const entry = zip.files[n];
+    delete zip.files[n];
+    zip.files[n] = entry;
+  }
+  return zip.generateAsync({ type: 'nodebuffer', compression: 'DEFLATE' });
+}
+
+export async function* xlsxRows(input: Buffer): AsyncGenerator<unknown[]> {
+  const buf = await orderXlsx(input);
   const reader = new ExcelJS.stream.xlsx.WorkbookReader(Readable.from(buf), {
     sharedStrings: 'cache',
     worksheets: 'emit',
@@ -44,16 +76,7 @@ async function* xlsxRows(buf: Buffer): AsyncGenerator<unknown[]> {
     entries: 'emit',
   });
   for await (const ws of reader) {
-    for await (const row of ws as AsyncIterable<ExcelJS.Row>) {
-      const vals = (row.values as unknown[]).slice(1).map((v) => {
-        if (v && typeof v === 'object' && !(v instanceof Date)) {
-          const o = v as { text?: string; result?: unknown; richText?: { text: string }[] };
-          return o.richText ? o.richText.map((x) => x.text).join('') : o.text ?? o.result ?? '';
-        }
-        return v;
-      });
-      yield vals;
-    }
+    for await (const row of ws as AsyncIterable<ExcelJS.Row>) yield cellValues(row);
   }
 }
 

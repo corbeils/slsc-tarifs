@@ -24,12 +24,6 @@ const Moon = () => (
     <path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z" />
   </svg>
 );
-const Monitor = () => (
-  <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
-    <rect x="2" y="4" width="20" height="13" rx="2" />
-    <path d="M8 21h8M12 17v4" />
-  </svg>
-);
 
 export default function ThemeToggle() {
   const { t: tr } = useI18n();
@@ -48,15 +42,16 @@ export default function ThemeToggle() {
     window.addEventListener('slsc-set-theme', on);
     return () => window.removeEventListener('slsc-set-theme', on);
   }, []);
+  // Default is the browser / OS setting (not shown); the user picks Light or Dark if needed.
+  // Clicking the selected one again goes back to the browser / OS setting.
   const opts: [Theme, string, () => JSX.Element][] = [
     ['light', 'Light', Sun],
     ['dark', 'Dark', Moon],
-    ['system', 'System', Monitor],
   ];
   return (
     <div className="theme" role="radiogroup" aria-label={tr('Theme')}>
       {opts.map(([k, label, Icon]) => (
-        <button key={k} role="radio" aria-checked={t === k} className={t === k ? 'on' : ''} title={k === 'system' ? tr('Follow the browser / OS setting') : tr(`${label} mode`)} onClick={() => setT(k)}>
+        <button key={k} role="radio" aria-checked={t === k} className={t === k ? 'on' : ''} title={tr(`${label} mode`)} onClick={() => setT(t === k ? 'system' : k)}>
           <Icon />
           <span className="theme-label">{tr(label)}</span>
         </button>

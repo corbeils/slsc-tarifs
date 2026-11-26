@@ -597,8 +597,7 @@ function Users({ me, wrap }: { me: Me; wrap: Wrap }) {
     <div className="card">
       <h3>Users</h3>
       <p className="small muted">
-        <b>ADMIN</b>: everything, including Admin. <b>USER</b>: Simulator, Batch simulator, Measures in force and HS code lookup. Without an account: Simulator and Batch
-        simulator only.
+        <b>ADMIN</b>: everything, including Admin. <b>USER</b>: + HS code lookup and My account. Without an account: Simulator, Batch simulator and Measures in force (footer link).
       </p>
       <table className="simple">
         <tbody>

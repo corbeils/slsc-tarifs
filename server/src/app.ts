@@ -208,8 +208,8 @@ export async function buildApp(db: DB) {
   });
 
   // Résumé public des mesures (page « Mesures en vigueur »)
-  // Measures in force: signed-in users (USER and ADMIN groups)
-  app.get('/api/measures', { preHandler: admin }, async (req) => {
+  // Measures in force: public (opened from the footer)
+  app.get('/api/measures', async (req) => {
     const R = localizeRules(getRules(), asLang((req.query as { lang?: string }).lang));
     const lists = Object.fromEntries(
       (db.prepare('SELECT measure_id, COUNT(*) n FROM code_lists GROUP BY measure_id').all() as { measure_id: string; n: number }[]).map((r) => [
@@ -233,7 +233,7 @@ export async function buildApp(db: DB) {
   });
 
   // INBOUND EU: VAT, agreements and the TARIC measures by origin (quotas, AD/CVD, additional duties)
-  app.get('/api/measures/eu', { preHandler: admin }, async (req) => {
+  app.get('/api/measures/eu', async (req) => {
     const q = req.query as { origin?: string; lang?: string };
     const R = localizeRules(getRules(), asLang(q.lang));
     const T = R.eu.measureTypes;

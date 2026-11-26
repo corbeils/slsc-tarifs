@@ -137,11 +137,11 @@ export const api = {
     }
   },
   changelog: () => req<{ version: string; beta: boolean; at: string; notes: string }[]>('/api/changelog'),
-  measures: () => req<any>(`/api/measures?lang=${getLang()}`, {}, true),
+  measures: () => req<any>(`/api/measures?lang=${getLang()}`),
   lookup: (q: string, j: string) => req<any[]>(`/api/lookup/search?q=${encodeURIComponent(q)}&j=${j}`, {}, true),
   classify: (j: string, turns: unknown[]) => req<any>('/api/lookup/classify', { method: 'POST', body: JSON.stringify({ j, turns, lang: getLang() }) }, true),
   lookupHs: (hs6: string) => req<any>(`/api/lookup/hs/${hs6}`, {}, true),
-  measuresEu: (origin: string) => req<any>(`/api/measures/eu?lang=${getLang()}&origin=${encodeURIComponent(origin)}`, {}, true),
+  measuresEu: (origin: string) => req<any>(`/api/measures/eu?lang=${getLang()}&origin=${encodeURIComponent(origin)}`),
   login: (username: string, password: string) =>
     req<{ token: string; username: string; mustChange: boolean }>('/api/auth/login', { method: 'POST', body: JSON.stringify({ username, password }) }),
   logout: () => req<any>('/api/auth/logout', { method: 'POST' }, true),

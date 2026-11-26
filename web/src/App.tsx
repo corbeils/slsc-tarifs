@@ -14,7 +14,7 @@ const PAGES = [
   { id: 'simulateur', label: 'Simulator', access: 'public' },
   { id: 'lot', label: 'Batch simulator', access: 'public' },
   // Measures in force: reached from the footer (MEASURES LAST UPDATE), no longer in the top menu
-  { id: 'mesures', label: 'Measures in force', access: 'user', hidden: true },
+  { id: 'mesures', label: 'Measures in force', access: 'public', hidden: true },
   { id: 'hscode', label: 'HS code lookup', access: 'user' },
   { id: 'admin', label: 'Admin', access: 'admin' },
 ] as const;
@@ -95,7 +95,7 @@ export default function App() {
       <main>
         {page === 'simulateur' && <Simulator />}
         {page === 'lot' && <Batch />}
-        {page === 'mesures' && (can('user') ? <Measures /> : <SignInFirst />)}
+        {page === 'mesures' && <Measures />}
         {page === 'hscode' && (can('user') ? <HsLookup /> : <SignInFirst />)}
         {page === 'admin' && <Admin />}
       </main>

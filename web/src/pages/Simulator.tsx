@@ -634,10 +634,12 @@ function Result({ r, loading, f, setChoice }: { r: CalcResult; loading: boolean;
                         </select>
                       )}
                     </td>
-                    <td>{l.ch99 ? <span className="mono">{l.ch99}</span> : <span className="ref">{l.legal ?? l.program ?? ''}</span>}</td>
-                    <td className="r">{l.ratePct !== null && l.ratePct !== undefined ? pct(l.ratePct) : <span className="mono small">{l.rateText}</span>}</td>
-                    <td className="r">{money(l.basis, cur)}</td>
-                    <td className="r b">{money(l.amount, cur)}</td>
+                    <td className={l.ch99 || l.legal || l.program ? '' : 'empty'} data-label={t('Heading / ref.')}>
+                      {l.ch99 ? <span className="mono">{l.ch99}</span> : <span className="ref">{l.legal ?? l.program ?? ''}</span>}
+                    </td>
+                    <td className="r" data-label={t('Rate')}>{l.ratePct !== null && l.ratePct !== undefined ? pct(l.ratePct) : <span className="mono small">{l.rateText}</span>}</td>
+                    <td className="r" data-label={t('Basis')}>{money(l.basis, cur)}</td>
+                    <td className="r b" data-label={t('Amount')}>{money(l.amount, cur)}</td>
                   </tr>
                 ))}
               </tbody>
@@ -645,7 +647,7 @@ function Result({ r, loading, f, setChoice }: { r: CalcResult; loading: boolean;
           })}
           <tfoot>
             <tr>
-              <td colSpan={4}>{t('Estimated landed cost (value + duties + fees + taxes)')}</td>
+              <td colSpan={4} className="landed-label">{t('Estimated landed cost (value + duties + fees + taxes)')}</td>
               <td className="r b">
                 {money(r.totals.landed, cur)}
                 {alt(r.totals.landed) && <div className="alt-cur">≈ {alt(r.totals.landed)}</div>}

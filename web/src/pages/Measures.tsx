@@ -7,6 +7,26 @@ function St({ s }: { s?: string }) {
   return s === 'verified' || s === 'vérifié' ? <span className="badge ok">{t('verified')}</span> : <span className="badge warn">{t('to verify')}</span>;
 }
 
+/** Phone view: each cell gets its column name (data-label) so the tables can be shown as cards. */
+function labelTables(root: HTMLElement | null) {
+  if (!root) return;
+  const run = () =>
+    root.querySelectorAll('table').forEach((tb) => {
+      const heads = [...tb.querySelectorAll('thead th')].map((th) => th.textContent?.trim() ?? '');
+      if (!heads.length) return;
+      tb.querySelectorAll('tbody tr').forEach((tr) => {
+        let col = 0;
+        [...tr.children].forEach((td) => {
+          const label = heads[col] ?? '';
+          if (td.getAttribute('data-label') !== label) td.setAttribute('data-label', label);
+          col += Number(td.getAttribute('colspan') ?? 1);
+        });
+      });
+    });
+  run();
+  new MutationObserver(run).observe(root, { childList: true, subtree: true });
+}
+
 export default function Measures() {
   const { t, lang } = useI18n();
   const [d, setD] = useState<any>(null);
@@ -16,7 +36,7 @@ export default function Measures() {
   }, [lang]);
   if (!d) return <div className="card">{t('Loading…')}</div>;
   return (
-    <div className="wide">
+    <div className="wide stack-tables" ref={labelTables}>
       <div className="seg small">
         <button className={tab === 'us' ? 'on' : ''} onClick={() => setTab('us')}>INBOUND USA</button>
         <button className={tab === 'ca' ? 'on' : ''} onClick={() => setTab('ca')}>INBOUND CANADA</button>

@@ -207,6 +207,8 @@ export const FR: Record<string, string> = {
   'This tab is reserved for signed-in users.': 'Cet onglet est réservé aux utilisateurs connectés.',
   'Sign in': 'Se connecter',
   'My account': 'Mon compte',
+  'Menu': 'Menu',
+  'Take a photo': 'Prendre une photo',
 
   // INBOUND EU
   'TARIC LAST UPDATE': 'DERNIÈRE MISE À JOUR TARIC',

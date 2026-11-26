@@ -1,3 +1,4 @@
+import type React from 'react';
 import { useState } from 'react';
 import { api } from '../api';
 import { useI18n } from '../i18n';
@@ -48,6 +49,13 @@ export default function Classifier({ onCompare }: { onCompare: (hs6: string) => 
   const [turns, setTurns] = useState<Turn[]>([]);
   const [reply, setReply] = useState<Reply | null>(null);
   const [answers, setAnswers] = useState<string[]>([]);
+  const addPhotos = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const input = e.target;
+    const files = [...(input.files ?? [])].slice(0, 4 - imgs.length);
+    const add = await Promise.all(files.map(toImg));
+    setImgs((x) => [...x, ...add].slice(0, 4));
+    input.value = '';
+  };
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState('');
 
@@ -116,20 +124,14 @@ export default function Classifier({ onCompare }: { onCompare: (hs6: string) => 
             onChange={(e) => setDesc(e.target.value)}
           />
           <div className="row">
+            {/* Phones: open the camera directly */}
+            <label className="btn ghost only-touch">
+              📷 {t('Take a photo')}
+              <input type="file" accept="image/*" capture="environment" hidden onChange={addPhotos} />
+            </label>
             <label className="btn ghost">
               {t('Add photos')}
-              <input
-                type="file"
-                accept="image/*"
-                multiple
-                hidden
-                onChange={async (e) => {
-                  const files = [...(e.target.files ?? [])].slice(0, 4 - imgs.length);
-                  const add = await Promise.all(files.map(toImg));
-                  setImgs((x) => [...x, ...add].slice(0, 4));
-                  e.target.value = '';
-                }}
-              />
+              <input type="file" accept="image/*" multiple hidden onChange={addPhotos} />
             </label>
             {imgs.map((im, i) => (
               <span key={i} className="thumb">

@@ -38,6 +38,9 @@ export default function App() {
   const [meta, setMeta] = useState<any>(null);
   const { user, ready } = useAuth();
   const [showLog, setShowLog] = useState(false);
+  // Phone menu (hamburger): closes when the page changes
+  const [menuOpen, setMenuOpen] = useState(false);
+  useEffect(() => setMenuOpen(false), [page]);
   const can = (a: Access) => a === 'public' || (a === 'user' && !!user) || (a === 'admin' && user?.role === 'admin');
   useEffect(() => {
     api.meta().then(setMeta).catch(() => {});
@@ -69,7 +72,18 @@ export default function App() {
             <div className="brand-sub">{t('Canada · United States · European Union duty simulator')}</div>
           </div>
         </div>
-        <div className="topbar-right">
+        <button className="burger" aria-label={t('Menu')} aria-expanded={menuOpen} onClick={() => setMenuOpen((o) => !o)}>
+          {menuOpen ? (
+            <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden>
+              <path d="M6 6l12 12M18 6L6 18" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" />
+            </svg>
+          ) : (
+            <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden>
+              <path d="M4 7h16M4 12h16M4 17h16" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" />
+            </svg>
+          )}
+        </button>
+        <div className={`topbar-right${menuOpen ? ' open' : ''}`}>
           <nav>
             {PAGES.filter((p) => can(p.access) && !('hidden' in p)).map((p) => (
               <a key={p.id} className={page === p.id ? 'active' : ''} href={`#/${p.id}`}>
@@ -87,9 +101,11 @@ export default function App() {
               </a>
             )}
           </nav>
-          <LangToggle />
-          <CurrencyToggle />
-          <ThemeToggle />
+          <div className="toggles">
+            <LangToggle />
+            <CurrencyToggle />
+            <ThemeToggle />
+          </div>
         </div>
       </header>
       <main>

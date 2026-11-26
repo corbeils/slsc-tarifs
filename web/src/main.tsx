@@ -17,3 +17,8 @@ createRoot(document.getElementById('root')!).render(
     </LangProvider>
   </React.StrictMode>,
 );
+
+// Installable app (PWA): the service worker only runs on the built site
+if ('serviceWorker' in navigator && import.meta.env.PROD) {
+  window.addEventListener('load', () => navigator.serviceWorker.register('/sw.js').catch(() => {}));
+}

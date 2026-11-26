@@ -102,8 +102,6 @@ export default function App() {
       <footer className="notice">
         <div className="notice-text">
           <b>⚠️ {t('Important Notice:')}</b> {t('This site is provided for informational purposes only, offered without any warranty')}
-          <br />
-          {t('Due to frequent changes in U.S. tariff rates, some information may become outdated or inaccurate.')}
         </div>
         <div className="notice-dates">
           <span>
@@ -115,6 +113,7 @@ export default function App() {
           <span>
             <b>{t('TARIC LAST UPDATE')}</b> : {upd(meta?.eu)}
           </span>
+          <span className="row-break" aria-hidden />
           <span>
             <b>{t('MEASURES LAST UPDATE')}</b> :{' '}
             <a className="linklike" href="#/mesures" title={t('View all measures in force')}>

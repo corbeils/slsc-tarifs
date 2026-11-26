@@ -26,6 +26,9 @@ export function migrateAuth(db: DB) {
   const cols = (db.prepare('PRAGMA table_info(users)').all() as { name: string }[]).map((c) => c.name);
   if (!cols.includes('role')) db.exec("ALTER TABLE users ADD COLUMN role TEXT NOT NULL DEFAULT 'admin'");
   if (!cols.includes('prefs')) db.exec("ALTER TABLE users ADD COLUMN prefs TEXT NOT NULL DEFAULT '{}'");
+  // v3: last sign-in and last activity (shown in Admin → USERS)
+  if (!cols.includes('last_login')) db.exec('ALTER TABLE users ADD COLUMN last_login TEXT');
+  if (!cols.includes('last_seen')) db.exec('ALTER TABLE users ADD COLUMN last_seen TEXT');
   const n = (db.prepare('SELECT COUNT(*) n FROM users').get() as { n: number }).n;
   if (n === 0) createUser(db, DEFAULT_USER, DEFAULT_PASSWORD, true, 'admin');
 }
@@ -66,15 +69,19 @@ export function login(db: DB, username: string, password: string) {
   const expires = new Date(Date.now() + SESSION_DAYS * 86400_000).toISOString();
   db.prepare('DELETE FROM sessions WHERE expires_at < ?').run(new Date().toISOString());
   db.prepare('INSERT INTO sessions (token, user_id, expires_at) VALUES (?, ?, ?)').run(token, u.id, expires);
+  const now = new Date().toISOString();
+  db.prepare('UPDATE users SET last_login = ?, last_seen = ? WHERE id = ?').run(now, now, u.id);
   return { token, username: u.username, mustChange: !!u.must_change, role: asRole((u as UserRow & { role?: string }).role) };
 }
 
 export function sessionUser(db: DB, token: string) {
   if (!token) return null;
   const r = db
-    .prepare('SELECT u.id, u.username, u.must_change, u.role, u.prefs FROM sessions s JOIN users u ON u.id = s.user_id WHERE s.token = ? AND s.expires_at > ?')
-    .get(token, new Date().toISOString()) as { id: string; username: string; must_change: number; role: string; prefs: string } | undefined;
+    .prepare('SELECT u.id, u.username, u.must_change, u.role, u.prefs, u.last_seen FROM sessions s JOIN users u ON u.id = s.user_id WHERE s.token = ? AND s.expires_at > ?')
+    .get(token, new Date().toISOString()) as { id: string; username: string; must_change: number; role: string; prefs: string; last_seen: string | null } | undefined;
   if (!r) return null;
+  // Last activity, written at most every 5 minutes (sessions stay open for days, so the last sign-in alone can be old)
+  if (!r.last_seen || Date.now() - Date.parse(r.last_seen) > 5 * 60_000) db.prepare('UPDATE users SET last_seen = ? WHERE id = ?').run(new Date().toISOString(), r.id);
   let prefs: Record<string, string> = {};
   try {
     prefs = JSON.parse(r.prefs || '{}');
@@ -145,7 +152,7 @@ export function resetPassword(db: DB, username: string, next: string) {
 }
 
 export function listUsers(db: DB) {
-  return db.prepare('SELECT username, must_change AS mustChange, created_at AS createdAt, role FROM users ORDER BY username').all();
+  return db.prepare('SELECT username, must_change AS mustChange, created_at AS createdAt, role, last_login AS lastLogin, last_seen AS lastSeen FROM users ORDER BY username').all();
 }
 
 export function deleteUser(db: DB, username: string, selfId: string) {

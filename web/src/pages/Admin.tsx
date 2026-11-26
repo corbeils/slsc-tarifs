@@ -585,7 +585,7 @@ function MyAccount({ me, wrap, onChanged, onRenamed }: { me: Me; wrap: Wrap; onC
 }
 
 function Users({ me, wrap }: { me: Me; wrap: Wrap }) {
-  const [users, setUsers] = useState<{ username: string; mustChange: number; createdAt: string; role: 'admin' | 'user' }[]>([]);
+  const [users, setUsers] = useState<{ username: string; mustChange: number; createdAt: string; role: 'admin' | 'user'; lastLogin: string | null; lastSeen: string | null }[]>([]);
   const [u, setU] = useState('');
   const [p, setP] = useState('');
   const [role, setRoleNew] = useState<'admin' | 'user'>('user');
@@ -606,7 +606,17 @@ function Users({ me, wrap }: { me: Me; wrap: Wrap }) {
               <td>
                 <b>{x.username}</b> <span className={`badge ${x.role === 'admin' ? 'ok' : 'muted'}`}>{x.role.toUpperCase()}</span>{' '}
                 {x.mustChange ? <span className="badge warn">temporary password</span> : null}
-                <div className="muted small">created {fmtDate(x.createdAt)}</div>
+                <div className="muted small user-dates">
+                  <span>
+                    <b>Created:</b> {fmtDate(x.createdAt)}
+                  </span>
+                  <span>
+                    <b>Last login:</b> {x.lastLogin ? fmtDate(x.lastLogin) : 'never'}
+                  </span>
+                  <span>
+                    <b>Last activity:</b> {x.lastSeen ? fmtDate(x.lastSeen) : '—'}
+                  </span>
+                </div>
               </td>
               <td style={{ textAlign: 'right', whiteSpace: 'nowrap' }}>
                 {x.username.toLowerCase() !== me.username.toLowerCase() && (

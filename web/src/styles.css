@@ -487,3 +487,4 @@ input[type='date'] { min-width: 0; }
   .topbar.two-rows .toggles { order: 2; margin-left: auto; }
   .topbar.two-rows nav { order: 3; flex: 1 0 100%; flex-wrap: wrap; border-top: 1px solid #2a3036; padding-top: 6px; }
 }
+.user-dates { display: flex; flex-wrap: wrap; gap: 2px 16px; margin-top: 3px; }

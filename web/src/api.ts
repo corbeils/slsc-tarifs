@@ -151,7 +151,7 @@ export const api = {
     setRole: (u: string, role: string) => req<any>(`/api/admin/users/${encodeURIComponent(u)}/role`, { method: 'POST', body: JSON.stringify({ role }) }, true),
     changePassword: (current: string, next: string) =>
       req<any>('/api/admin/password', { method: 'POST', body: JSON.stringify({ current, next }) }, true),
-    users: () => req<{ username: string; mustChange: number; createdAt: string; role: 'admin' | 'user' }[]>('/api/admin/users', {}, true),
+    users: () => req<{ username: string; mustChange: number; createdAt: string; role: 'admin' | 'user'; lastLogin: string | null; lastSeen: string | null }[]>('/api/admin/users', {}, true),
     addUser: (username: string, password: string, role = 'user') => req<any>('/api/admin/users', { method: 'POST', body: JSON.stringify({ username, password, role }) }, true),
     resetUser: (username: string, password: string) =>
       req<any>(`/api/admin/users/${encodeURIComponent(username)}/reset`, { method: 'POST', body: JSON.stringify({ password }) }, true),

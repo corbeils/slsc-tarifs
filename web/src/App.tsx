@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import Simulator from './pages/Simulator';
 import Batch from './pages/Batch';
 import Measures from './pages/Measures';
@@ -41,6 +41,25 @@ export default function App() {
   // Phone menu (hamburger): closes when the page changes
   const [menuOpen, setMenuOpen] = useState(false);
   useEffect(() => setMenuOpen(false), [page]);
+  // Desktop: when the brand + menu + toggles do not fit on one line (screen size, zoom, Windows scaling,
+  // longer menu once signed in), the menu goes on a second line instead of overflowing.
+  const headerRef = useRef<HTMLElement>(null);
+  const [twoRows, setTwoRows] = useState(false);
+  useLayoutEffect(() => {
+    const h = headerRef.current;
+    if (!h) return;
+    const check = () => {
+      const w = (sel: string) => (h.querySelector(sel) as HTMLElement | null)?.scrollWidth ?? 0;
+      const need = w('.brand') + w('nav') + w('.toggles') + 24 * 2 + 40;
+      setTwoRows(need > h.clientWidth);
+    };
+    check();
+    const ro = new ResizeObserver(check);
+    ro.observe(h);
+    h.querySelectorAll('nav, .toggles').forEach((el) => ro.observe(el));
+    document.fonts?.ready.then(check);
+    return () => ro.disconnect();
+  }, [user, ready, lang]);
   const can = (a: Access) => a === 'public' || (a === 'user' && !!user) || (a === 'admin' && user?.role === 'admin');
   useEffect(() => {
     api.meta().then(setMeta).catch(() => {});
@@ -56,7 +75,7 @@ export default function App() {
   const upd = (m: any) => (m?.at ? `${fmtDate(m.at)}${m.source?.startsWith('seed') ? t(' (demo)') : ''}` : '—');
   return (
     <div className="app">
-      <header className="topbar">
+      <header className={`topbar${twoRows ? ' two-rows' : ''}`} ref={headerRef}>
         <div className="brand" onClick={() => go('simulateur')}>
           <span className="logo" aria-hidden>
             <svg viewBox="0 0 100 64">

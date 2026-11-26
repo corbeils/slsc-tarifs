@@ -289,7 +289,6 @@ table { border-collapse: collapse; width: 100%; }
   .sim { grid-template-columns: 1fr; }
   .form { position: static; max-height: none; }
   .grid3 { grid-template-columns: 1fr 1fr; }
-  .topbar { flex-direction: column; gap: 8px; }
 }
 @media print {
   .topbar, .form, .actions, .foot, .input.small { display: none !important; }
@@ -372,7 +371,6 @@ tr.dim td { opacity: .6; }
   nav a { padding-left: 8px; padding-right: 8px; font-size: 13.5px; }
   .theme { margin-left: 6px; }
 }
-@media (max-width: 1250px) { .topbar { flex-wrap: wrap; gap: 8px; } }
 .brand-title { white-space: nowrap; }
 
 /* Classification assistant */
@@ -480,3 +478,12 @@ input[type='date'] { min-width: 0; }
   .stack-tables tbody td:empty { display: none; }
 }
 .classifier .chips { display: flex; flex-wrap: wrap; }
+
+/* Desktop header on two lines when it does not fit (class set by App after measuring):
+   line 1 = logo + language/currency/theme, line 2 = menu */
+@media (min-width: 761px) {
+  .topbar.two-rows { flex-wrap: wrap; row-gap: 6px; padding-bottom: 6px; }
+  .topbar.two-rows .topbar-right { display: contents; }
+  .topbar.two-rows .toggles { order: 2; margin-left: auto; }
+  .topbar.two-rows nav { order: 3; flex: 1 0 100%; flex-wrap: wrap; border-top: 1px solid #2a3036; padding-top: 6px; }
+}

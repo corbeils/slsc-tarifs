@@ -15,7 +15,7 @@ const PAGES = [
   { id: 'lot', label: 'Batch simulator', access: 'public' },
   // Measures in force: reached from the footer (MEASURES LAST UPDATE), no longer in the top menu
   { id: 'mesures', label: 'Measures in force', access: 'public', hidden: true },
-  { id: 'hscode', label: 'HS code lookup', access: 'user' },
+  { id: 'hscode', label: 'Classification assistant', access: 'user' },
   { id: 'admin', label: 'Admin', access: 'admin' },
 ] as const;
 type Access = (typeof PAGES)[number]['access'];

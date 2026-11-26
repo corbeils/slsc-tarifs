@@ -16,6 +16,6 @@
   ],
   "shortcuts": [
     { "name": "Simulator", "url": "/#/simulateur", "icons": [{ "src": "/icons/icon-192.png", "sizes": "192x192" }] },
-    { "name": "HS code lookup", "url": "/#/hscode", "icons": [{ "src": "/icons/icon-192.png", "sizes": "192x192" }] }
+    { "name": "Classification assistant", "url": "/#/hscode", "icons": [{ "src": "/icons/icon-192.png", "sizes": "192x192" }] }
   ]
 }

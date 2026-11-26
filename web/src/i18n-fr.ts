@@ -166,7 +166,7 @@ export const FR: Record<string, string> = {
   Date: 'Date',
 
   // Classification assistant
-  'Classification assistant': 'Assistant de classement',
+  'Classification assistant': 'Assistant de classification',
   'Describe the goods and/or add photos: the assistant applies the General Rules of Interpretation, asks questions if needed and proposes the tariff line of the chosen country (only codes that exist in the imported tariff).':
     'Décrivez la marchandise et/ou ajoutez des photos : l’assistant applique les Règles générales interprétatives, pose des questions au besoin et propose la ligne tarifaire du pays choisi (seulement des codes qui existent dans le tarif importé).',
   'e.g. Hydraulic press for closed-die forging of steel parts, 2,500 tonnes, CNC controlled, new':

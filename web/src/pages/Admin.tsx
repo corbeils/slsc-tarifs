@@ -339,7 +339,7 @@ function AiCard({ notify }: { notify: (ok: boolean, text: string) => void }) {
   if (!cfg) return null;
   return (
     <div className="card">
-      <h3>AI classification assistant (HS code lookup)</h3>
+      <h3>AI classification assistant</h3>
       <p className="small muted">
         Provider used now: <b>{cfg.providers.find((y: any) => y.id === cfg.active)?.label}</b>. Keys stay on this server and are never sent to the browser. Anthropic uses its own API; the others use their
         OpenAI-compatible endpoint (function calling). Model names change often: pick a suggestion or type the exact name from the provider's console.
@@ -597,7 +597,7 @@ function Users({ me, wrap }: { me: Me; wrap: Wrap }) {
     <div className="card">
       <h3>Users</h3>
       <p className="small muted">
-        <b>ADMIN</b>: everything, including Admin. <b>USER</b>: + HS code lookup and My account. Without an account: Simulator, Batch simulator and Measures in force (footer link).
+        <b>ADMIN</b>: everything, including Admin. <b>USER</b>: + Classification assistant and My account. Without an account: Simulator, Batch simulator and Measures in force (footer link).
       </p>
       <table className="simple">
         <tbody>

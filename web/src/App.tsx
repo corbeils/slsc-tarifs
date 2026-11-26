@@ -13,7 +13,8 @@ import { useAuth } from './auth';
 const PAGES = [
   { id: 'simulateur', label: 'Simulator', access: 'public' },
   { id: 'lot', label: 'Batch simulator', access: 'public' },
-  { id: 'mesures', label: 'Measures in force', access: 'user' },
+  // Measures in force: reached from the footer (MEASURES LAST UPDATE), no longer in the top menu
+  { id: 'mesures', label: 'Measures in force', access: 'user', hidden: true },
   { id: 'hscode', label: 'HS code lookup', access: 'user' },
   { id: 'admin', label: 'Admin', access: 'admin' },
 ] as const;
@@ -46,6 +47,9 @@ export default function App() {
     window.addEventListener('slsc-meta', on);
     return () => window.removeEventListener('slsc-meta', on);
   }, []);
+  // Last refresh of the official lists (automatic sync, otherwise the latest list import)
+  const measuresAt: string | undefined =
+    meta?.officialLists?.at ?? (meta?.codeLists as { at?: string }[] | undefined)?.reduce<string | undefined>((m, x) => (x.at && (!m || x.at > m) ? x.at : m), undefined);
   const upd = (m: any) => (m?.at ? `${fmtDate(m.at)}${m.source?.startsWith('seed') ? t(' (demo)') : ''}` : '—');
   return (
     <div className="app">
@@ -67,7 +71,7 @@ export default function App() {
         </div>
         <div className="topbar-right">
           <nav>
-            {PAGES.filter((p) => can(p.access)).map((p) => (
+            {PAGES.filter((p) => can(p.access) && !('hidden' in p)).map((p) => (
               <a key={p.id} className={page === p.id ? 'active' : ''} href={`#/${p.id}`}>
                 {t(p.label)}
               </a>
@@ -110,6 +114,12 @@ export default function App() {
           </span>
           <span>
             <b>{t('TARIC LAST UPDATE')}</b> : {upd(meta?.eu)}
+          </span>
+          <span>
+            <b>{t('MEASURES LAST UPDATE')}</b> :{' '}
+            <a className="linklike" href="#/mesures" title={t('View all measures in force')}>
+              {measuresAt ? fmtDate(measuresAt) : '—'}
+            </a>
           </span>
           <span>
             <b>{t('SITE VERSION')}</b> :{' '}

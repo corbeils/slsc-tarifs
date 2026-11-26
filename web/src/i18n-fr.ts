@@ -22,6 +22,8 @@ export const FR: Record<string, string> = {
   'USITC LAST UPDATE': 'DERNIÈRE MISE À JOUR USITC',
   'ASFC LAST UPDATE': 'DERNIÈRE MISE À JOUR ASFC',
   'SITE VERSION': 'VERSION DU SITE',
+  'MEASURES LAST UPDATE': 'DERNIÈRE MISE À JOUR MESURES',
+  'View all measures in force': 'Voir toutes les mesures en vigueur',
   'BETA VERSION {v}': 'VERSION BETA {v}',
   'VERSION {v}': 'VERSION {v}',
   ' (demo)': ' (démo)',

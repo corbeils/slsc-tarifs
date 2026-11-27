@@ -227,9 +227,31 @@ export function calcEU(db: DB, rules: Rules, line: LineRow, input: CalcInput, fx
   });
 
   // ---------------- Additional duties (safeguard, countermeasures…) ----------------
-  for (const m of mine.filter((x) => typeIn(T, 'additional', x.type))) {
+  // Steel out-of-quota duty: recognised by its legal base, even under a TARIC type not listed in measureTypes.
+  const OQ = R.outOfQuota;
+  const known = new Set(Object.values(T).flat());
+  const isOutOfQuota = (m: { legal: string }) => !!OQ && OQ.legal.some((l) => m.legal.replace(/\s/g, '').includes(l));
+  const quotaTicked = quotas.some((q) => isOutOfQuota(q) && opts[`quota:${q.order_no || q.code}`]);
+  for (const m of mine.filter((x) => typeIn(T, 'additional', x.type) || (!known.has(x.type) && isOutOfQuota(x)))) {
     const p = parseEuDuty(m.duty);
     const d = computeDuty(p, value, qty);
+    if (isOutOfQuota(m)) {
+      lines.push({
+        key: `add:${m.type}:${m.origin}:${m.add_code}:${m.order_no}`,
+        label: t(OQ!.label),
+        program: m.type,
+        legal: m.legal,
+        rateText: m.duty,
+        ratePct: p.specific.length ? null : p.adValorem,
+        basis: value,
+        amount: quotaTicked ? 0 : round2(d.amount),
+        exempted: quotaTicked,
+        kind: 'additional',
+        status: 'to verify',
+        note: [originName(m), quotaTicked ? t('Within the tariff quota: not due') : OQ!.note ? t(OQ!.note) : ''].filter(Boolean).join(' · '),
+      });
+      continue;
+    }
     if (d.missingQuantity.length) needs.quantityUnits = [...new Set([...(needs.quantityUnits ?? []), ...d.missingQuantity])];
     lines.push({
       key: `add:${m.type}:${m.origin}:${m.add_code}:${m.order_no}`,

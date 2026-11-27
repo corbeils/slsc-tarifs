@@ -418,6 +418,44 @@ measures:
       - { option: humanitarian, ch99: "9903.05.91", label: "Humanitarian donations (food, clothing, medicine)" }
     note: "Full list of the 60 economies: headings 9903.05.20 to 9903.05.84 (imported automatically)."
 
+  # PROPOSED (Nov. 25, 2026) — not in force. Off by default; tick the option to simulate it.
+  - id: US-301-OC
+    name: "Section 301 — structural excess capacity (PROPOSED, not in force)"
+    program: "Section 301"
+    legal: "USTR proposed actions, 14 Section 301 investigations (Nov. 25, 2026); comments due Jan. 5, 2027, hearing from Jan. 25, 2027"
+    url: "https://ustr.gov"
+    status: to verify
+    requiresOption: usOvercapacity301
+    optionLabel: "Simulate the proposed Section 301 excess-capacity tariff (not in force)"
+    scope: { all: true }
+    origins: [EU, JP, KR, CH, TW, BD, KH, ID, MY, TH, SG, CN, IN, VN]
+    # Proposed default rates ("up to"); EU, Japan, Korea, Switzerland, Taiwan: 15% all-in (net of MFN and existing 301)
+    originRates:
+      EU: 15
+      JP: 15
+      KR: 15
+      CH: 15
+      TW: 15
+      BD: 18
+      KH: 18
+      ID: 18
+      MY: 18
+      TH: 18
+      SG: 20
+      CN: 20
+      IN: 25
+      VN: 35
+    originCaps:
+      EU: 15
+      JP: 15
+      KR: 15
+      CH: 15
+      TW: 15
+    netOf: [US-301-FL]
+    exemptIf:
+      - { families: [s232], origins: [EU, JP, KR, CH, TW, BD, KH, ID, MY, TH, SG, IN, VN], label: "Article subject to a Section 232 program (proposed exemption, except China)" }
+    note: "Proposal only: no collection date. Rates are the proposed maximums, net of the forced-labor Section 301 (and of MFN for the EU, Japan, Korea, Switzerland, Taiwan). Lower rates proposed if an agreement is reached (India 17%, Vietnam 20%, Singapore 10%); China 10% on Annex A goods, Annex B goods exempt. Each economy has its own product exemption list."
+
   - id: US-338-BAN
     name: "Section 338 — IMPORT PROHIBITION (products of Canada)"
     program: "Section 338"

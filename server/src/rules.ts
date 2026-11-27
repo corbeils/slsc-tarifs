@@ -64,6 +64,10 @@ export const Measure = z
     originCaps: z.record(z.number()).optional(),
     autoFromCh99Range: z.tuple([z.string(), z.string()]).optional(),
     requiresOption: z.string().optional(),
+    /** Label of the requiresOption checkbox (default: the measure name). */
+    optionLabel: z.string().optional(),
+    /** Rate is net of these measures already applied (e.g. existing Section 301), percentage points subtracted. */
+    netOf: z.array(z.string()).optional(),
     exemptIf: z.array(ExemptCond).optional(),
     preferentialBasis: z.enum(['value', 'nonUsContent', 'nonCaMxContent']).optional(),
     group: z.string().optional(),
@@ -289,6 +293,7 @@ export const EuRules = z
     vat: z.record(z.number()),
     vatNote: z.string().optional(),
     measureTypes: z.record(z.array(z.string())),
+    outOfQuota: z.object({ legal: z.array(z.string()), label: z.string(), note: z.string().optional() }).optional(),
     agreements: z.record(Agreement).default({}),
   })
   .passthrough();

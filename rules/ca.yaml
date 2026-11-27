@@ -101,9 +101,9 @@ measures:
     group: ca-us
     priority: 10
     status: verified
-    note: "Rate per tariff item (15%, 25% or 50%) read from the Department of Finance consolidated list, imported automatically. No CUSMA exemption. Until the list is imported, steel/aluminum prefixes are used at 50%."
+    note: "Rate per tariff item (15%, 25% or 50%) read from the Department of Finance consolidated list, imported automatically. No CUSMA exemption. Until the list is imported, steel/aluminum prefixes are used at 50%. Remission (amended Nov. 9, 2026): horizontal relief extended to June 30, 2028; goods in new Schedule 7 are not eligible (check the Remission List); company-specific relief under Schedules 2–4.2."
     exemptIf:
-      - { option: usSurtaxRemission, label: "Horizontal remission — United States Surtax Remission Order (2025) (manufacturing, processing, food packaging, health, public safety) — until June 30, 2027" }
+      - { option: usSurtaxRemission, label: "Horizontal remission — United States Surtax Remission Order (2025) (manufacturing, processing, food packaging, health, public safety) — until June 30, 2028, except goods in Schedule 7 (domestic production)" }
 
   - id: CA-US-AUTO
     name: "U.S. surtax — motor vehicles"
@@ -204,6 +204,36 @@ measures:
     group: ca-steel
     priority: 3
     status: verified
+
+  # --------------------------- Provisional safeguards (Customs Tariff s. 55) ---------------------------
+  # Excluded origins: U.S., Mexico, Chile, Israel / other CIFTA beneficiaries, and the developing countries of Schedule 2.
+  - id: CA-SG-CANVEG
+    name: "Provisional safeguard — canned vegetables (10%)"
+    program: "Safeguard surtax"
+    legal: "Certain Canned Vegetable Goods Surtax Order, SOR/2026-135 (June 19, 2026, for 200 days); Customs Notice 26-14; surtax code 26135A"
+    url: "https://www.cbsa-asfc.gc.ca/publications/cn-ad/cn26-14-eng.html"
+    rate: 10
+    from: "2026-06-19"
+    to: "2027-01-04"
+    excludeOrigins: [CA, US, MX, CL, IL, PS, AF, AO, AI, BD, BJ, BT, BO, IO, BF, MM, BI, KH, CM, IC, CV, CF, EA, TD, CX, CC, KM, CG, CK, CI, CD, DJ, EG, SV, ER, ET, FK, TF, GM, GH, GN, GW, HT, HN, KE, KI, KG, LA, LB, LS, LR, MG, MW, ML, MR, FM, MN, MS, MA, MZ, NP, NI, NE, NG, NU, NF, PK, PG, PH, PN, RW, SH, WS, ST, SN, SL, SB, SO, SS, LK, SD, SZ, SY, TJ, TZ, TL, TG, TK, TN, UG, UA, UZ, VU, YE, ZM, ZW]
+    scope:
+      prefixes: ["2005.40.00.00", "2005.51.90.19", "2005.51.90.90", "2005.59.00.00", "2005.80.00.00", "2005.99.11.00", "2005.99.19.00", "2005.99.20.19", "2005.99.20.99", "2005.99.90.15", "2005.99.90.18", "2005.99.90.19", "2005.99.90.98", "2005.99.90.99"]
+    status: verified
+    note: "Corn, peas, green and wax beans, peas and carrots, mixed vegetables, white/black/red/pinto beans, chickpeas. Not: fresh, dried or frozen vegetables; ready meals; purées, powders, juices, pastes; Chapter 98; goods in transit on June 19, 2026. Ends after 200 days or earlier on the CITT report."
+
+  - id: CA-SG-CABINET
+    name: "Provisional safeguard — wood cabinets and vanities (25%)"
+    program: "Safeguard surtax"
+    legal: "Certain Wood Cabinet and Vanity Goods Surtax Order, SOR/2026-169 (July 31, 2026, for 200 days); Customs Notice 26-17; surtax code 26169A"
+    url: "https://www.cbsa-asfc.gc.ca/publications/cn-ad/cn26-17-eng.html"
+    rate: 25
+    from: "2026-07-31"
+    to: "2027-02-15"
+    excludeOrigins: [CA, US, MX, CL, IL, PS, AF, AO, AI, BD, BJ, BT, BO, IO, BF, MM, BI, KH, CM, IC, CV, CF, EA, TD, CX, CC, KM, CG, CK, CI, CD, DJ, EG, SV, ER, ET, FK, TF, GM, GH, GN, GW, HT, HN, KE, KI, KG, LA, LB, LS, LR, MG, MW, ML, MR, FM, MN, MS, MA, MZ, NP, NI, NE, NG, NU, NF, PK, PG, PH, PN, RW, SH, WS, ST, SN, SL, SB, SO, SS, LK, SD, SZ, SY, TJ, TZ, TL, TG, TK, TN, UG, UA, UZ, VU, YE, ZM, ZW]
+    scope:
+      prefixes: ["9403.40.00.10", "9403.60.10.31", "9403.60.10.39", "9403.91.00.90"]
+    status: verified
+    note: "Wood cabinets and vanities for permanent installation (kitchens, bathrooms, closets) and their subassemblies, solid or engineered wood. Not: freestanding furniture, office furniture, retail fixtures, organizers and accessories imported separately, non-wood hardware, certain medicine cabinets, Chapter 98. Ends after 200 days or earlier on the CITT report."
 
 regimes:
   - id: none

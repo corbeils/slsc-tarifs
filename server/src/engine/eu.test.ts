@@ -56,6 +56,8 @@ describe('INBOUND EU (TARIC)', () => {
         ['8462110000', '', '094001', '01-01-2025', '', '', 'Canada', 'Preferential tariff quota', 'D0038/17', '0.000 %', 'CA', '143'],
         ['8462000000', '', '', '01-01-2025', '', '', 'ERGA OMNES', 'Import control', 'R2025/0003', '', '1011', '710'],
         ['8462000000', '', '', '01-01-2020', '31-12-2020', '', 'ERGA OMNES', 'Third country duty', 'old', '9.000 %', '1011', '103'],
+        ['8462110010', '', '', '01-07-2026', '', '', 'India', 'Out-of-quota duty', 'R2601384', '50.000 %', 'IN', '699'],
+        ['8462110010', '', '098600', '01-07-2026', '', '', 'India', 'Non preferential tariff quota', 'R2601384', '0.000 %', 'IN', '122'],
       ],
     );
     const geo = await xlsx(
@@ -114,6 +116,16 @@ describe('INBOUND EU (TARIC)', () => {
     expect(r.lines.find((l) => l.kind === 'adcvd')!.amount).toBe(3500);
     const r2 = calc({ origin: 'CN', includeAdcvd: true, adcvdCompany: 'C123' });
     expect(r2.lines.find((l) => l.kind === 'adcvd')!.amount).toBe(2000);
+  });
+
+  it('steel out-of-quota duty (Reg. 2026/1384): recognised by legal base, not due within the quota', () => {
+    const r = calc({ origin: 'IN' });
+    const l = r.lines.find((x) => x.legal === 'R2601384')!;
+    expect(l.amount).toBe(5000);
+    expect(r.options.some((o) => o.key === 'quota:098600')).toBe(true);
+    const q = calc({ origin: 'IN', options: { 'quota:098600': true } });
+    expect(q.lines.find((x) => x.legal === 'R2601384')!.amount).toBe(0);
+    expect(calc({}).lines.some((x) => x.legal === 'R2601384')).toBe(false);
   });
 
   it('additional duties by origin (countermeasures on U.S. goods)', () => {

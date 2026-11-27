@@ -367,6 +367,11 @@ export function calcUS(db: DB, rules: Rules, line: LineRow, input: CalcInput, fx
       if (!originAllowed(m, origin)) continue;
       const sm = scopeMatch(db, m, line);
       if (!sm.matched) continue;
+      // Opt-in measures (e.g. proposed, not yet in force): only computed when the box is ticked
+      if (m.requiresOption) {
+        options.push({ key: m.requiresOption, label: t(m.optionLabel ?? m.name), context: m.name, status: m.status, note: m.note });
+        if (!opts[m.requiresOption]) continue;
+      }
       if (m.kind === 'ban') {
         flags.bans.push({
           level: 'danger',
@@ -413,6 +418,10 @@ export function calcUS(db: DB, rules: Rules, line: LineRow, input: CalcInput, fx
       }
       let ratePct = rate;
       if (cap !== undefined) ratePct = Math.max(0, Math.min(rate, cap - basePct));
+      if (m.netOf?.length) {
+        const prior = lines.filter((l) => m.netOf!.includes(l.key) && !l.exempted).reduce((s, l) => s + (l.ratePct ?? 0), 0);
+        ratePct = Math.max(0, ratePct - prior);
+      }
       const amount = exempt ? 0 : (ratePct / 100) * dutiable;
       lines.push({
         key: m.id,

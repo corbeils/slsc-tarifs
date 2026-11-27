@@ -17,3 +17,5 @@ Tariff Item,SS,Description,UOM,MFN Tariff,Applicable Preferential Tariffs,Genera
 8537.10.90,00,"[DEMO] Boards, panels for electric control, ≤ 1,000 V - - - Other",NMB,Free,"UST, MXT, CIAT, CT, CRT, IT, NT, SLT, PT, COLT, JT, PAT, HNT, KRT, CEUT, UAT, CPTPT, UKT, CPUKT: Free",35%
 8703.80.00,00,"[DEMO] Other vehicles, with only electric motor for propulsion",NMB,6.1%,"UST, MXT, CIAT, CT, CRT, IT, NT, SLT, PT, COLT, JT, PAT, HNT, KRT, CEUT, UAT, CPTPT, UKT, CPUKT: Free GPT: 6%",35%
 8711.50.00,00,"[DEMO] Motorcycles, cylinder capacity exceeding 800 cc",NMB,6%,"UST, MXT, CIAT, CT, CRT, IT, NT, SLT, PT, COLT, JT, PAT, HNT, KRT, CEUT, UAT, CPTPT, UKT, CPUKT: Free",35%
+9403.40.00,10,[DEMO] Wooden furniture of a kind used in the kitchen - Kitchen cabinets,NMB,9.5%,"UST, MXT, CEUT: Free",35%
+2005.40.00,00,"[DEMO] Peas, prepared or preserved otherwise than by vinegar",KGM,Free,"UST, MXT: Free",35%

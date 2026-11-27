@@ -293,6 +293,31 @@ describe('accords de libre-échange', () => {
     expect(r.lines.find((l) => l.key === 'base')!.amount).toBeGreaterThan(0);
   });
 
+  it('US : 301 surcapacité proposée — désactivée par défaut, 15 % tout compris pour l’UE', () => {
+    const base = calculate(db, rules, { direction: 'CA-US', code: '8462110035', origin: 'DE', value: 100000, currency: 'USD' });
+    expect(base.lines.some((l) => l.key === 'US-301-OC')).toBe(false);
+    expect(base.options.some((o) => o.key === 'usOvercapacity301')).toBe(true);
+    const r = calculate(db, rules, { direction: 'CA-US', code: '8462110035', origin: 'DE', value: 100000, currency: 'USD', options: { usOvercapacity301: true } });
+    const mfn = r.lines.find((l) => l.key === 'base')!.amount;
+    const fl = r.lines.find((l) => l.key === 'US-301-FL')?.amount ?? 0;
+    const oc = r.lines.find((l) => l.key === 'US-301-OC')!.amount;
+    expect(Math.round(mfn + fl + oc)).toBe(15000);
+    const ca = calculate(db, rules, { direction: 'CA-US', code: '8462110035', origin: 'CA', value: 100000, currency: 'USD', options: { usOvercapacity301: true } });
+    expect(ca.lines.some((l) => l.key === 'US-301-OC')).toBe(false);
+  });
+
+  it('CA : sauvegardes provisoires (armoires 25 %, conserves 10 %) selon l’origine et la date', () => {
+    const cab = (origin: string, date = '2026-11-27') =>
+      calculate(db, rules, { direction: 'US-CA', code: '9403400010', origin, value: 1000, currency: 'CAD', date }).lines.find((l) => l.key === 'CA-SG-CABINET');
+    expect(cab('CN')?.amount).toBe(250);
+    expect(cab('DE')?.amount).toBe(250);
+    expect(cab('US')).toBeUndefined();
+    expect(cab('PH')).toBeUndefined(); // Schedule 2 developing country
+    expect(cab('CN', '2027-03-01')).toBeUndefined(); // after 200 days
+    const veg = calculate(db, rules, { direction: 'US-CA', code: '2005400000', origin: 'CN', value: 1000, currency: 'CAD', date: '2026-11-27' });
+    expect(veg.lines.find((l) => l.key === 'CA-SG-CANVEG')?.amount).toBe(100);
+  });
+
   it('CA : traitements tarifaires de la ligne avec admissibilité selon l’origine', () => {
     const row = db.prepare("SELECT code FROM lines WHERE j = 'CA' AND pref_json LIKE '%CEUT%' AND is_leaf = 1 LIMIT 1").get() as { code: string } | undefined;
     if (!row) return;

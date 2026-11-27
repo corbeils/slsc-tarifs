@@ -53,6 +53,15 @@ measureTypes:
   additional: ["690", "692", "693", "695", "696"]
   agricultural: ["672", "673", "674"]
 
+# Out-of-quota duties (steel): measures whose legal base matches are additional duties (whatever their TARIC type,
+# except quota types) and are not due when the matching tariff quota is ticked.
+# Regulation (EU) 2026/1384 (steel overcapacity, from July 1, 2026, 50%), bilateral safeguards (EU) 2026/1930,
+# former safeguard (EU) 2019/159 (until June 30, 2026).
+outOfQuota:
+  legal: ["2601384", "2026/1384", "2601930", "2026/1930", "1900159", "2019/159"]
+  label: "Steel out-of-quota duty — Regulation (EU) 2026/1384"
+  note: "Due only when the country's tariff quota is exhausted (or for imports without quota). Tick the tariff quota below if a balance is available. Melt and pour country required since Oct. 1, 2026."
+
 # Free trade agreements by TARIC origin (country or group code). Origins not listed use the TARIC description.
 agreements:
   CA: { name: "EU-Canada Comprehensive Economic and Trade Agreement", short: "CETA", url: "https://policy.trade.ec.europa.eu/eu-trade-relationships-country-and-region/countries-and-regions/canada/eu-canada-agreement_en" }

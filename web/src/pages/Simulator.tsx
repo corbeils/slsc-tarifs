@@ -3,6 +3,7 @@ import CodeSearch from '../components/CodeSearch';
 import CountrySelect from '../components/CountrySelect';
 import { useI18n } from '../i18n';
 import { convert, useDisplayCurrency } from '../currency';
+import { downloadResultPdf } from '../pdf';
 import { api, fmtDate, money, pct, type AgreementInfo, type CalcLine, type CalcResult, type Country, type Direction, type Flag, type SearchHit } from '../api';
 
 const UNIT_LABELS: Record<string, string> = {
@@ -391,7 +392,7 @@ export default function Simulator() {
         {!f.hit && <Empty j={j} />}
         {err && <div className="alert danger">{err}</div>}
         {res && !res.ok && <div className="alert danger">{res.error}</div>}
-        {res?.ok && <Result r={res} loading={loading} f={f} setChoice={(p, c) => set('ch99Choice', { ...f.ch99Choice, [p]: c })} />}
+        {res?.ok && <Result r={res} loading={loading} f={f} countries={countries} setChoice={(p, c) => set('ch99Choice', { ...f.ch99Choice, [p]: c })} />}
       </section>
     </div>
   );
@@ -500,8 +501,9 @@ function Empty({ j }: { j: 'US' | 'CA' | 'EU' }) {
   );
 }
 
-function Result({ r, loading, f, setChoice }: { r: CalcResult; loading: boolean; f: Form; setChoice: (p: string, c: string) => void }) {
-  const { t } = useI18n();
+function Result({ r, loading, f, countries, setChoice }: { r: CalcResult; loading: boolean; f: Form; countries: Country[]; setChoice: (p: string, c: string) => void }) {
+  const { t, lang } = useI18n();
+  const [pdfBusy, setPdfBusy] = useState(false);
   const cur = r.currency;
   const { cur: shown } = useDisplayCurrency();
   /** Same amount in the currency chosen at the top (only when it differs from the local currency). */
@@ -510,17 +512,23 @@ function Result({ r, loading, f, setChoice }: { r: CalcResult; loading: boolean;
     const v = convert(n, r.currency, shown, r.fx);
     return v === null ? null : money(v, shown);
   };
-  const copy = () => {
-    const txt = [
-      `${r.line!.display} — ${r.line!.description}`,
-      `${t('Origin')} ${f.origin} · ${t('Value')} ${money(r.value, cur)} · ${r.direction === 'CA-US' ? 'INBOUND USA' : r.direction === 'IN-EU' ? 'INBOUND EU' : 'INBOUND CANADA'}`,
-      ...r.lines.map((l) => `${l.label}${l.ch99 ? ' (' + l.ch99 + ')' : ''}: ${l.ratePct !== null && l.ratePct !== undefined ? pct(l.ratePct) : l.rateText ?? ''} → ${money(l.amount, cur)}`),
-      `${t('TOTAL')}: ${money(r.totals.total, cur)} (${t('duties')} ${pct(r.totals.dutyPct)})`,
-      ...r.flags.bans.map((x) => `${t('PROHIBITED')}: ${x.title}`),
-      ...r.flags.adcvd.map((x) => `AD/CVD: ${x.title}`),
-      ...r.flags.licences.filter((x) => x.level !== 'info').map((x) => `${t('Licence')}: ${x.agency} — ${x.title}`),
-    ].join('\n');
-    navigator.clipboard.writeText(txt);
+  const pdf = async () => {
+    setPdfBusy(true);
+    try {
+      const country = countries.find((c) => c.code === f.origin);
+      const modes: Record<string, string> = { truck: t('Truck'), rail: t('Rail'), ocean: t('Ocean'), air: t('Air') };
+      await downloadResultPdf(r, {
+        t,
+        lang,
+        originName: country ? `${lang === 'fr' ? country.fr : country.en} (${country.code})` : f.origin,
+        date: f.date,
+        mode: modes[f.mode] ?? f.mode,
+        place: r.destination === 'CA' ? f.province : r.destination === 'EU' ? f.memberState : undefined,
+        shown,
+      });
+    } finally {
+      setPdfBusy(false);
+    }
   };
   const groups: [string, CalcLine['kind'][]][] = [
     [t('Duties and measures'), ['base', 'additional']],
@@ -544,8 +552,8 @@ function Result({ r, loading, f, setChoice }: { r: CalcResult; loading: boolean;
             {r.line!.path && <div className="path" title={r.line!.path}>{r.line!.path}</div>}
           </div>
           <div className="actions">
-            <button className="btn ghost" onClick={copy}>
-              {t('Copy')}
+            <button className="btn ghost" onClick={pdf} disabled={pdfBusy} title={t('Download the simulation as a PDF')}>
+              {pdfBusy ? '…' : 'PDF'}
             </button>
             <button className="btn ghost" onClick={() => window.print()}>
               {t('Print')}

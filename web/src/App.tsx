@@ -4,6 +4,7 @@ import Batch from './pages/Batch';
 import Measures from './pages/Measures';
 import HsLookup from './pages/HsLookup';
 import Admin from './pages/Admin';
+import News from './pages/News';
 import ThemeToggle from './components/ThemeToggle';
 import { api, fmtDate, session } from './api';
 import { LangToggle, useI18n } from './i18n';
@@ -16,6 +17,7 @@ const PAGES = [
   // Measures in force: reached from the footer (MEASURES LAST UPDATE), no longer in the top menu
   { id: 'mesures', label: 'Measures in force', access: 'public', hidden: true },
   { id: 'hscode', label: 'Classification assistant', access: 'user' },
+  { id: 'nouveautes', label: "What's new", access: 'public' },
   { id: 'admin', label: 'Admin', access: 'admin' },
 ] as const;
 type Access = (typeof PAGES)[number]['access'];
@@ -132,6 +134,7 @@ export default function App() {
         {page === 'lot' && <Batch />}
         {page === 'mesures' && <Measures />}
         {page === 'hscode' && (can('user') ? <HsLookup /> : <SignInFirst />)}
+        {page === 'nouveautes' && <News />}
         {page === 'admin' && <Admin />}
       </main>
       <footer className="notice">

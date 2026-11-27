@@ -18,6 +18,7 @@ import { extractCodes, fetchText, fileToText, section, validateCodes, importAdcv
 import { buildTemplate, runBatch } from './batch.js';
 import { syncCbsa } from './importers/cbsa-sync.js';
 import { syncOfficialLists } from './importers/official-lists.js';
+import { listNews, syncNews } from './importers/news.js';
 import { importTaric, syncTaricUrls, type TaricFile } from './importers/taric.js';
 import { classify, publicAiConfig, setAiConfig, type ChatTurn, type ClassJ } from './classify.js';
 import { clearListCache } from './engine/common.js';
@@ -88,6 +89,12 @@ export async function buildApp(db: DB) {
   app.get('/api/changelog', async () =>
     (getMeta<{ version: string; beta: boolean; at: string; notes: string }[]>(db, 'site:changelog') ?? []).map(({ version, beta, at, notes }) => ({ version, beta, at, notes })),
   );
+  // Customs news feed (public)
+  app.get('/api/news', async (req) => {
+    const q = req.query as { lang?: string; j?: string; q?: string; limit?: string };
+    const st = getMeta<{ at: string }>(db, 'news:sync');
+    return { at: st?.at ?? null, items: listNews(db, getRules().news, { lang: q.lang === 'fr' ? 'fr' : 'en', j: q.j, q: q.q?.slice(0, 100), limit: Number(q.limit) || 150 }) };
+  });
   app.get('/api/meta', async () => {
     const count = (j: string) => (db.prepare('SELECT COUNT(*) n FROM lines WHERE j = ?').get(j) as { n: number }).n;
     const lists = db.prepare('SELECT measure_id, COUNT(*) n, MAX(added_at) at FROM code_lists GROUP BY measure_id').all();
@@ -433,6 +440,11 @@ export async function buildApp(db: DB) {
       const job = startJob('import-ca', () => importCaUrl(db, url));
       return { job: job.id };
     });
+    a.post('/api/admin/sync/news', async () => {
+      const job = startJob('sync-news', () => syncNews(db, getRules().news));
+      return { job: job.id };
+    });
+    a.get('/api/admin/news/status', async () => getMeta(db, 'news:sync'));
     a.post('/api/admin/sync/official-lists', async () => {
       const job = startJob('sync-lists', (log) => syncOfficialLists(db, getRules(), log));
       return { job: job.id };

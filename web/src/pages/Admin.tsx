@@ -257,6 +257,8 @@ function AdminPanel({ me, onLogout, onPasswordChanged, onRenamed }: { me: Me; on
         </div>
       </div>
 
+      <NewsCard wrap={wrap} poll={poll} />
+
       <div className="card">
         <h3>Official lists — U.S. Section 232 annexes and Canadian surtaxes on U.S. goods</h3>
         <p className="small muted">
@@ -757,7 +759,7 @@ function RulesEditor({ wrap }: { wrap: Wrap }) {
     <div className="card">
       <h3>Rules (YAML)</h3>
       <div className="row">
-        {['us', 'ca', 'eu', 'adcvd', 'licences'].map((k) => (
+        {['us', 'ca', 'eu', 'adcvd', 'licences', 'news'].map((k) => (
           <button key={k} className={`btn ${key === k ? '' : 'ghost'}`} onClick={() => setKey(k)}>{k}.yaml</button>
         ))}
         <span className="spacer" />
@@ -765,6 +767,64 @@ function RulesEditor({ wrap }: { wrap: Wrap }) {
       </div>
       <textarea className="input mono code-editor" spellCheck={false} value={text} onChange={(e) => setText(e.target.value)} />
       <div className="small muted">The file is validated before it is written; a .bak copy is kept.</div>
+    </div>
+  );
+}
+
+function NewsCard({ wrap, poll }: { wrap: (l: string, f: () => Promise<any>) => Promise<any>; poll: (l: string, id: string) => void }) {
+  const [st, setSt] = useState<Awaited<ReturnType<typeof api.admin.newsStatus>>>(null);
+  const load = () => api.admin.newsStatus().then(setSt).catch(() => {});
+  useEffect(() => {
+    load();
+  }, []);
+  return (
+    <div className="card">
+      <h3>Customs news feed (What's new tab)</h3>
+      <p className="small muted">
+        Official sources checked every 6 hours (CRON_NEWS): Federal Register (USTR, proclamations, CBP, Commerce 232), CBSA Customs Notices, Finance Canada,
+        EU Official Journal and DG TAXUD. Sources and keyword filters are in <span className="mono">rules/news.yaml</span> (RULES tab).
+      </p>
+      <button
+        className="btn"
+        onClick={async () => {
+          const r = await wrap('News feed', api.admin.syncNews);
+          if (r?.job) {
+            poll('News feed', r.job);
+            setTimeout(load, 15000);
+            setTimeout(load, 45000);
+          }
+        }}
+      >
+        Check sources now
+      </button>{' '}
+      <button className="btn ghost" onClick={load}>
+        Refresh status
+      </button>
+      {st && (
+        <table className="simple" style={{ marginTop: 12 }}>
+          <tbody>
+            <tr>
+              <td colSpan={2} className="muted small">
+                Last run {fmtDate(st.at)}
+              </td>
+            </tr>
+            {st.results.map((r) => (
+              <tr key={r.id}>
+                <td>{r.source}</td>
+                <td>
+                  {r.ok ? (
+                    <>
+                      <span className="badge ok">{r.kept} kept</span> <span className="muted small">{r.found} read · {r.added} new</span>
+                    </>
+                  ) : (
+                    <span className="badge warn">{r.error}</span>
+                  )}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      )}
     </div>
   );
 }

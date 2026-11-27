@@ -1,0 +1,85 @@
+# Customs news feed ("What's new" tab): official sources checked automatically.
+# kind:
+#   federalregister  Federal Register API (JSON)
+#   feed             RSS 2.0 or Atom feed
+#   cbsa             CBSA Customs Notices list (HTML page)
+# lang + group: the same source in English and French; the page shows the version in the reader's language.
+# keywords: keep only items whose title or summary matches one of these (case-insensitive). Empty = keep all.
+keepDays: 400
+
+sources:
+  # ------------------------------- United States -------------------------------
+  - id: us-ustr
+    source: "USTR (Federal Register)"
+    jurisdiction: US
+    kind: federalregister
+    url: "https://www.federalregister.gov/api/v1/documents.json?per_page=50&order=newest&conditions[agencies][]=trade-representative-office-of-united-states"
+
+  - id: us-president
+    source: "White House — Proclamations and executive orders (Federal Register)"
+    jurisdiction: US
+    kind: federalregister
+    url: "https://www.federalregister.gov/api/v1/documents.json?per_page=50&order=newest&conditions[type][]=PRESDOCU"
+    keywords: ["tariff", "duty", "duties", "import", "section 232", "section 301", "section 338", "trade"]
+
+  - id: us-cbp
+    source: "CBP (Federal Register)"
+    jurisdiction: US
+    kind: federalregister
+    url: "https://www.federalregister.gov/api/v1/documents.json?per_page=50&order=newest&conditions[agencies][]=u-s-customs-and-border-protection"
+    keywords: ["tariff", "duty", "duties", "entry", "import", "drawback", "de minimis", "country of origin", "harmonized", "section 232", "section 301"]
+
+  - id: us-commerce-232
+    source: "Commerce — Section 232 (Federal Register)"
+    jurisdiction: US
+    kind: federalregister
+    url: "https://www.federalregister.gov/api/v1/documents.json?per_page=50&order=newest&conditions[agencies][]=industry-and-security-bureau&conditions[term]=%22section%20232%22"
+
+  # ---------------------------------- Canada ----------------------------------
+  - id: ca-cbsa-en
+    source: "CBSA — Customs Notices"
+    jurisdiction: CA
+    kind: cbsa
+    lang: en
+    group: ca-cbsa
+    url: "https://www.cbsa-asfc.gc.ca/publications/cn-ad/menu-eng.html"
+
+  - id: ca-cbsa-fr
+    source: "ASFC — Avis des douanes"
+    jurisdiction: CA
+    kind: cbsa
+    lang: fr
+    group: ca-cbsa
+    url: "https://www.cbsa-asfc.gc.ca/publications/cn-ad/menu-fra.html"
+
+  - id: ca-finance-en
+    source: "Department of Finance Canada — News"
+    jurisdiction: CA
+    kind: feed
+    lang: en
+    group: ca-finance
+    url: "https://api.io.canada.ca/io-server/gc/news/en/v2?dept=departmentfinance&sort=publishedDate&orderBy=desc&pick=50&format=atom"
+    keywords: ["tariff", "surtax", "remission", "customs", "counter", "steel", "aluminum", "import", "trade"]
+
+  - id: ca-finance-fr
+    source: "Ministère des Finances Canada — Nouvelles"
+    jurisdiction: CA
+    kind: feed
+    lang: fr
+    group: ca-finance
+    url: "https://api.io.canada.ca/io-server/gc/news/fr/v2?dept=departmentfinance&sort=publishedDate&orderBy=desc&pick=50&format=atom"
+    keywords: ["tarif", "surtaxe", "remise", "douan", "contre-mesure", "acier", "aluminium", "import", "commerce"]
+
+  # ------------------------------ European Union ------------------------------
+  - id: eu-taxud
+    source: "European Commission — Taxation and Customs Union"
+    jurisdiction: EU
+    kind: feed
+    url: "https://taxation-customs.ec.europa.eu/node/2/rss_en"
+
+  - id: eu-oj
+    source: "Official Journal of the EU (L series)"
+    jurisdiction: EU
+    kind: feed
+    url: "https://eur-lex.europa.eu/EN/display-feed.rss?rssId=165"
+    keywords: ["anti-dumping", "countervailing", "customs dut", "tariff", "combined nomenclature", "safeguard", "tariff quota", "steel", "classification of certain goods", "customs code", "additional dut", "rebalancing"]

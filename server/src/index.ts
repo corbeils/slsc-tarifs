@@ -10,6 +10,7 @@ import { syncOfficialLists } from './importers/official-lists.js';
 import { getRules } from './rules.js';
 import { importFx } from './importers/misc.js';
 import { syncTaricUrls } from './importers/taric.js';
+import { syncNews } from './importers/news.js';
 import { getMeta } from './db.js';
 
 const db = openDb();
@@ -43,6 +44,9 @@ schedule(config.cronFx, 'import-fx', () => importFx(db));
 if (!db.prepare('SELECT 1 FROM fx_history LIMIT 1').get()) importFx(db).catch((e) => app.log.warn({ err: e }, 'FX history import failed'));
 schedule(config.cronCa, 'sync-cbsa', () => syncCbsa(db));
 schedule(config.cronLists, 'sync-lists', () => syncOfficialLists(db, getRules()));
+schedule(config.cronNews, 'sync-news', () => syncNews(db, getRules().news));
+// First start: fill the news feed
+if (!db.prepare('SELECT 1 FROM news LIMIT 1').get()) syncNews(db, getRules().news).catch((e) => app.log.warn({ err: e }, 'News sync failed'));
 schedule(config.cronEu, 'sync-taric', async () => {
   const urls = getMeta<string[]>(db, 'taric:urls') ?? [];
   return urls.length ? syncTaricUrls(db, urls) : 'no TARIC URL saved';

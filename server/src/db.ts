@@ -109,6 +109,20 @@ function migrate(db: DB) {
       url TEXT,
       PRIMARY KEY (j, case_no, country)
     );
+    CREATE TABLE IF NOT EXISTS news (
+      id TEXT PRIMARY KEY,
+      source_id TEXT NOT NULL,
+      jurisdiction TEXT NOT NULL,
+      lang TEXT NOT NULL DEFAULT '',
+      grp TEXT NOT NULL DEFAULT '',
+      title TEXT NOT NULL,
+      url TEXT NOT NULL,
+      date TEXT NOT NULL,
+      summary TEXT NOT NULL DEFAULT '',
+      doc_type TEXT NOT NULL DEFAULT '',
+      first_seen TEXT NOT NULL
+    );
+    CREATE INDEX IF NOT EXISTS idx_news_date ON news(date);
     CREATE TABLE IF NOT EXISTS eu_measures (
       code TEXT NOT NULL,
       add_code TEXT NOT NULL DEFAULT '',

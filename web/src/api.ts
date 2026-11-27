@@ -136,6 +136,7 @@ export const api = {
       }
     }
   },
+  news: (lang: string, j = '', q = '') => req<{ at: string | null; items: any[] }>(`/api/news?lang=${lang}&j=${j}&q=${encodeURIComponent(q)}`),
   changelog: () => req<{ version: string; beta: boolean; at: string; notes: string }[]>('/api/changelog'),
   measures: () => req<any>(`/api/measures?lang=${getLang()}`),
   lookup: (q: string, j: string) => req<any[]>(`/api/lookup/search?q=${encodeURIComponent(q)}&j=${j}`, {}, true),
@@ -165,6 +166,8 @@ export const api = {
     },
     caUrl: (url: string) => req<{ job: string }>('/api/admin/import/ca-url', { method: 'POST', body: JSON.stringify({ url }) }, true),
     syncLists: () => req<{ job: string }>('/api/admin/sync/official-lists', { method: 'POST' }, true),
+    syncNews: () => req<{ job: string }>('/api/admin/sync/news', { method: 'POST' }, true),
+    newsStatus: () => req<{ at: string; results: { id: string; source: string; ok: boolean; found: number; kept: number; added: number; error?: string }[] } | null>('/api/admin/news/status', {}, true),
     syncCbsa: (force = false) => req<{ job: string }>('/api/admin/sync/cbsa', { method: 'POST', body: JSON.stringify({ force }) }, true),
     fxOnline: () => req<any>('/api/admin/import/fx', { method: 'POST' }, true),
     siteVersion: (version: string, beta: boolean, notes = '') => req<any>('/api/admin/site-version', { method: 'POST', body: JSON.stringify({ version, beta, notes }) }, true),

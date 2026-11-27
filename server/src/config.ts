@@ -19,6 +19,8 @@ export const config = {
   cronFx: process.env.CRON_FX ?? '15 17 * * 1-5',
   /** Weekly re-import of official annex lists (Section 232 proclamation PDFs). */
   cronLists: process.env.CRON_LISTS ?? '15 4 * * 1',
+  /** Customs news feed (official sources): every 6 hours. */
+  cronNews: process.env.CRON_NEWS ?? '20 */6 * * *',
   /** Daily CBSA check: the file is downloaded/imported only when it changed. */
   cronCa: process.env.CRON_CA ?? '45 6 * * *',
   /** URL du fichier tarif CBSA (XLSX/CSV) pour import automatique, optionnel. */

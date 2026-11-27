@@ -299,7 +299,22 @@ export const EuRules = z
   .passthrough();
 export type EuRules = z.infer<typeof EuRules>;
 
+export const NewsSource = z.object({
+  id: z.string(),
+  source: z.string(),
+  jurisdiction: z.enum(['US', 'CA', 'EU']),
+  kind: z.enum(['federalregister', 'feed', 'cbsa']),
+  url: z.string(),
+  lang: z.enum(['en', 'fr']).optional(),
+  group: z.string().optional(),
+  keywords: z.array(z.string()).optional(),
+});
+export type NewsSource = z.infer<typeof NewsSource>;
+export const NewsRules = z.object({ keepDays: z.number().default(400), sources: z.array(NewsSource) });
+export type NewsRules = z.infer<typeof NewsRules>;
+
 export interface Rules {
+  news: NewsRules;
   us: UsRules;
   ca: CaRules;
   eu: EuRules;
@@ -314,6 +329,7 @@ export const RULE_FILES = {
   eu: { file: 'eu.yaml', schema: EuRules },
   adcvd: { file: 'adcvd.yaml', schema: AdcvdRules },
   licences: { file: 'licences.yaml', schema: LicenceRules },
+  news: { file: 'news.yaml', schema: NewsRules },
 } as const;
 export type RuleKey = keyof typeof RULE_FILES;
 
@@ -332,6 +348,7 @@ export function loadRules(dir = config.rulesDir): Rules {
     eu: read('eu') as EuRules,
     adcvd: read('adcvd') as AdcvdRules,
     licences: read('licences') as LicenceRules,
+    news: read('news') as NewsRules,
     loadedAt: new Date().toISOString(),
   };
   return current;

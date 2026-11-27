@@ -88,8 +88,8 @@ export default function Classifier({ onCompare }: { onCompare: (hs6: string) => 
   };
   const simulate = (c: Candidate) => {
     try {
-      const saved = JSON.parse(localStorage.getItem('slsc-tarifs-form') ?? '{}');
-      localStorage.setItem(
+      const saved = JSON.parse(sessionStorage.getItem('slsc-tarifs-form') ?? '{}');
+      sessionStorage.setItem(
         'slsc-tarifs-form',
         JSON.stringify({ ...saved, direction: DIR[j], hit: { code: c.code, display: c.display, description: c.description, path: c.path ?? '', is_leaf: 1 }, currency: j === 'US' ? 'USD' : j === 'EU' ? 'EUR' : 'CAD' }),
       );

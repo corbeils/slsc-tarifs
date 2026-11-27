@@ -27,8 +27,8 @@ const fmt6 = (c: string) => `${c.slice(0, 4)}.${c.slice(4, 6)}`;
 /** Opens the simulator on this line (direction + code). */
 function simulate(h: Hit) {
   try {
-    const saved = JSON.parse(localStorage.getItem('slsc-tarifs-form') ?? '{}');
-    localStorage.setItem(
+    const saved = JSON.parse(sessionStorage.getItem('slsc-tarifs-form') ?? '{}');
+    sessionStorage.setItem(
       'slsc-tarifs-form',
       JSON.stringify({ ...saved, direction: DIR[h.j], hit: { code: h.code, display: h.display, description: h.description, path: h.path ?? '', is_leaf: h.is_leaf }, currency: h.j === 'US' ? 'USD' : h.j === 'EU' ? 'EUR' : 'CAD' }),
     );

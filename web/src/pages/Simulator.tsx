@@ -47,13 +47,16 @@ interface Form {
 }
 
 const today = () => new Date().toISOString().slice(0, 10);
+// The form is kept while the site stays open (tab changes, reloads) and cleared when the tab / app is closed:
+// sessionStorage, not localStorage. The old permanent copy is removed.
+localStorage.removeItem('slsc-tarifs-form');
 const initial = (): Form => {
-  const saved = localStorage.getItem('slsc-tarifs-form');
+  const saved = sessionStorage.getItem('slsc-tarifs-form');
   const base: Form = {
     direction: 'CA-US',
     hit: null,
     origin: 'CA',
-    value: '10000',
+    value: '0',
     currency: 'USD',
     date: today(),
     mode: 'truck',
@@ -98,7 +101,7 @@ export default function Simulator() {
   useEffect(() => {
     api.countries().then(setCountries).catch(() => {});
   }, []);
-  useEffect(() => localStorage.setItem('slsc-tarifs-form', JSON.stringify(f)), [f]);
+  useEffect(() => sessionStorage.setItem('slsc-tarifs-form', JSON.stringify(f)), [f]);
   // New line or new origin: nothing claimed until the user ticks an agreement
   useEffect(() => setF((x) => ({ ...x, preferential: false, agreement: '' })), [f.origin, f.hit?.code, f.direction]);
 
